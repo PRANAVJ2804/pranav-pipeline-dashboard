@@ -70,6 +70,81 @@ try {
         exit;
     }
 
+    if ($action === 'track') {
+        $sent = isset($_SERVER['HTTP_X_CSRF_TOKEN']) ? (string)$_SERVER['HTTP_X_CSRF_TOKEN'] : '';
+        $want = isset($_SESSION['csrf']) ? (string)$_SESSION['csrf'] : '';
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $want === '' || !hash_equals($want, $sent)) {
+            fail(403, 'Blocked.');
+        }
+        $in = json_decode((string)file_get_contents('php://input', false, null, 0, 2000), true);
+        $t = is_array($in) && isset($in['t']) ? (string)$in['t'] : '';
+        if (!in_array($t, array('view', 'bot', 'bot_miss', 'search', 'edit_open', 'export'), true)) {
+            fail(400, 'Unknown event.');
+        }
+        $d = trim(preg_replace('/[\x00-\x1F\x7F<>]/u', ' ', isset($in['d']) ? (string)$in['d'] : ''));
+        session_write_close();
+        log_usage($t, mb_substr($d, 0, 120, 'UTF-8'));
+        echo json_encode(array('ok' => true));
+        exit;
+    }
+
+    if ($action === 'usage') {
+        if ($scope !== null) {
+            fail(403, 'Only the admin can see usage.');
+        }
+        session_write_close();
+        $days = 30;
+        $ev = read_usage($days);
+        $now = time();
+        $feat = array('view' => 'Page views', 'bot' => 'Bot questions', 'bot_miss' => 'Bot could not answer', 'search' => 'Searches', 'edit_open' => 'Edit forms opened');
+        $users = array();
+        $tot = array();
+        $pages = array();
+        $miss = array();
+        $daily = array();
+        $touch = function ($u, $at) use (&$users) {
+            if (!isset($users[$u])) {
+                $users[$u] = array('user' => $u, 'last' => '', 'logins' => 0, 'edits' => 0, 'view' => 0, 'bot' => 0, 'bot_miss' => 0, 'search' => 0, 'edit_open' => 0, 'd7' => 0);
+            }
+            if ($at > $users[$u]['last']) { $users[$u]['last'] = $at; }
+        };
+        foreach ($ev as $e) {
+            $u = (string)$e['u'];
+            $t = (string)$e['t'];
+            $ts = strtotime($e['at']);
+            $touch($u, $e['at']);
+            if (isset($users[$u][$t])) { $users[$u][$t]++; }
+            if (!isset($tot[$t])) { $tot[$t] = array('d7' => 0, 'd30' => 0); }
+            $tot[$t]['d30']++;
+            if ($ts >= $now - 7 * 86400) { $tot[$t]['d7']++; $users[$u]['d7']++; }
+            $day = date('Y-m-d', $ts);
+            if (!isset($daily[$day])) { $daily[$day] = array(); }
+            $daily[$day][$u] = 1;
+            if ($t === 'view') { $k = (string)$e['d']; $pages[$k] = (isset($pages[$k]) ? $pages[$k] : 0) + 1; }
+            if ($t === 'bot_miss') { $k = mb_strtolower((string)$e['d'], 'UTF-8'); $miss[$k] = (isset($miss[$k]) ? $miss[$k] : 0) + 1; }
+        }
+        foreach (read_activity(20000) as $e) {
+            $ts = strtotime(isset($e['at']) ? $e['at'] : '');
+            if (!$ts || $ts < $now - $days * 86400) { continue; }
+            $u = isset($e['user']) ? (string)$e['user'] : '';
+            if ($u === '') { continue; }
+            $touch($u, $e['at']);
+            if (isset($e['type']) && $e['type'] === 'login') { $users[$u]['logins']++; $daily[date('Y-m-d', $ts)][$u] = 1; }
+            elseif (!isset($e['type']) && !empty($e['changes'])) { $users[$u]['edits']++; }
+        }
+        foreach (array_keys(cfg()['users']) as $u) { $touch((string)$u, ''); }
+        arsort($pages);
+        arsort($miss);
+        ksort($daily);
+        $dau = array();
+        foreach ($daily as $day => $us) { $dau[] = array('day' => $day, 'n' => count($us)); }
+        $ul = array_values($users);
+        usort($ul, function ($a, $b) { return strcmp($b['last'], $a['last']); });
+        echo json_encode(array('ok' => true, 'days' => $days, 'features' => $feat, 'totals' => $tot, 'users' => $ul,
+            'pages' => array_slice($pages, 0, 12, true), 'misses' => array_slice($miss, 0, 15, true), 'dau' => array_slice($dau, -14)), JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
     if ($action === 'profile_save' || $action === 'password_change') {
         $sent = isset($_SERVER['HTTP_X_CSRF_TOKEN']) ? (string)$_SERVER['HTTP_X_CSRF_TOKEN'] : '';
         $want = isset($_SESSION['csrf']) ? (string)$_SESSION['csrf'] : '';
