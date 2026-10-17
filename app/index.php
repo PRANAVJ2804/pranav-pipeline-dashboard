@@ -1185,6 +1185,12 @@ a.wapp{display:inline-flex;align-items:center;justify-content:center;flex:none;w
 .pkr .ri{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;font-size:22px;background:color-mix(in srgb,var(--c) 16%,transparent)}
 .pkr .tx b{white-space:normal}.pkr .tx small{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4}
 .pkr .go{grid-column:2;color:var(--accent);font-weight:700;font-size:12.5px}
+.navh .prl .bd{margin-left:10px;vertical-align:middle;letter-spacing:0;text-transform:none}.navh .prl .bd:empty{display:none}.navh.on{background:#e4dbff;color:#5b2ee0}.shell.col #navP{position:relative}
+.pkg.prio{grid-template-columns:repeat(auto-fit,minmax(260px,1fr));padding:20px 24px 24px}
+.pkb:has(.pkg.prio){width:min(720px,100%)}
+.prc>a{grid-template-columns:52px minmax(0,1fr) auto!important;grid-template-rows:auto!important;padding:18px 16px!important;border-radius:18px}
+.prc .ri{display:grid;place-items:center;width:52px;height:52px;border-radius:16px;font-size:24px;background:color-mix(in srgb,var(--c) 16%,transparent);border:1px solid color-mix(in srgb,var(--c) 35%,transparent)}
+.prc .tx b{white-space:normal;font-size:15px}.prc .ct{min-width:58px}.prc .ct b{display:block;font-size:26px;color:var(--c)}
 .pkov{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#0a9a4a;--s7:#6d4be0}
 @media (prefers-color-scheme:dark){.pkov{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#17a35a;--s7:#9085e9}}
 #btnRefresh{display:none!important}
@@ -1214,12 +1220,9 @@ a.wapp{display:inline-flex;align-items:center;justify-content:center;flex:none;w
     <a data-nav="home" href="#/" title="Dashboard"><i>🏠</i><span class="t">Dashboard</span></a>
     <a data-nav="master" href="#/master" title="Master overview"><i>📊</i><span class="t">Master overview</span></a>
     <a data-nav="all" href="#/master/sheet" title="All deals"><i>📋</i><span class="t">All deals</span></a>
-    <a data-nav="stale" href="#/master/sheet?f=stale" title="Follow-up overdue"><i>⏰</i><span class="t">Follow-up overdue</span><span class="bd" id="navStale"></span></a>
-    <a data-nav="notcontacted" class="subnav" href="#/master/sheet?f=notcontacted" title="Not contacted"><i>📵</i><span class="t">Not contacted</span><span class="bd nc" id="navNC"></span></a>
-    <a data-nav="paydue" href="#/master/sheet?f=paydue" title="Payment overdue"><i>💳</i><span class="t">Payment overdue</span><span class="bd" id="navPay"></span></a>
-    <a data-nav="docpend" href="#/master/sheet?f=docpend" title="Documents pending"><i>📄</i><span class="t">Docs pending</span><span class="bd" id="navDoc"></span></a>
     <div id="svNav"></div>
   </nav>
+  <button type="button" class="navh" id="navP" aria-expanded="false" aria-haspopup="dialog"><span class="prl">🔥<span class="t"> Priority leads</span><span class="bd" id="navPrio"></span></span><span class="chev">›</span></button>
   <button type="button" class="navh" id="navU" aria-expanded="false"><span>🎓<span class="t"> Universities</span></span><span class="chev">›</span></button>
   <div class="unav" id="unav" hidden></div>
   <button type="button" class="navh" id="navR" aria-expanded="false"><span>📑<span class="t"> Reports</span></span><span class="chev">›</span></button>
@@ -2015,6 +2018,17 @@ $('unav').addEventListener('click', e => {
   if (e.target.closest('.uopen')) { location.hash = hashFor(Array.from(uSel).join(MS), null, false); return; }
   if (e.target.closest('.uclr')) { uSel.clear(); $('unav').querySelectorAll('.uck').forEach(c => { c.checked = false; }); renderUBar(); }
 });
+/* Priority leads: the four "needs attention" lists. A lead can be in more than one list, so "any" counts each lead once. */
+function prioStats() {
+  const o = {stale: [], nc: [], pay: [], doc: []}, any = new Set();
+  rows.forEach(r => {
+    if (cmSrc && isStale(r)) { o.stale.push(r.ID); any.add(r.ID); }
+    if (cmSrc && isNotContacted(r)) { o.nc.push(r.ID); any.add(r.ID); }
+    if (passF(r, 'paydue')) { o.pay.push(r.ID); any.add(r.ID); }
+    if (passF(r, 'docpend')) { o.doc.push(r.ID); any.add(r.ID); }
+  });
+  return {stale: o.stale.length, nc: o.nc.length, pay: o.pay.length, doc: o.doc.length, any: any.size};
+}
 function renderSide() {
   const st = uniStats();
   const names = Object.keys(st).sort((a, b) => a === UNASSIGNED ? 1 : b === UNASSIGNED ? -1 : a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'}));
@@ -2022,18 +2036,12 @@ function renderSide() {
   const curU = route.type === 'uni' ? route.name.split(MS) : [];
   $('unav').innerHTML = '<div id="uSelBar" class="usel" hidden></div>' + names.map(n => '<div class="urow"><input type="checkbox" class="uck" data-n="' + esc(n) + '" aria-label="Select ' + esc(n) + '"' + (uSel.has(n) ? ' checked' : '') + '><a href="' + hashFor(n, null, false) + '" class="' + (curU.indexOf(n) >= 0 ? 'on' : '') + '"><b title="' + esc(n) + '">' + esc(n) + '</b><span>' + fmtN(st[n].n) + '</span></a></div>').join('');
   renderUBar();
-  const stale = cmSrc ? rows.filter(isStale).length : 0;
-  $('navStale').textContent = stale ? fmtN(stale) : '';
-  const nc = cmSrc ? rows.filter(isNotContacted).length : 0;
-  $('navNC').textContent = nc ? fmtN(nc) : '';
-  const pd = rows.filter(r => passF(r, 'paydue')).length, dp = rows.filter(r => passF(r, 'docpend')).length;
-  $('navPay').textContent = pd ? fmtN(pd) : ''; $('navDoc').textContent = dp ? fmtN(dp) : '';
+  { const ps = prioStats(); $('navPrio').textContent = ps.any ? fmtN(ps.any) : ''; $('navP').title = 'Priority leads · ' + fmtN(ps.any) + ' need attention'; }
   paintViews(); paintWaMode();
-  const cur = route.type === 'home' ? 'home' : route.sheet ? (route.f === 'stale' ? 'stale' : route.f === 'notcontacted' ? 'notcontacted' : route.f === 'paydue' ? 'paydue' : route.f === 'docpend' ? 'docpend' : (route.type === 'master' && !route.f && route.p === null && route.m === null && route.s === null && !route.q ? 'all' : '')) : (route.type === 'master' ? 'master' : '');
+  const cur = route.type === 'home' ? 'home' : route.sheet ? ((route.f === 'stale' || route.f === 'notcontacted' || route.f === 'paydue' || route.f === 'docpend') ? 'prio' : (route.type === 'master' && !route.f && route.p === null && route.m === null && route.s === null && !route.q ? 'all' : '')) : (route.type === 'master' ? 'master' : '');
   $('nav').querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.nav === cur));
+  $('navP').classList.toggle('on', cur === 'prio');
   renderRepNav();
-  $('nav').querySelector('[data-nav="stale"]').hidden = !cmSrc;
-  $('nav').querySelector('[data-nav="notcontacted"]').hidden = !cmSrc;
 }
 
 function tile(label, icon, color, value, sub, href, sp, cls) {
@@ -3937,7 +3945,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   const g = id => document.getElementById(id);
   const ov = g('pkOv'), box = g('pkBox');
   let mode = '';
-  function close() { ov.hidden = true; box.innerHTML = ''; mode = ''; g('navU').setAttribute('aria-expanded', 'false'); g('navR').setAttribute('aria-expanded', 'false'); }
+  function close() { ov.hidden = true; box.innerHTML = ''; mode = ''; g('navP').setAttribute('aria-expanded', 'false'); g('navU').setAttribute('aria-expanded', 'false'); g('navR').setAttribute('aria-expanded', 'false'); }
   ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !ov.hidden) close(); });
   window.addEventListener('hashchange', () => { if (!ov.hidden) close(); });
@@ -3992,6 +4000,20 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     g('pkQ').onkeydown = e => { if (e.key === 'Enter') { const a = g('pkG').querySelector('.pkr a'); if (a) location.hash = a.getAttribute('href'); } };
     repDraw(); g('pkQ').focus();
   }
+  function openPrio() {
+    mode = 'p'; const st = prioStats();
+    const items = [
+      cmSrc && {k: 'stale', f: 'stale', ic: '⏰', c: '#e03131', t: 'Follow-up overdue', d: 'No comment in ' + STALE_DAYS + '+ days', n: st.stale},
+      cmSrc && {k: 'nc', f: 'notcontacted', ic: '📵', c: '#f08c00', t: 'Not contacted', d: 'Active, no comment yet', n: st.nc},
+      {k: 'pay', f: 'paydue', ic: '💳', c: '#d9a400', t: 'Payment overdue', d: 'Next payment date passed', n: st.pay},
+      {k: 'doc', f: 'docpend', ic: '📄', c: '#2a78d6', t: 'Docs pending', d: 'Documents still to collect', n: st.doc}
+    ].filter(Boolean);
+    box.classList.remove('lst'); g('navP').setAttribute('aria-expanded', 'true');
+    box.innerHTML = '<div class="pkh"><h2>🔥 Priority leads</h2><p>' + fmtN(st.any) + ' lead' + (st.any === 1 ? '' : 's') + ' need attention. A lead can be in more than one list. Click a list to open exactly those students.</p><button type="button" class="pkx" aria-label="Close"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
+      '<div class="pkg prio" id="pkG">' + items.map((x, i) => '<div class="pkc prc" style="--c:' + x.c + ';--i:' + i + '"><a href="#/master/sheet?f=' + x.f + '"><span class="ri">' + x.ic + '</span><span class="tx"><b>' + esc(x.t) + '</b><small>' + esc(x.d) + '</small></span><span class="ct"><b>' + fmtN(x.n) + '</b><small>' + (x.n === 1 ? 'lead' : 'leads') + '</small></span></a></div>').join('') + '</div>';
+    ov.hidden = false;
+  }
+  g('navP').onclick = e => { e.preventDefault(); if (mode === 'p') close(); else { close(); openPrio(); } };
   g('navU').onclick = e => { e.preventDefault(); if (mode === 'u') close(); else { close(); openUnis(); } };
   g('navR').onclick = e => { e.preventDefault(); if (mode === 'r') close(); else { close(); openReps(); } };
 })();
