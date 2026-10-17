@@ -1110,6 +1110,11 @@ button.uchip[aria-expanded=true] .uc{transform:rotate(180deg)}
 .pfa button{padding:11px 20px}
 .pst{height:6px;margin-top:8px;border-radius:4px;background:var(--bg);overflow:hidden}.pst i{display:block;height:100%;width:0;border-radius:4px;background:#e11d48;transition:width .25s,background .25s}
 .pfh{margin-top:5px;font-size:12px;color:var(--muted)}
+a.qa{margin-left:5px;text-decoration:none;font-size:13px;opacity:.75}a.qa:hover{opacity:1}
+#updated.warn{color:#b45309;font-weight:700}#updated.old{color:#e11d48;font-weight:800}
+#svNav .svh{margin:10px 14px 2px;font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}#svNav .svr{display:flex;align-items:center}#svNav .svr a{flex:1;min-width:0}#svNav .svr a .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#svNav .svx{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:13px;padding:4px 8px;opacity:.6}#svNav .svx:hover{opacity:1;color:#e11d48}
+#svBox{display:inline-flex;gap:6px;margin-left:8px}#svBox input{width:150px}
+.hcheck{margin-top:8px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:13px}.hcheck.bad{color:#e11d48}.hcheck.good{color:#0b8a4f}
 .usg{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:6px}.usg div{padding:10px 12px;border-radius:14px;background:var(--bg)}.usg b{display:block;font-size:22px}.usg small{display:block;font-size:11.5px;color:var(--muted)}.usg em{font-style:normal;font-size:11px;color:var(--muted)}
 .ush{margin:16px 0 6px;font-size:13px;font-weight:800}.ust{max-height:240px;overflow:auto;border-radius:12px;background:var(--bg)}.ust table{width:100%;border-collapse:collapse;font-size:12.5px}.ust th{text-align:left;color:var(--muted);font-weight:700;padding:7px 10px}.ust td{padding:6px 10px;border-top:1px solid color-mix(in srgb,var(--muted) 18%,transparent)}.ust tr.dead td{color:var(--muted)}
 .usd{display:flex;align-items:flex-end;gap:5px;height:90px;padding:6px 8px;border-radius:12px;background:var(--bg)}.usd span{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}.usd i{display:block;width:100%;min-height:2px;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#a78bfa,#6d3df5)}.usd small{font-size:9.5px;color:var(--muted)}
@@ -1206,6 +1211,9 @@ button.uchip[aria-expanded=true] .uc{transform:rotate(180deg)}
     <a data-nav="all" href="#/master/sheet" title="All deals"><i>📋</i><span class="t">All deals</span></a>
     <a data-nav="stale" href="#/master/sheet?f=stale" title="Follow-up overdue"><i>⏰</i><span class="t">Follow-up overdue</span><span class="bd" id="navStale"></span></a>
     <a data-nav="notcontacted" class="subnav" href="#/master/sheet?f=notcontacted" title="Not contacted"><i>📵</i><span class="t">Not contacted</span><span class="bd nc" id="navNC"></span></a>
+    <a data-nav="paydue" href="#/master/sheet?f=paydue" title="Payment overdue"><i>💳</i><span class="t">Payment overdue</span><span class="bd" id="navPay"></span></a>
+    <a data-nav="docpend" href="#/master/sheet?f=docpend" title="Documents pending"><i>📄</i><span class="t">Documents pending</span><span class="bd" id="navDoc"></span></a>
+    <div id="svNav"></div>
   </nav>
   <button type="button" class="navh" id="navU" aria-expanded="false"><span>🎓<span class="t"> Universities</span></span><span class="chev">›</span></button>
   <div class="unav" id="unav" hidden></div>
@@ -1321,7 +1329,7 @@ button.uchip[aria-expanded=true] .uc{transform:rotate(180deg)}
   </div>
   <div id="stages" class="chips"></div>
   <div class="toolbar">
-    <input id="q" type="search" placeholder="Search name, phone, email, anything…" autocomplete="off">
+    <input id="q" type="search" placeholder="Search name, phone, email, anything…" autocomplete="off"><button type="button" class="ghost" id="btnSv" title="Save this filtered view to your sidebar">★ Save view</button>
     <details class="cols" id="colsBox">
       <summary>Columns</summary>
       <div class="panel">
@@ -1372,7 +1380,7 @@ button.uchip[aria-expanded=true] .uc{transform:rotate(180deg)}
 <script>
 const CSRF = <?= json_encode($_SESSION['csrf']) ?>;
 const ME = <?= json_encode((string)($_SESSION['user'] ?? '')) ?>;
-const PROFILE = <?php $pf = user_profile((string)($_SESSION['user'] ?? '')); echo json_encode(array('name' => (string)($pf['name'] ?? ''), 'phone' => (string)($pf['phone'] ?? ''), 'color' => (string)($pf['color'] ?? '')), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG); ?>;
+const PROFILE = <?php $pf = user_profile((string)($_SESSION['user'] ?? '')); echo json_encode(array('name' => (string)($pf['name'] ?? ''), 'phone' => (string)($pf['phone'] ?? ''), 'color' => (string)($pf['color'] ?? ''), 'views' => array_values(is_array($pf['views'] ?? null) ? $pf['views'] : array())), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG); ?>;
 function track(t, d) { try { fetch('api.php?action=track', {method: 'POST', credentials: 'same-origin', keepalive: true, headers: {'X-CSRF-Token': CSRF, 'Content-Type': 'application/json'}, body: JSON.stringify({t: t, d: String(d || '').slice(0, 120)})}).catch(function () {}); } catch (e) {} }
 let __lastPg = '';
 const SCOPE = <?= json_encode((string)(user_scope() ?? '')) ?>;
@@ -1468,6 +1476,7 @@ function showUpdated() {
   if (rfBusy || !fetchedAt || !window._cnt) return;
   const u = $('updated');
   u.textContent = 'Updated ' + ago(fetchedAt) + ' · ' + window._cnt.toLocaleString() + ' deals';
+  { const m = (Date.now() - fetchedAt.getTime()) / 60000; u.className = 'sub' + (m >= 120 ? ' old' : m >= 30 ? ' warn' : ''); u.title = m >= 30 ? 'This data is ' + ago(fetchedAt).replace(' ago', '') + ' old. Press Refresh data before quoting numbers.' : ''; }
   u.title = 'Last data fetch: ' + fetchedAt.toLocaleString() + '. The page refreshes itself every 5 minutes.';
 }
 async function load(keep) {
@@ -1735,6 +1744,7 @@ function renderKpis() {
     tiles.push(['Universities', fmtN(Object.keys(tally(list, uniOf)).filter(n => n !== UNASSIGNED).length)]);
   }
   tiles.push(['Active deals', fmtN(list.filter(r => !isClosed(r)).length), hashFor(scopeName(), {f: 'active'}, true)]);
+  tiles.push(['Payment overdue', fmtN(list.filter(r => passF(r, 'paydue')).length), hashFor(scopeName(), {f: 'paydue'}, true)], ['Documents pending', fmtN(list.filter(r => passF(r, 'docpend')).length), hashFor(scopeName(), {f: 'docpend'}, true)]);
   if (cmSrc) tiles.push(['Follow-up overdue', fmtN(list.filter(isStale).length), hashFor(scopeName(), {f: 'stale'}, true)], ['Not contacted', fmtN(list.filter(isNotContacted).length), hashFor(scopeName(), {f: 'notcontacted'}, true)]);
   if (pk) tiles.push(['Programs', fmtN(Object.keys(tally(list, r => cellVal(r, pk))).filter(n => n !== NONE).length)]);
   const ak = colKey('OPPORTUNITY', /^amount$|^opportunity$/i);
@@ -1902,7 +1912,7 @@ function renderRoute(reset) {
 
 /* ---------- app shell: sidebar, global search, home ---------- */
 const STALE_LABEL = 'Follow-up overdue (' + STALE_DAYS + '+ days)';
-const FILTER_LABEL = {active: 'Active deals', stale: STALE_LABEL, nocomment: 'No comment yet', notcontacted: 'Not contacted (no comment yet)'};
+const FILTER_LABEL = {paydue: 'Payment overdue (next payment date passed)', docpend: 'Documents pending', active: 'Active deals', stale: STALE_LABEL, nocomment: 'No comment yet', notcontacted: 'Not contacted (no comment yet)'};
 function isClosed(r) {
   const s = r.STAGE_ID || '';
   if (CLOSED) return CLOSED.indexOf(s) >= 0;
@@ -1920,6 +1930,8 @@ function isNotContacted(r) { return !isClosed(r) && !isAlumni(r) && !hasHist(r);
 function passF(r, f) {
   if (f === 'active') return !isClosed(r);
   if (f === 'stale') return isStale(r);
+  if (f === 'paydue') return !isClosed(r) && rrStatus(r) === RR.O;
+  if (f === 'docpend') return !isClosed(r) && !isAlumni(r) && docStatus(r) === 'Pending';
   if (f === 'notcontacted') return isNotContacted(r);
   if (f === 'nocomment') return !isClosed(r) && !isAlumni(r) && !r._ct;
   return true;
@@ -2005,7 +2017,10 @@ function renderSide() {
   $('navStale').textContent = stale ? fmtN(stale) : '';
   const nc = cmSrc ? rows.filter(isNotContacted).length : 0;
   $('navNC').textContent = nc ? fmtN(nc) : '';
-  const cur = route.type === 'home' ? 'home' : route.sheet ? (route.f === 'stale' ? 'stale' : route.f === 'notcontacted' ? 'notcontacted' : (route.type === 'master' && !route.f && route.p === null && route.m === null && route.s === null && !route.q ? 'all' : '')) : (route.type === 'master' ? 'master' : '');
+  const pd = rows.filter(r => passF(r, 'paydue')).length, dp = rows.filter(r => passF(r, 'docpend')).length;
+  $('navPay').textContent = pd ? fmtN(pd) : ''; $('navDoc').textContent = dp ? fmtN(dp) : '';
+  paintViews();
+  const cur = route.type === 'home' ? 'home' : route.sheet ? (route.f === 'stale' ? 'stale' : route.f === 'notcontacted' ? 'notcontacted' : route.f === 'paydue' ? 'paydue' : route.f === 'docpend' ? 'docpend' : (route.type === 'master' && !route.f && route.p === null && route.m === null && route.s === null && !route.q ? 'all' : '')) : (route.type === 'master' ? 'master' : '');
   $('nav').querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.nav === cur));
   renderRepNav();
   $('nav').querySelector('[data-nav="stale"]').hidden = !cmSrc;
@@ -3234,6 +3249,7 @@ function cellHtml(c, v) {
   if (c.key === '_COMMENT') return '<span class="cm">' + esc(v) + '</span>';
   if (c.key === 'ID') return '<span class="idc">' + esc(v) + '</span>';
   if (c.key === '_NAME') return '<b class="nm">' + esc(v) + '</b>';
+  if (c.key === '_PHONE') { const d = String(v).split(/[,;]/)[0].replace(/\D/g, ''); if (d.length >= 10) { return '<span style="white-space:nowrap">' + esc(v) + ' <a class="qa" href="tel:+' + esc(d.length === 10 ? '91' + d : d) + '" title="Call" onclick="event.stopPropagation()">📞</a><a class="qa" href="https://wa.me/' + esc(d.length === 10 ? '91' + d : d) + '" target="_blank" rel="noopener" title="WhatsApp" onclick="event.stopPropagation()">💬</a></span>'; } }
   return esc(v);
 }
 
@@ -3487,6 +3503,36 @@ $('btnCsv').onclick = () => {
   a.remove();
 };
 
+/* ---------- saved views (kept per login, so they follow you to any device) ---------- */
+function curViewHash() {
+  const h = location.hash || '#/', i = h.indexOf('?'), base = i < 0 ? h : h.slice(0, i), sp = new URLSearchParams(i < 0 ? '' : h.slice(i + 1));
+  if (stage) sp.set('s', stage); else sp.delete('s');
+  if (query) sp.set('q', query); else sp.delete('q');
+  const q = sp.toString(); return base + (q ? '?' + q : '');
+}
+async function saveViews(list) {
+  PROFILE.views = list; paintViews();
+  try { await fetch('api.php?action=views_save', {method: 'POST', credentials: 'same-origin', headers: {'X-CSRF-Token': CSRF, 'Content-Type': 'application/json'}, body: JSON.stringify({views: list})}); } catch (e) {}
+}
+function paintViews() {
+  const el = $('svNav'); if (!el) return;
+  const v = Array.isArray(PROFILE.views) ? PROFILE.views : [];
+  el.innerHTML = v.length ? '<div class="svh t">Saved views</div>' + v.map((x, i) => '<div class="svr"><a class="subnav" href="' + esc(x.h) + '" title="' + esc(x.n) + '"><i>★</i><span class="t">' + esc(x.n) + '</span></a><button type="button" class="svx" data-i="' + i + '" title="Remove" aria-label="Remove ' + esc(x.n) + '">✕</button></div>').join('') : '';
+}
+$('svNav').onclick = e => { const b = e.target.closest('button[data-i]'); if (b) saveViews((PROFILE.views || []).filter((x, i) => i !== +b.dataset.i)); };
+$('btnSv').onclick = () => {
+  if ($('svBox')) { $('svName').focus(); return; }
+  const box = document.createElement('span'); box.id = 'svBox';
+  box.innerHTML = '<input id="svName" maxlength="40" placeholder="Name this view" autocomplete="off"><button type="button" class="ghost" id="svOk">Save</button>';
+  $('btnSv').after(box); $('svName').focus();
+  const done = () => box.remove();
+  const ok = () => {
+    const n = $('svName').value.trim(); if (!n) { $('svName').focus(); return; }
+    const list = (PROFILE.views || []).filter(x => x.n.toLowerCase() !== n.toLowerCase()); list.push({n: n, h: curViewHash()});
+    if (list.length > 20) list.shift(); saveViews(list); done();
+  };
+  $('svOk').onclick = ok; $('svName').onkeydown = e => { if (e.key === 'Enter') ok(); else if (e.key === 'Escape') done(); };
+};
 $('uq').oninput = () => { if (route.type === 'home') renderHome(); };
 window.addEventListener('hashchange', () => { if (cols.length || rows.length) renderRoute(true); });
 $('q').oninput = () => { query = $('q').value; page = 0; apply(); };
@@ -3681,13 +3727,22 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     if (!j.ok) { g('usB').innerHTML = '<div class="pfm err">' + esc(j.error || 'Could not load usage.') + '</div>'; return; }
     const ago = at => { if (!at) return 'never'; const m = Math.round((Date.now() - new Date(at).getTime()) / 60000); return m < 2 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
     const T = j.totals || {};
-    let h = '<div class="usg">' + Object.keys(j.features).map(k => '<div><b>' + ((T[k] || {}).d7 || 0) + '</b><small>' + esc(j.features[k]) + ' · 7 days</small><em>' + ((T[k] || {}).d30 || 0) + ' in 30 days</em></div>').join('') + '</div>';
+    let h = '<h3 class="ush" style="margin-top:4px">Data health</h3><div class="pfh">Compares what the dashboard shows with Bitrix24 right now.</div><div class="hcheck" id="hcOut"><button type="button" class="ghost" id="hcGo">Check against Bitrix24 now</button></div>';
+    h += '<div class="usg">' + Object.keys(j.features).map(k => '<div><b>' + ((T[k] || {}).d7 || 0) + '</b><small>' + esc(j.features[k]) + ' · 7 days</small><em>' + ((T[k] || {}).d30 || 0) + ' in 30 days</em></div>').join('') + '</div>';
     h += '<h3 class="ush">People</h3><div class="ust"><table><tr><th>Login</th><th>Last seen</th><th>Logins</th><th>Views</th><th>Bot</th><th>Search</th><th>Edits</th></tr>' + j.users.map(u => '<tr class="' + (u.last ? '' : 'dead') + '"><td>' + esc(u.user) + '</td><td>' + esc(ago(u.last)) + '</td><td>' + u.logins + '</td><td>' + u.view + '</td><td>' + u.bot + '</td><td>' + u.search + '</td><td>' + u.edits + '</td></tr>').join('') + '</table></div>';
     const pg = Object.keys(j.pages); if (pg.length) h += '<h3 class="ush">Most-visited pages</h3><div class="ust"><table>' + pg.map(k => '<tr><td>' + esc(k) + '</td><td>' + j.pages[k] + '</td></tr>').join('') + '</table></div>';
     const ms = Object.keys(j.misses); h += '<h3 class="ush">Questions the bot could not answer</h3>' + (ms.length ? '<div class="ust"><table>' + ms.map(k => '<tr><td>' + esc(k) + '</td><td>' + j.misses[k] + '×</td></tr>').join('') + '</table></div>' : '<div class="pfh">None yet.</div>');
     const mx = Math.max.apply(null, [1].concat(j.dau.map(d => d.n)));
     if (j.dau.length) h += '<h3 class="ush">People per day</h3><div class="usd">' + j.dau.map(d => '<span title="' + esc(d.day) + ': ' + d.n + '"><i style="height:' + Math.round(d.n / mx * 100) + '%"></i><small>' + esc(d.day.slice(8)) + '</small></span>').join('') + '</div>';
     g('usB').innerHTML = h;
+    g('hcGo').onclick = async () => {
+      const o = g('hcOut'); o.className = 'hcheck'; o.textContent = 'Checking Bitrix24…';
+      let r = {}; try { r = await (await fetch('api.php?action=reconcile', {credentials: 'same-origin'})).json(); } catch (e) {}
+      if (!r.ok) { o.className = 'hcheck bad'; o.textContent = r.error || 'Could not check.'; return; }
+      const x = r.r, f = n => Number(n).toLocaleString();
+      o.className = 'hcheck ' + (x.ok ? 'good' : 'bad');
+      o.innerHTML = (x.ok ? '✔ Matches Bitrix24: <b>' + f(x.live) + '</b> deals.' : '⚠ Dashboard has <b>' + f(x.cached) + '</b> deals, Bitrix24 has <b>' + f(x.live) + '</b> (newest deal ID ' + x.cached_max + ' vs ' + x.live_max + '). Press Refresh data.') + '<br><small>' + f(x.changed_since) + ' deal(s) changed in Bitrix24 since the last refresh (' + esc(String(x.fetched_at).replace('T', ' ').slice(0, 16)) + ').</small>';
+    };
   }
   function strength(v) { let s = 0; if (v.length >= 8) s++; if (v.length >= 12) s++; if (/[a-z]/.test(v) && /[A-Z]/.test(v)) s++; if (/\d/.test(v)) s++; if (/[^A-Za-z0-9]/.test(v)) s++; return s; }
   function openPwd() {
