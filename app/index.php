@@ -1110,6 +1110,9 @@ button.uchip[aria-expanded=true] .uc{transform:rotate(180deg)}
 .pfa button{padding:11px 20px}
 .pst{height:6px;margin-top:8px;border-radius:4px;background:var(--bg);overflow:hidden}.pst i{display:block;height:100%;width:0;border-radius:4px;background:#e11d48;transition:width .25s,background .25s}
 .pfh{margin-top:5px;font-size:12px;color:var(--muted)}
+.usg{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:6px}.usg div{padding:10px 12px;border-radius:14px;background:var(--bg)}.usg b{display:block;font-size:22px}.usg small{display:block;font-size:11.5px;color:var(--muted)}.usg em{font-style:normal;font-size:11px;color:var(--muted)}
+.ush{margin:16px 0 6px;font-size:13px;font-weight:800}.ust{max-height:240px;overflow:auto;border-radius:12px;background:var(--bg)}.ust table{width:100%;border-collapse:collapse;font-size:12.5px}.ust th{text-align:left;color:var(--muted);font-weight:700;padding:7px 10px}.ust td{padding:6px 10px;border-top:1px solid color-mix(in srgb,var(--muted) 18%,transparent)}.ust tr.dead td{color:var(--muted)}
+.usd{display:flex;align-items:flex-end;gap:5px;height:90px;padding:6px 8px;border-radius:12px;background:var(--bg)}.usd span{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}.usd i{display:block;width:100%;min-height:2px;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#a78bfa,#6d3df5)}.usd small{font-size:9.5px;color:var(--muted)}
 @media (max-width:700px){.udrop{position:fixed;left:12px;right:12px;top:64px;width:auto}.udrop::before{display:none}}
 /* ===== Universities / Reports pop-ups ===== */
 #unav,#rnav,.usel{display:none!important}
@@ -1246,6 +1249,7 @@ button.uchip[aria-expanded=true] .uc{transform:rotate(180deg)}
         <div class="uhd"><span class="av" id="uAv2"></span><span class="t"><small>Signed in as</small><b id="uNm2"></b><em id="uUn2"></em></span></div>
         <button type="button" role="menuitem" data-a="profile"><i>👤</i>Your profile</button>
         <button type="button" role="menuitem" data-a="pwd"><i>🔑</i>Change password</button>
+        <?php if (user_scope() === null) { ?><button type="button" role="menuitem" data-a="usage"><i>📊</i>Usage (who uses what)</button><?php } ?>
         <a role="menuitem" href="#/reports/activity" data-a="act"><i>🕵️</i><?= user_scope() !== null ? 'Your activity' : 'Activity log' ?></a>
         <a role="menuitem" href="#/master/sheet?f=stale" data-a="stale"><i>⏰</i>Follow-up overdue</a>
         <button type="button" role="menuitem" data-a="search"><i>🔎</i>Search<kbd>Ctrl K</kbd></button>
@@ -1369,6 +1373,8 @@ button.uchip[aria-expanded=true] .uc{transform:rotate(180deg)}
 const CSRF = <?= json_encode($_SESSION['csrf']) ?>;
 const ME = <?= json_encode((string)($_SESSION['user'] ?? '')) ?>;
 const PROFILE = <?php $pf = user_profile((string)($_SESSION['user'] ?? '')); echo json_encode(array('name' => (string)($pf['name'] ?? ''), 'phone' => (string)($pf['phone'] ?? ''), 'color' => (string)($pf['color'] ?? '')), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG); ?>;
+function track(t, d) { try { fetch('api.php?action=track', {method: 'POST', credentials: 'same-origin', keepalive: true, headers: {'X-CSRF-Token': CSRF, 'Content-Type': 'application/json'}, body: JSON.stringify({t: t, d: String(d || '').slice(0, 120)})}).catch(function () {}); } catch (e) {} }
+let __lastPg = '';
 const SCOPE = <?= json_encode((string)(user_scope() ?? '')) ?>;
 const CLOSED = <?= json_encode(isset($c['closed_stages']) && is_array($c['closed_stages']) ? array_values($c['closed_stages']) : null) ?>;
 const STALE_DAYS = <?= (int)(isset($c['stale_days']) ? $c['stale_days'] : 15) ?>;
@@ -1850,6 +1856,7 @@ function botSel(key) {
 }
 function renderRoute(reset) {
   route = parseRoute();
+  try { const pk = route.type + (route.name ? ':' + route.name : '') + (route.id ? ':' + route.id : '') + (route.sheet ? ' (table)' : ''); if (pk !== __lastPg) { __lastPg = pk; track('view', pk); } } catch (e) {}
   try { if (location.hash === '#/' || location.hash === '#') history.replaceState(null, '', location.pathname.replace(/\/index\.php$/, '/') + location.search); } catch (e) {}
   gfCompute();
   rows = (route.type === 'reports' || route.type === 'report' || route.rb || (route.sheet && route.bot)) ? allRows : gfRows;
@@ -2163,7 +2170,7 @@ function renderTrendChart() {
   const RK = 'pranav_recent_searches';
   let act = 0, uniCnt = [], ROWS = [];
   const rs = () => { try { const a = JSON.parse(localStorage.getItem(RK) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
-  const rsAdd = q => { q = String(q || '').trim(); if (q.length < 2) return; try { const a = rs().filter(x => x.toLowerCase() !== q.toLowerCase()); a.unshift(q); localStorage.setItem(RK, JSON.stringify(a.slice(0, 6))); } catch (e) {} };
+  const rsAdd = q => { q = String(q || '').trim(); if (q.length < 2) return; track('search', q); try { const a = rs().filter(x => x.toLowerCase() !== q.toLowerCase()); a.unshift(q); localStorage.setItem(RK, JSON.stringify(a.slice(0, 6))); } catch (e) {} };
   const hl = (t, terms) => {
     t = String(t == null ? '' : t); if (!terms.length) return esc(t);
     const re = new RegExp('(' + terms.map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'ig');
@@ -3351,6 +3358,7 @@ function fldHtml(c, r, notPaid) {
   return '<div class="fld ed" data-label="' + esc(c.label.toLowerCase()) + '"><label>' + esc(c.label) + ph + '</label>' + inp + '</div>';
 }
 function openEdit(r) {
+  track('edit_open', '');
   editRow = r;
   const name = r._NAME || r.TITLE || ('Deal ' + r.ID);
   $('mTitle').textContent = name;
@@ -3629,12 +3637,12 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   dd.addEventListener('click', e => {
     const it = e.target.closest('[data-a]'); if (!it) return;
     const a = it.dataset.a; shut();
-    if (a === 'profile') openProfile(); else if (a === 'pwd') openPwd();
+    if (a === 'profile') openProfile(); else if (a === 'pwd') openPwd(); else if (a === 'usage') openUsage();
     else if (a === 'search') { const s = g('gsearch'); if (s) { s.focus(); s.select(); } }
     else if (a === 'refresh') g('btnRefresh').click();
   });
   const ov = g('pfOv'), box = g('pfBox');
-  function closeOv() { ov.hidden = true; box.innerHTML = ''; }
+  function closeOv() { ov.hidden = true; box.innerHTML = ''; box.style.width = ''; }
   ov.addEventListener('mousedown', e => { if (e.target === ov) closeOv(); });
   async function post(action, body) {
     const r = await fetch('api.php?action=' + action, {method: 'POST', credentials: 'same-origin', headers: {'X-CSRF-Token': CSRF, 'Content-Type': 'application/json'}, body: JSON.stringify(body)});
@@ -3665,6 +3673,21 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       Object.assign(PROFILE, r.data.profile); paint(); m.className = 'pfm ok'; m.textContent = 'Saved.'; setTimeout(closeOv, 600);
     };
     g('pfName').focus();
+  }
+  async function openUsage() {
+    box.innerHTML = '<h2>Usage · last 30 days</h2><p class="sub">Who is actually using the dashboard, and what for.</p><div id="usB"><div class="pfh">Loading…</div></div><div class="pfa"><button type="button" class="ghost" id="pfX">Close</button></div>';
+    ov.hidden = false; g('pfX').onclick = closeOv; box.style.width = 'min(760px,100%)';
+    let j = {}; try { j = await (await fetch('api.php?action=usage', {credentials: 'same-origin'})).json(); } catch (e) {}
+    if (!j.ok) { g('usB').innerHTML = '<div class="pfm err">' + esc(j.error || 'Could not load usage.') + '</div>'; return; }
+    const ago = at => { if (!at) return 'never'; const m = Math.round((Date.now() - new Date(at).getTime()) / 60000); return m < 2 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
+    const T = j.totals || {};
+    let h = '<div class="usg">' + Object.keys(j.features).map(k => '<div><b>' + ((T[k] || {}).d7 || 0) + '</b><small>' + esc(j.features[k]) + ' · 7 days</small><em>' + ((T[k] || {}).d30 || 0) + ' in 30 days</em></div>').join('') + '</div>';
+    h += '<h3 class="ush">People</h3><div class="ust"><table><tr><th>Login</th><th>Last seen</th><th>Logins</th><th>Views</th><th>Bot</th><th>Search</th><th>Edits</th></tr>' + j.users.map(u => '<tr class="' + (u.last ? '' : 'dead') + '"><td>' + esc(u.user) + '</td><td>' + esc(ago(u.last)) + '</td><td>' + u.logins + '</td><td>' + u.view + '</td><td>' + u.bot + '</td><td>' + u.search + '</td><td>' + u.edits + '</td></tr>').join('') + '</table></div>';
+    const pg = Object.keys(j.pages); if (pg.length) h += '<h3 class="ush">Most-visited pages</h3><div class="ust"><table>' + pg.map(k => '<tr><td>' + esc(k) + '</td><td>' + j.pages[k] + '</td></tr>').join('') + '</table></div>';
+    const ms = Object.keys(j.misses); h += '<h3 class="ush">Questions the bot could not answer</h3>' + (ms.length ? '<div class="ust"><table>' + ms.map(k => '<tr><td>' + esc(k) + '</td><td>' + j.misses[k] + '×</td></tr>').join('') + '</table></div>' : '<div class="pfh">None yet.</div>');
+    const mx = Math.max.apply(null, [1].concat(j.dau.map(d => d.n)));
+    if (j.dau.length) h += '<h3 class="ush">People per day</h3><div class="usd">' + j.dau.map(d => '<span title="' + esc(d.day) + ': ' + d.n + '"><i style="height:' + Math.round(d.n / mx * 100) + '%"></i><small>' + esc(d.day.slice(8)) + '</small></span>').join('') + '</div>';
+    g('usB').innerHTML = h;
   }
   function strength(v) { let s = 0; if (v.length >= 8) s++; if (v.length >= 12) s++; if (/[a-z]/.test(v) && /[A-Z]/.test(v)) s++; if (/\d/.test(v)) s++; if (/[^A-Za-z0-9]/.test(v)) s++; return s; }
   function openPwd() {
@@ -4613,6 +4636,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     if (!rep) return;
     let h = rep.h || E(rep.t || '');
     if (rep.deal && rep.actions) { S.deal = rep.deal; h += actionsFor(rep.deal); }
+    if (rep.copy) track('bot_miss', S.asked);
     if (rep.copy) h += '<div class="mbact"><button type="button" data-act="copyq">📋 Copy my question for the admin</button></div>';
     addBot(h);
     mood(rep.mood || 'idle');
@@ -5409,7 +5433,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
 
   async function send(text) {
     text = String(text || '').trim(); if (!text || S.busy) return;
-    addMe(text); input.value = ''; S.asked = text; setChips([]);
+    addMe(text); input.value = ''; S.asked = text; setChips([]); track('bot', text);
     await think(() => brain(text), Math.min(900, 380 + text.length * 6));
   }
 
