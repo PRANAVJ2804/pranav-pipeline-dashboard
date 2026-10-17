@@ -1110,7 +1110,12 @@ button.uchip[aria-expanded=true] .uc{transform:rotate(180deg)}
 .pfa button{padding:11px 20px}
 .pst{height:6px;margin-top:8px;border-radius:4px;background:var(--bg);overflow:hidden}.pst i{display:block;height:100%;width:0;border-radius:4px;background:#e11d48;transition:width .25s,background .25s}
 .pfh{margin-top:5px;font-size:12px;color:var(--muted)}
-a.qa{margin-left:5px;text-decoration:none;font-size:13px;opacity:.75}a.qa:hover{opacity:1}
+a.wapp{display:inline-flex;align-items:center;justify-content:center;flex:none;width:26px;height:26px;border-radius:50%;background:linear-gradient(145deg,#34d399,#16a34a);color:#fff;box-shadow:0 2px 6px rgba(22,163,74,.35);text-decoration:none;transition:transform .15s,box-shadow .15s}a.wapp:hover{transform:scale(1.14);box-shadow:0 4px 10px rgba(22,163,74,.5)}a.wapp svg{width:15px;height:15px;display:block}a.wapp svg .b{fill:#fff}a.wapp svg .h{fill:#16a34a}
+.wapop{position:fixed;z-index:400;width:250px;padding:8px;border-radius:16px;background:var(--card);color:var(--text);border:1px solid var(--line);box-shadow:0 18px 50px rgba(30,16,90,.35);animation:mvFade .14s}
+.wapop .wph{padding:8px 10px 10px}.wapop .wph b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wapop .wph small{display:block;margin-top:2px;color:var(--muted);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wapop button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:11px;background:transparent;color:inherit;font:inherit;font-size:14px;font-weight:600;text-align:left;cursor:pointer}.wapop button:hover,.wapop button:focus-visible{background:var(--bg);outline:none}
+.wapop button i{width:10px;height:10px;border-radius:50%;flex:none}
+.wapop .wpf{padding:8px 10px 4px;color:var(--muted);font-size:11px;line-height:1.35}
 #updated.warn{color:#b45309;font-weight:700}#updated.old{color:#e11d48;font-weight:800}
 #svNav .svh{margin:10px 14px 2px;font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}#svNav .svr{display:flex;align-items:center}#svNav .svr a{flex:1;min-width:0}#svNav .svr a .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#svNav .svx{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:13px;padding:4px 8px;opacity:.6}#svNav .svx:hover{opacity:1;color:#e11d48}
 #svBox{display:inline-flex;gap:6px;margin-left:8px}#svBox input{width:150px}
@@ -1212,7 +1217,7 @@ a.qa{margin-left:5px;text-decoration:none;font-size:13px;opacity:.75}a.qa:hover{
     <a data-nav="stale" href="#/master/sheet?f=stale" title="Follow-up overdue"><i>⏰</i><span class="t">Follow-up overdue</span><span class="bd" id="navStale"></span></a>
     <a data-nav="notcontacted" class="subnav" href="#/master/sheet?f=notcontacted" title="Not contacted"><i>📵</i><span class="t">Not contacted</span><span class="bd nc" id="navNC"></span></a>
     <a data-nav="paydue" href="#/master/sheet?f=paydue" title="Payment overdue"><i>💳</i><span class="t">Payment overdue</span><span class="bd" id="navPay"></span></a>
-    <a data-nav="docpend" href="#/master/sheet?f=docpend" title="Documents pending"><i>📄</i><span class="t">Documents pending</span><span class="bd" id="navDoc"></span></a>
+    <a data-nav="docpend" href="#/master/sheet?f=docpend" title="Documents pending"><i>📄</i><span class="t">Docs pending</span><span class="bd" id="navDoc"></span></a>
     <div id="svNav"></div>
   </nav>
   <button type="button" class="navh" id="navU" aria-expanded="false"><span>🎓<span class="t"> Universities</span></span><span class="chev">›</span></button>
@@ -1257,6 +1262,7 @@ a.qa{margin-left:5px;text-decoration:none;font-size:13px;opacity:.75}a.qa:hover{
         <div class="uhd"><span class="av" id="uAv2"></span><span class="t"><small>Signed in as</small><b id="uNm2"></b><em id="uUn2"></em></span></div>
         <button type="button" role="menuitem" data-a="profile"><i>👤</i>Your profile</button>
         <button type="button" role="menuitem" data-a="pwd"><i>🔑</i>Change password</button>
+        <button type="button" role="menuitem" data-a="wa"><i>💬</i><span id="waMode">WhatsApp opens in: Browser tab</span></button>
         <?php if (user_scope() === null) { ?><button type="button" role="menuitem" data-a="usage"><i>📊</i>Usage (who uses what)</button><?php } ?>
         <a role="menuitem" href="#/reports/activity" data-a="act"><i>🕵️</i><?= user_scope() !== null ? 'Your activity' : 'Activity log' ?></a>
         <a role="menuitem" href="#/master/sheet?f=stale" data-a="stale"><i>⏰</i>Follow-up overdue</a>
@@ -1413,7 +1419,7 @@ function parseComments(raw) {
     const c = clean(text.slice(last, m.index));
     last = m.index + m[0].length;
     const ms = tsMs(m[1]);
-    if (!best || ms > best.ms) best = {c: c, at: m[1].replace(/\s+/g, ' ').trim(), ms: ms};
+    if (!best || ms > best.ms) best = {c: c, at: m[1].replace(/\s+/g, ' ').trim(), ms: ms, by: String(m[2] || '').replace(/-{3,}/g, '').trim()};
   }
   return best || {c: clean(text), at: '', ms: 0};
 }
@@ -1423,9 +1429,10 @@ const actOf = r => Math.max(+r._ct || 0, +TOUCHED[r.ID] || 0);
 function deriveRow(r) {
   if (!cmSrc) return;
   const p = parseComments(r[cmSrc]);
-  delete r._COMMENT; delete r._COMMENT_AT;
+  delete r._COMMENT; delete r._COMMENT_AT; delete r._COMMENT_BY;
   if (p.c) r._COMMENT = p.c;
   if (p.at) r._COMMENT_AT = p.at;
+  if (p.by) r._COMMENT_BY = p.by;
   r._ct = p.ms ? String(p.ms) : '';
 }
 function indexRow(r) { delete r._s; r._s = Object.values(r).join(' ').toLowerCase(); }
@@ -1438,7 +1445,7 @@ function withComments(list, rowsArr) {
   let at = si >= 0 ? si + 1 : list.map(c => c.default).lastIndexOf(true) + 1;
   if (fi >= 0 && at > fi) at = fi;
   const out = list.slice();
-  out.splice(at, 0, {key: '_COMMENT', label: 'Comments', type: 'string', default: true}, {key: '_COMMENT_AT', label: 'Last updated on', type: 'string', default: true});
+  out.splice(at, 0, {key: '_COMMENT', label: 'Comments', type: 'string', default: true}, {key: '_COMMENT_BY', label: 'Updated by', type: 'string', default: true}, {key: '_COMMENT_AT', label: 'Last updated on', type: 'string', default: true});
   return out;
 }
 function orderCols(list) {
@@ -1506,6 +1513,8 @@ async function load(keep) {
   const keys = new Set(cols.map(c => c.key));
   const saved = lsGet();
   visible = (saved && saved.filter(k => keys.has(k)).length) ? saved.filter(k => keys.has(k)) : cols.filter(c => c.default).map(c => c.key);
+  // One-time: people who saved their own column choice get the new "Updated by" column right after Comments.
+  try { if (!localStorage.getItem('pranav_by_col') && keys.has('_COMMENT_BY')) { localStorage.setItem('pranav_by_col', '1'); if (visible.indexOf('_COMMENT_BY') < 0) { const i = visible.indexOf('_COMMENT'); if (i >= 0) { visible.splice(i + 1, 0, '_COMMENT_BY'); lsSet(visible); } } } } catch (e) {}
   fetchedAt = new Date(j.data.fetched_at); window._cnt = j.data.count;
   showUpdated();
   if (!keep) page = 0;
@@ -2019,7 +2028,7 @@ function renderSide() {
   $('navNC').textContent = nc ? fmtN(nc) : '';
   const pd = rows.filter(r => passF(r, 'paydue')).length, dp = rows.filter(r => passF(r, 'docpend')).length;
   $('navPay').textContent = pd ? fmtN(pd) : ''; $('navDoc').textContent = dp ? fmtN(dp) : '';
-  paintViews();
+  paintViews(); paintWaMode();
   const cur = route.type === 'home' ? 'home' : route.sheet ? (route.f === 'stale' ? 'stale' : route.f === 'notcontacted' ? 'notcontacted' : route.f === 'paydue' ? 'paydue' : route.f === 'docpend' ? 'docpend' : (route.type === 'master' && !route.f && route.p === null && route.m === null && route.s === null && !route.q ? 'all' : '')) : (route.type === 'master' ? 'master' : '');
   $('nav').querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.nav === cur));
   renderRepNav();
@@ -2654,6 +2663,8 @@ function fv(r, k) {
   if (k === '_DOCP') return docStatus(r);
   if (k === '_ACT') return isClosed(r) ? 'Closed' : 'Active';
   if (k === '_AGE') return ageBucket(r);
+  if (k === '_LSG') return lsGroup(r);
+  if (k.indexOf('_LS:') === 0) return lsVal(r, k.slice(4));
   if (k.indexOf('_DOC:') === 0) return docVal(r, k.slice(5));
   if (k.charAt(0) === '_') { let q = refFv(r, k); if (q !== null) return q; q = rrFv(r, k); if (q !== null) return q; }
   return k === uniKey() ? uniOf(r) : cellVal(r, k);
@@ -2677,6 +2688,8 @@ function xLabel(p) {
   if (p[0] === '_RR' || p[0] === '_RRA') return (neg ? 'not ' : '') + v;
   if (p[0] === '_RRPAY') return 'Current semester fee: ' + v;
   if (p[0] === '_ALUM') return v;
+  if (p[0] === '_LSG') return 'Lead status: ' + (neg ? 'not ' : '') + v;
+  if (p[0].indexOf('_LS:') === 0) return 'Lead status: ' + (neg ? 'not ' : '') + v;
   if (p[0].indexOf('_DOC:') === 0) return 'Documents Status: ' + (neg ? 'not ' : '') + v;
   return (neg ? 'not ' : '') + v;
 }
@@ -2686,12 +2699,97 @@ function shownCols() {
     const ps = route.x.map(p => p[0]);
     let want = [];
     if (ps.some(k => k.indexOf('_DOC') === 0)) want = want.concat(dfs().map(d => d.key));
+    if (ps.some(k => k.indexOf('_LS') === 0)) { const lc = colByRole('lead'); if (lc) want.push(lc.key); }
     if (ps.some(k => k.indexOf('_REF') === 0)) want = want.concat(rfs().map(d => d.key));
     if (ps.some(k => k.indexOf('_RR') === 0)) want = want.concat([semKeyCur()]).concat(['lastpay', 'nextpay'].map(x => { const c = colByRole(x); return c && c.key; }));
     const add = want.filter(k => k && !shown.some(c => c.key === k)).map(k => cols.find(c => c.key === k));
     if (add.length) { const si = shown.findIndex(c => c.key === 'STAGE_ID'); shown.splice.apply(shown, [si >= 0 ? si + 1 : shown.length, 0].concat(add)); }
   }
   return shown;
+}
+/* ---------- LEAD STATUS (Connected / RNR) ---------- */
+const LS_GROUPS = ['Connected', 'RNR', 'Other', 'Not updated'];
+function lsKey() { const c = colByRole('lead'); return c ? c.key : null; }
+function lsVal(r, k) { const v = String(r[k] || '').trim(); return v === '' ? 'Blank' : v; }
+// RNR first (so "Not connected" / "Not picking" are RNR, never Connected). Anything unclear is Other, not guessed.
+function lsClass(raw) {
+  const v = String(raw || '').trim();
+  if (v === '' || v === 'Blank') return 'Not updated';
+  if (/\brnr\b|ring(ing)?\W+no\W+resp|no\W*(answer|response|reply)|not\W*(pick|answer|respond|reachab|connect|attend|lift|receiv)|un(answered|reachable|connected)|switch(ed)?\W*off|call\W*not\W*(pick|connect|answer)|busy|out\W*of\W*(reach|coverage|service)|not\W*available|voice\W*mail|invalid|wrong\W*number|disconnect/i.test(v)) return 'RNR';
+  if (/connect|spoke|talk|contact|interest|hot|warm|cold|follow|call\W*back|callback|discuss|negotiat|convers|counsel|visit|enrol|admit|register|paid|document|think|later|busy\W*now/i.test(v)) return 'Connected';
+  return 'Other';
+}
+function lsGroup(r) { const k = lsKey(); return k ? lsClass(r[k]) : 'Not updated'; }
+function renderLead(def) {
+  const rq = route.rq || {}, defs = fieldDefs(), lk0 = lsKey(), lc = colByRole('lead');
+  const scope = rq.scope === 'all' ? 'all' : 'active';
+  const by = defs.find(f => f.id === rq.by) || defs[0];
+  const allVals = new Set(); if (lk0) rows.forEach(r => allVals.add(lsVal(r, lk0)));
+  const valList = Array.from(allVals).sort((a, b) => (a === 'Blank') - (b === 'Blank') || a.localeCompare(b));
+  const miss = valList.indexOf(rq.miss) >= 0 ? rq.miss : '';
+  $('rpBuilder').hidden = false;
+  $('rpBuilder').innerHTML = '<div class="rpt">View</div>' +
+    selHtml('scope', 'Which deals', [{v: 'all', t: 'All deals (including completed / dropped)'}], scope === 'all' ? 'all' : '', 'Active deals only') +
+    selHtml('miss', 'Lead Status is', valList.map(v => ({v: v, t: v})), miss, 'Any status') +
+    selHtml('by', 'Break the table down by', defs.map(f => ({v: f.id, t: f.label})), rq.by && defs.some(f => f.id === rq.by) ? rq.by : '', by ? by.label : '—');
+  $('rpFilters').innerHTML = '<div class="rpt">Filters</div>' + defs.map(f => {
+    const vals = new Set(); rows.forEach(r => vals.add(fv(r, f.key)));
+    return selHtml(f.id, f.label, orderVals(f.key, vals).map(v => ({v: v, t: v})), rq[f.id] || '', 'All', true);
+  }).join('');
+  enhanceSelects();
+  const flt = repFilters();
+  $('rpReset').disabled = !flt.length && !miss && scope === 'active';
+  rpCache = null;
+  if (!lk0) {
+    $('rpSummary').textContent = '';
+    $('rpBody').innerHTML = '<div class="empty">I could not find the “Lead Status” field in your data. Press “Refresh data” once, then open this report again.</div>';
+    return;
+  }
+  const base = flt.map(f => [f.key, f.val]);
+  if (scope === 'active') base.push(['_ACT', 'Active']);
+  if (miss) base.push(['_LS:' + lk0, miss]);
+  const list = rows.filter(r => base.every(p => xMatch(r, p)));
+  const rb = location.hash;
+  const lk = extra => hashFor(null, {x: base.concat(extra), rb: rb}, true);
+  const n = list.length;
+  $('rpSummary').textContent = fmtN(n) + ' students in view · ' + (scope === 'active' ? 'active deals only' : 'all deals') + ' · click any number to open those students';
+  if (!n) { $('rpBody').innerHTML = '<div class="empty">No deals match these filters.</div>'; return; }
+  const st = {Connected: 0, RNR: 0, Other: 0, 'Not updated': 0}, per = {};
+  list.forEach(r => { const v = lsVal(r, lk0); per[v] = (per[v] || 0) + 1; st[lsClass(v)]++; });
+  const pct = (a, b) => b ? Math.round(a / b * 1000) / 10 : 0;
+  const vs = Object.keys(per).sort((a, b) => per[b] - per[a]);
+  const byClass = c => vs.filter(v => lsClass(v) === c);
+  let h = '<div class="rpnote">Field used: <b>Lead Status</b> → “' + esc(lc.label) + '”. ' +
+    'Counted as <b>Connected</b>: ' + esc(byClass('Connected').join(', ') || '—') + '. Counted as <b>RNR</b>: ' + esc(byClass('RNR').join(', ') || '—') + '. <b>Other</b>: ' + esc(byClass('Other').join(', ') || '—') + '. <b>Not updated</b>: blank.' +
+    ' If a value is in the wrong group, tell me which one.</div>';
+  h += '<div class="hk">' +
+    tile('Students in view', '👥', 'var(--s1)', fmtN(n), scope === 'active' ? 'Active deals' : 'All deals', lk([])) +
+    tile('Connected', '✅', 'var(--s3)', fmtN(st.Connected), pct(st.Connected, n) + '% of students', lk([['_LSG', 'Connected']])) +
+    tile('RNR', '📵', '#e03131', fmtN(st.RNR), pct(st.RNR, n) + '% · no response', lk([['_LSG', 'RNR']]), '', 'warn') +
+    tile('Other', '🔹', 'var(--s4)', fmtN(st.Other), pct(st.Other, n) + '% of students', lk([['_LSG', 'Other']])) +
+    tile('Not updated', '❔', 'var(--other)', fmtN(st['Not updated']), pct(st['Not updated'], n) + '% · status is blank', lk([['_LSG', 'Not updated']])) + '</div>';
+  const clsColor = c => c === 'Connected' ? 'var(--s3)' : c === 'RNR' ? '#e03131' : c === 'Other' ? 'var(--s4)' : 'var(--other)';
+  const vmax = Math.max.apply(null, vs.map(v => per[v]).concat([1]));
+  const c1 = vs.map(v => '<a class="hbar" href="' + esc(lk([['_LS:' + lk0, v]])) + '"><span class="hl" title="' + esc(v) + '">' + esc(v) + '</span><span class="hb"><i style="width:' + Math.max(3, per[v] / vmax * 100) + '%;background:' + clsColor(lsClass(v)) + '"></i></span><span class="hn">' + fmtN(per[v]) + '</span></a>').join('');
+  h += '<div class="dgrid"><div class="chartcard"><h3>By Lead Status</h3><div class="sub">Every value in the field and how many students have it. Click a bar to open them.</div>' + c1 + '</div></div>';
+  const g = {};
+  list.forEach(r => {
+    const v = fv(r, by.key), o = g[v] || (g[v] = {n: 0, Connected: 0, RNR: 0, Other: 0, NU: 0});
+    o.n++; const s = lsGroup(r);
+    if (s === 'Connected') o.Connected++; else if (s === 'RNR') o.RNR++; else if (s === 'Other') o.Other++; else o.NU++;
+  });
+  const names = Object.keys(g).sort((a, b) => g[b].RNR - g[a].RNR || g[b].n - g[a].n || a.localeCompare(b));
+  const cell = (num, extra) => num ? '<td><a class="dn" href="' + esc(lk(extra)) + '">' + fmtN(num) + '</a></td>' : '<td class="zero"><span>·</span></td>';
+  const bar = (p, n2) => '<td class="pcell"><div class="pb2"><i style="width:' + Math.min(100, pct(p, n2)) + '%"></i><span>' + pct(p, n2) + '%</span></div></td>';
+  const tot = {n: n, Connected: st.Connected, RNR: st.RNR, Other: st.Other, NU: st['Not updated']};
+  const rowHtml = (label, o, pairs, cls) => '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td class="l" title="' + esc(label) + '">' + (pairs ? '<a class="dn" href="' + esc(lk(pairs)) + '">' + esc(label) + '</a>' : esc(label)) + '</td>' +
+    cell(o.n, pairs || []) + cell(o.Connected, (pairs || []).concat([['_LSG', 'Connected']])) + cell(o.RNR, (pairs || []).concat([['_LSG', 'RNR']])) + cell(o.Other, (pairs || []).concat([['_LSG', 'Other']])) + cell(o.NU, (pairs || []).concat([['_LSG', 'Not updated']])) + bar(o.RNR, o.n) + '</tr>';
+  h += '<div class="chartcard wide"><h3>Connected vs RNR by ' + esc(by.label.toLowerCase()) + '</h3><div class="sub">Sorted by most RNR first. Change “Break the table down by” above to see it by program, batch, team and so on.</div><div class="rpscroll"><table class="rp"><thead><tr><th class="l">' + esc(by.label) + '</th><th>Students</th><th>Connected</th><th>RNR</th><th>Other</th><th>Not updated</th><th class="sub">RNR %</th></tr></thead><tbody>' +
+    names.map(v => rowHtml(v, g[v], [[by.key, v]], '')).join('') + rowHtml('Total', tot, null, 'gt') + '</tbody></table></div></div>';
+  $('rpBody').innerHTML = h;
+  const csv = [[by.label, 'Students', 'Connected', 'RNR', 'Other', 'Not updated', 'RNR %'].map(csvCell).join(',')];
+  names.concat(['Total']).forEach(v => { const o = v === 'Total' ? tot : g[v]; csv.push([v, o.n, o.Connected, o.RNR, o.Other, o.NU, pct(o.RNR, o.n)].map(csvCell).join(',')); });
+  rpCache = {csv: csv, name: 'lead-status-by-' + by.label.toLowerCase().replace(/[^a-z0-9]+/g, '-')};
 }
 function renderDocs(def) {
   const rq = route.rq || {}, defs = fieldDefs(), d0 = dfs()[0], dk = d0 && d0.key;
@@ -2800,6 +2898,9 @@ const REPORTS = [
    axes: () => ({rows: [uniKey(), batchKeyG()], cols: ['STAGE_ID', semKeyCur()]})},
   {id: 'docs', icon: '📄', title: 'Documents pending', kind: 'docs',
    desc: 'Students whose documents are still pending, based only on the “Documents Status” field. Includes what is missing, how long it has been pending, and a breakdown you can change.',
+   axes: () => ({rows: [], cols: []})},
+  {id: 'lead', icon: '📞', title: 'Lead status (Connected / RNR)', kind: 'lead',
+   desc: 'Based only on the “Lead Status” field. Shows how many students are connected, how many are RNR (ringing, no response / not picking / switched off) and the rest, and every status value with its count. Click any number to open exactly those students. Break the table down by university, program, batch, team and more.',
    axes: () => ({rows: [], cols: []})},
   {id: 'ref', icon: '🤝', title: 'Reference report', kind: 'ref',
    desc: 'Students who came through a reference and how many of those references joined. Uses “Has reference” and “Reference admission”. Shows the funnel, references by month, who to follow up, and a breakdown you can change.',
@@ -3055,6 +3156,7 @@ function renderReport() {
   document.title = def.title + ' · Pranav Pipeline';
   $('rpFilters').hidden = def.kind === 'activity'; $('rpCsv').hidden = def.kind === 'activity';
   if (def.kind === 'docs') { renderDocs(def); return; }
+  if (def.kind === 'lead') { renderLead(def); return; }
   if (def.kind === 'ref') { renderRef(def); return; }
   if (def.kind === 'rr') { renderRR(def); return; }
   if (def.kind === 'alumni') { renderAlumni(def); return; }
@@ -3238,7 +3340,7 @@ function hashColor(v) {
   for (let i = 0; i < v.length; i++) h = (h * 31 + v.charCodeAt(i)) >>> 0;
   return 'var(--s' + (h % 7 + 1) + ')';
 }
-function cellHtml(c, v) {
+function cellHtml(c, v, row) {
   if (v === '') return '<span class="dash">–</span>';
   if (c.key === 'STAGE_ID') return pill(v, stageColor(v));
   if (SEMRE.test(c.label)) return pill(v, /^paid$/i.test(v) ? 'var(--s3)' : /not/i.test(v) ? 'var(--s2)' : 'var(--other)');
@@ -3249,7 +3351,7 @@ function cellHtml(c, v) {
   if (c.key === '_COMMENT') return '<span class="cm">' + esc(v) + '</span>';
   if (c.key === 'ID') return '<span class="idc">' + esc(v) + '</span>';
   if (c.key === '_NAME') return '<b class="nm">' + esc(v) + '</b>';
-  if (c.key === '_PHONE') { const d = String(v).split(/[,;]/)[0].replace(/\D/g, ''); if (d.length >= 10) { return '<span style="white-space:nowrap">' + esc(v) + ' <a class="qa" href="tel:+' + esc(d.length === 10 ? '91' + d : d) + '" title="Call" onclick="event.stopPropagation()">📞</a><a class="qa" href="https://wa.me/' + esc(d.length === 10 ? '91' + d : d) + '" target="_blank" rel="noopener" title="WhatsApp" onclick="event.stopPropagation()">💬</a></span>'; } }
+  if (c.key === '_PHONE') { const d = String(v).split(/[,;]/)[0].replace(/\D/g, ''); if (d.length >= 10) { const ph = d.length === 10 ? '91' + d : d; return '<span style="display:inline-flex;align-items:center;gap:10px;white-space:nowrap">' + esc(v) + '<a class="wapp" href="https://wa.me/' + esc(ph) + '" data-ph="' + esc(ph) + '" data-id="' + esc(row ? row.ID : '') + '" title="Open WhatsApp chat" aria-label="Open WhatsApp chat"><svg viewBox="0 0 24 24"><path class="b" d="M12 2.5a9.5 9.5 0 0 0-8.1 14.4L2.7 21.5l4.7-1.2A9.5 9.5 0 1 0 12 2.5z"/><path class="h" d="M16.7 14.5c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1-1.3-.6-2.3-1.4-3.1-2.8-.1-.2 0-.3.1-.4l.6-.7c.1-.1.1-.3 0-.4l-.7-1.7c-.2-.4-.3-.4-.5-.4h-.4c-.2 0-.4.1-.6.3-.6.6-.9 1.3-.8 2.2.1.9.5 1.8 1.2 2.7 1.2 1.7 2.7 2.7 4.5 3.2.8.2 1.4.2 2-.2.5-.3.8-.8.9-1.3 0-.2 0-.4-.2-.5z"/></svg></a></span>'; } }
   return esc(v);
 }
 
@@ -3275,7 +3377,7 @@ function renderTable() {
     body.innerHTML = slice.map((r, ri) => '<tr>' + shown.map(c => {
       const v = r[c.key] || '';
       const num = (c.type === 'integer' || c.type === 'double') ? ' class="num"' : '';
-      return '<td' + num + ' title="' + esc(v) + '">' + cellHtml(c, v) + '</td>';
+      return '<td' + num + ' title="' + esc(v) + '">' + cellHtml(c, v, r) + '</td>';
     }).join('') + (canEdit ? '<td class="editcol"><button class="ghost sm" data-ri="' + (page * PER + ri) + '">✎ Edit</button></td>' : '') + '</tr>').join('');
   }
   $('count').textContent = view.length === total ? total.toLocaleString() + ' deals' : view.length.toLocaleString() + ' of ' + total.toLocaleString() + ' shown';
@@ -3503,6 +3605,65 @@ $('btnCsv').onclick = () => {
   a.remove();
 };
 
+/* WhatsApp. Browser tabs cannot be reused: WhatsApp Web cuts the link between its tab and this page, so every chat opens a new tab.
+   "Desktop app" mode opens the chat inside the WhatsApp app instead (no tab at all). Chosen per device from the account menu. */
+const WA_KEY = 'pranav_wa_mode';
+const waMode = () => { try { return localStorage.getItem(WA_KEY) === 'app' ? 'app' : 'web'; } catch (e) { return 'web'; } };
+function toastWa() { const t = document.getElementById('updated'); if (!t) return; const o = t.textContent; t.textContent = waMode() === 'app' ? 'WhatsApp will open in the desktop app (install it from whatsapp.com/download)' : 'WhatsApp will open in a browser tab'; setTimeout(() => { if (t.textContent.indexOf('WhatsApp') === 0) t.textContent = o; }, 3500); }
+function paintWaMode() { const el = document.getElementById('waMode'); if (el) el.textContent = 'WhatsApp opens in: ' + (waMode() === 'app' ? 'Desktop app' : 'Browser tab'); }
+/* ---- WhatsApp message templates. {n} lead name, {u} university, {s} your name, {p} your phone. Edit the wording here. ---- */
+const WA_TPL = [
+  {id: 'connected', label: 'Connected', dot: '#16a34a', text:
+"Dear {n},\n\nThank you for connecting with {u} Online today.\nFor any further assistance regarding your course or academics, please feel free to reach out to us.\nWe look forward to supporting you throughout your learning journey.\n\nRegards,\n{s} ({p})\nStudent Support SPOC\n{u} Online"},
+  {id: 'rnr', label: 'RNR', dot: '#e11d48', text:
+"Hello {n},\n\nGreetings from {u}! 👋\nI’m {s}, your SPOC for Student Support at {u}.\nI’ll be your go-to person for any academic, LMS, Payments, examination, assignment, or course-related queries.\nPlease feel free to reach out to me anytime. I’m always happy to help and support you throughout your learning journey. 😊\nLooking forward to connecting with you!\n\nBest Regards,\n{s} ({p})\nStudent Support SPOC\n{u}"},
+  {id: 'alconn', label: 'Alumni Connected', dot: '#0ea5e9', text:
+"Dear {n},\n\nGreetings from {u} Online!\nCongratulations on completing your course! We hope you had a great learning experience with us.\nWe would be happy to assist your friends or colleagues who may be interested in pursuing their higher education with {u} Online. Please feel free to share our details with them.\n\nBest Regards,\n{s} ({p})\nStudent Support SPOC\n{u} Online"},
+  {id: 'alrnr', label: 'Alumni RNR', dot: '#f59e0b', text:
+"Dear {n},\n\nGreetings from {u} Online!\nHope you’re doing well! We’d love to know how your learning experience was and how smoothly the course went for you.\nAlso, if you have any friends or colleagues interested in pursuing higher education, we’d be happy to guide them with {u} Online programs.\n\nBest Regards,\n{s} ({p})\nStudent Support SPOC\n{u} Online"}
+];
+// Signature = the logged-in person (Your profile: display name + phone). If those are empty, the wording from the shared Word file is used.
+const waSender = () => ({s: (PROFILE.name || '').trim() || 'Tanuja', p: (PROFILE.phone || '').trim() || '70900 31900'});
+function waText(tpl, r) {
+  const sg = waSender(), u = (typeof uniOf === 'function' ? uniOf(r) : '') || '', uni = (!u || u === UNASSIGNED) ? 'our university' : u;
+  const nm = String(r._NAME || r.TITLE || '').replace(/\s+/g, ' ').trim() || 'Student';
+  return tpl.text.replace(/\{n\}/g, nm).replace(/\{u\}/g, uni).replace(/\{s\}/g, sg.s).replace(/\{p\}/g, sg.p);
+}
+function waGo(url, app) {
+  if (app) { location.href = url; return; }
+  const w = window.open(url, 'pranav_whatsapp');
+  if (w) { try { w.focus(); } catch (x) {} } else location.href = url;
+}
+let waPop = null;
+function waClose() { if (waPop) { waPop.remove(); waPop = null; } }
+function waOpenMenu(a) {
+  waClose();
+  const r = allRows.find(x => String(x.ID) === String(a.dataset.id)); if (!r) { waGo(a.href, waMode() === 'app'); return; }
+  const nm = String(r._NAME || r.TITLE || 'this lead').trim(), uni = (typeof uniOf === 'function' ? uniOf(r) : '');
+  const d = document.createElement('div'); d.className = 'wapop'; d.setAttribute('role', 'dialog');
+  d.innerHTML = '<div class="wph"><b>Message ' + esc(nm) + '</b><small>' + esc(uni && uni !== UNASSIGNED ? uni : 'No university set') + ' · +' + esc(a.dataset.ph) + '</small></div>' +
+    WA_TPL.map(t => '<button type="button" data-t="' + t.id + '"><i style="background:' + t.dot + '"></i>' + esc(t.label) + '</button>').join('') +
+    '<div class="wpf">The message is only typed into the chat box. You press send yourself.</div>';
+  document.body.appendChild(d); waPop = d;
+  const b = a.getBoundingClientRect(), w = d.offsetWidth, h = d.offsetHeight;
+  d.style.left = Math.max(8, Math.min(innerWidth - w - 8, b.left - 20)) + 'px';
+  d.style.top = (b.bottom + h + 12 > innerHeight ? Math.max(8, b.top - h - 8) : b.bottom + 8) + 'px';
+  d.onclick = e => {
+    const x = e.target.closest('button[data-t]'); if (!x) return;
+    const t = WA_TPL.find(q => q.id === x.dataset.t), txt = encodeURIComponent(waText(t, r));
+    waClose();
+    if (waMode() === 'app') waGo('whatsapp://send?phone=' + a.dataset.ph + '&text=' + txt, true);
+    else waGo('https://wa.me/' + a.dataset.ph + '?text=' + txt, false);
+  };
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest('a.wapp');
+  if (a) { e.preventDefault(); e.stopPropagation(); waOpenMenu(a); return; }
+  if (waPop && !e.target.closest('.wapop')) waClose();
+}, true);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') waClose(); });
+window.addEventListener('scroll', waClose, true);
+window.addEventListener('hashchange', waClose);
 /* ---------- saved views (kept per login, so they follow you to any device) ---------- */
 function curViewHash() {
   const h = location.hash || '#/', i = h.indexOf('?'), base = i < 0 ? h : h.slice(0, i), sp = new URLSearchParams(i < 0 ? '' : h.slice(i + 1));
@@ -3521,9 +3682,9 @@ function paintViews() {
 }
 $('svNav').onclick = e => { const b = e.target.closest('button[data-i]'); if (b) saveViews((PROFILE.views || []).filter((x, i) => i !== +b.dataset.i)); };
 $('btnSv').onclick = () => {
-  if ($('svBox')) { $('svName').focus(); return; }
+  if ($('svBox')) { $('svBox').remove(); return; }
   const box = document.createElement('span'); box.id = 'svBox';
-  box.innerHTML = '<input id="svName" maxlength="40" placeholder="Name this view" autocomplete="off"><button type="button" class="ghost" id="svOk">Save</button>';
+  box.innerHTML = '<input id="svName" maxlength="40" placeholder="Name this view" autocomplete="off"><button type="button" class="ghost" id="svOk">Save</button><button type="button" class="ghost" id="svNo">Cancel</button>';
   $('btnSv').after(box); $('svName').focus();
   const done = () => box.remove();
   const ok = () => {
@@ -3531,7 +3692,7 @@ $('btnSv').onclick = () => {
     const list = (PROFILE.views || []).filter(x => x.n.toLowerCase() !== n.toLowerCase()); list.push({n: n, h: curViewHash()});
     if (list.length > 20) list.shift(); saveViews(list); done();
   };
-  $('svOk').onclick = ok; $('svName').onkeydown = e => { if (e.key === 'Enter') ok(); else if (e.key === 'Escape') done(); };
+  $('svNo').onclick = done; $('svOk').onclick = ok; $('svName').onkeydown = e => { if (e.key === 'Enter') ok(); else if (e.key === 'Escape') done(); };
 };
 $('uq').oninput = () => { if (route.type === 'home') renderHome(); };
 window.addEventListener('hashchange', () => { if (cols.length || rows.length) renderRoute(true); });
@@ -3684,6 +3845,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     const it = e.target.closest('[data-a]'); if (!it) return;
     const a = it.dataset.a; shut();
     if (a === 'profile') openProfile(); else if (a === 'pwd') openPwd(); else if (a === 'usage') openUsage();
+    else if (a === 'wa') { try { localStorage.setItem(WA_KEY, waMode() === 'app' ? 'web' : 'app'); } catch (x) {} paintWaMode(); toastWa(); }
     else if (a === 'search') { const s = g('gsearch'); if (s) { s.focus(); s.select(); } }
     else if (a === 'refresh') g('btnRefresh').click();
   });
