@@ -70,6 +70,43 @@ try {
         exit;
     }
 
+    if ($action === 'reconcile') {
+        if ($scope !== null) {
+            fail(403, 'Only the admin can run this check.');
+        }
+        session_write_close();
+        try {
+            echo json_encode(array('ok' => true, 'r' => reconcile_check()));
+        } catch (Throwable $e) {
+            fail(502, 'Could not reach Bitrix24: ' . $e->getMessage());
+        }
+        exit;
+    }
+
+    if ($action === 'views_save') {
+        $sent = isset($_SERVER['HTTP_X_CSRF_TOKEN']) ? (string)$_SERVER['HTTP_X_CSRF_TOKEN'] : '';
+        $want = isset($_SESSION['csrf']) ? (string)$_SESSION['csrf'] : '';
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $want === '' || !hash_equals($want, $sent)) {
+            fail(403, 'Blocked. Reload the page and try again.');
+        }
+        $in = json_decode((string)file_get_contents('php://input', false, null, 0, 20000), true);
+        $me = (string)$_SESSION['user'];
+        session_write_close();
+        $out = array();
+        foreach ((is_array($in) && isset($in['views']) && is_array($in['views'])) ? $in['views'] : array() as $v) {
+            $n = trim(preg_replace('/[\x00-\x1F\x7F<>]/u', '', isset($v['n']) ? (string)$v['n'] : ''));
+            $h = isset($v['h']) ? (string)$v['h'] : '';
+            if ($n === '' || strpos($h, '#/') !== 0 || strlen($h) > 600) { continue; }
+            $out[] = array('n' => mb_substr($n, 0, 40, 'UTF-8'), 'h' => $h);
+            if (count($out) >= 20) { break; }
+        }
+        if (!write_profile($me, array('views' => $out))) {
+            fail(500, 'Could not save. Check that the cache folder is writable.');
+        }
+        echo json_encode(array('ok' => true, 'views' => $out), JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
     if ($action === 'track') {
         $sent = isset($_SERVER['HTTP_X_CSRF_TOKEN']) ? (string)$_SERVER['HTTP_X_CSRF_TOKEN'] : '';
         $want = isset($_SESSION['csrf']) ? (string)$_SESSION['csrf'] : '';
@@ -215,6 +252,7 @@ try {
     }
 
     session_write_close();
+    try { daily_backup(); } catch (Throwable $e) {}
     $lastError = 'null';
     if (is_file(error_path())) {
         $e = json_decode((string)file_get_contents(error_path()), true);
