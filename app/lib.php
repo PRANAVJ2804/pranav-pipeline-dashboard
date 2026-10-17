@@ -924,6 +924,56 @@ function log_event($type) {
     @file_put_contents($file, $line . json_encode($entry, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) . "\n", FILE_APPEND | LOCK_EX);
 }
 
+// Once a day (first visit), copy the small data files that cannot be rebuilt from Bitrix24: profiles/passwords, activity log, usage log.
+// Kept for 14 days inside the protected cache folder.
+function daily_backup() {
+    $dir = cfg()['cache_dir'] . '/backups';
+    $today = date('Y-m-d');
+    $mark = $dir . '/.last';
+    if (is_file($mark) && trim((string)@file_get_contents($mark)) === $today) {
+        return;
+    }
+    if (!is_dir($dir) && !@mkdir($dir, 0700, true)) {
+        return;
+    }
+    $to = $dir . '/' . $today;
+    if (!is_dir($to) && !@mkdir($to, 0700, true)) {
+        return;
+    }
+    foreach (array('profiles.php', 'edit_log.php', 'usage.php', 'touched.php', 'touched.json') as $f) {
+        $src = cfg()['cache_dir'] . '/' . $f;
+        if (is_file($src)) {
+            @copy($src, $to . '/' . $f);
+        }
+    }
+    @file_put_contents($mark, $today);
+    foreach ((array)glob($dir . '/20??-??-??', GLOB_ONLYDIR) as $d) {
+        if (basename($d) < date('Y-m-d', time() - 14 * 86400)) {
+            foreach ((array)glob($d . '/*') as $f) { @unlink($f); }
+            @rmdir($d);
+        }
+    }
+}
+
+// Compare the saved data with Bitrix24 right now (3 light calls).
+function reconcile_check() {
+    $c = cfg();
+    $cache = load_cache();
+    $maxId = 0;
+    foreach ($cache['rows'] as $r) {
+        if ((int)$r['ID'] > $maxId) { $maxId = (int)$r['ID']; }
+    }
+    $f = array('CATEGORY_ID' => $c['pipeline_id']);
+    $t = bx('crm.deal.list', array('filter' => $f, 'select' => array('ID'), 'order' => array('ID' => 'DESC')));
+    $f['>DATE_MODIFY'] = $cache['fetched_at'];
+    $m = bx('crm.deal.list', array('filter' => $f, 'select' => array('ID')));
+    $live = isset($t['total']) ? (int)$t['total'] : 0;
+    $liveMax = (isset($t['result'][0]['ID'])) ? (int)$t['result'][0]['ID'] : 0;
+    return array('cached' => count($cache['rows']), 'live' => $live, 'cached_max' => $maxId, 'live_max' => $liveMax,
+        'changed_since' => isset($m['total']) ? (int)$m['total'] : 0, 'fetched_at' => $cache['fetched_at'],
+        'ok' => count($cache['rows']) === $live && $maxId === $liveMax);
+}
+
 // Usage tracking: which features people actually use (page views, bot, search, edit forms).
 function log_usage($type, $detail) {
     $file = cfg()['cache_dir'] . '/usage.php';
