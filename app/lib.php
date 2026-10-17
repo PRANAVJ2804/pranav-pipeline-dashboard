@@ -924,6 +924,34 @@ function log_event($type) {
     @file_put_contents($file, $line . json_encode($entry, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) . "\n", FILE_APPEND | LOCK_EX);
 }
 
+// Usage tracking: which features people actually use (page views, bot, search, edit forms).
+function log_usage($type, $detail) {
+    $file = cfg()['cache_dir'] . '/usage.php';
+    if (is_file($file) && @filesize($file) > 3000000) {
+        @rename($file, cfg()['cache_dir'] . '/usage_old.php');
+    }
+    $line = is_file($file) ? '' : CACHE_GUARD;
+    $entry = array('at' => date('c'), 't' => $type, 'u' => (isset($_SESSION['user']) ? (string)$_SESSION['user'] : ''), 'd' => $detail);
+    @file_put_contents($file, $line . json_encode($entry, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) . "\n", FILE_APPEND | LOCK_EX);
+}
+function read_usage($days) {
+    $out = array();
+    $cut = time() - $days * 86400;
+    foreach (array('usage_old.php', 'usage.php') as $f) {
+        $file = cfg()['cache_dir'] . '/' . $f;
+        if (!is_file($file)) { continue; }
+        $fh = @fopen($file, 'r');
+        if (!$fh) { continue; }
+        while (($ln = fgets($fh)) !== false) {
+            if ($ln === '' || $ln[0] !== '{') { continue; }
+            $j = json_decode($ln, true);
+            if (is_array($j) && isset($j['at']) && strtotime($j['at']) >= $cut) { $out[] = $j; }
+        }
+        fclose($fh);
+    }
+    return $out;
+}
+
 // Latest entries of the activity log, newest first.
 function read_activity($limit = 5000) {
     $file = cfg()['cache_dir'] . '/edit_log.php';
