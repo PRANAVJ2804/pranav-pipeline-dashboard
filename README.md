@@ -7,7 +7,7 @@
 ![JavaScript](https://img.shields.io/badge/JavaScript-vanilla-F7DF1E?logo=javascript&logoColor=black)
 ![Bitrix24](https://img.shields.io/badge/Bitrix24-REST%20webhook-2FC6F6)
 ![Hosting](https://img.shields.io/badge/Hosting-cPanel-FF6C2C)
-![DB](https://img.shields.io/badge/Database-none-success)
+![Database](https://img.shields.io/badge/Database-Bitrix24%20CRM-2FC6F6)
 ![Build](https://img.shields.io/badge/Build%20step-none-success)
 
 ---
@@ -46,7 +46,7 @@ The original code was an older university dashboard. This project is a **rebuild
 | Safe editing | Edits go back to Bitrix24; comment, name and next follow-up date are enforced |
 | Team separation | Admins see everything; team logins see only their own **Team Name** |
 | Fast answers | Built-in **Monkey bot**, no external AI service |
-| Low cost | No database, no Composer, no npm, no build step |
+| Low cost | **Bitrix24 is the database** (no separate DB to host), no Composer, no npm, no build step |
 
 ---
 
@@ -182,7 +182,7 @@ app/daily_summary.php optional cron: daily e-mail summary + Bitrix24 cross-check
 Bitrix24 REST (inbound webhook)          app/cache/  (JSON snapshot, logs, profiles; web access denied)
 ```
 
-- **PHP 7.4+**, cURL, JSON, sessions. **No database, no Composer, no build step.**
+- **PHP 7.4+**, cURL, JSON, sessions. **Bitrix24 is the database**: all deal data is read from and written back to it. No separate database, no Composer, no build step.
 - Data is fetched from Bitrix24, cached in `app/cache/`, and rendered client-side.
 - The whole UI is one self-contained `index.php`: no CDN, no npm.
 
