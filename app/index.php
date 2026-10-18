@@ -1133,6 +1133,10 @@ button.uchip[aria-expanded=true] .uc{transform:rotate(180deg)}
 .pfp{display:flex;align-items:center;gap:14px;margin:0 0 16px;padding:14px;border-radius:18px;background:var(--bg)}
 .pfp .av{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;font-size:24px;font-weight:800;color:#fff;box-shadow:0 8px 18px rgba(33,187,176,.3);transition:background .25s}
 .pfp div b{display:block;font-size:16px}.pfp div small{color:var(--muted)}
+.av:has(>img),.who2 i:has(>img),button.ri .ic:has(>img){overflow:hidden;padding:0;background:var(--card)!important}
+.av>img,.who2 i>img,button.ri .ic>img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.pfph{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.pfph button{padding:8px 14px;font-size:13px}
+.ust td .av2{display:inline-block;vertical-align:middle;width:22px;height:22px;border-radius:50%;object-fit:cover;margin-right:6px}
 .pff{display:block;margin-top:12px;font-size:12.5px;font-weight:700;color:var(--muted)}
 .pff input{display:block;width:100%;margin-top:5px;padding:12px 14px;font:inherit;font-size:15px;font-weight:400;color:var(--text);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;outline:0;transition:border-color .2s,box-shadow .2s}
 .pff input:focus{background:var(--card);border-color:#2cdace;box-shadow:0 0 0 4px rgba(44,218,206,.16)}
@@ -1423,7 +1427,11 @@ a.wapp{display:inline-flex;align-items:center;justify-content:center;flex:none;w
 <script>
 const CSRF = <?= json_encode($_SESSION['csrf']) ?>;
 const ME = <?= json_encode((string)($_SESSION['user'] ?? '')) ?>;
-const PROFILE = <?php $pf = user_profile((string)($_SESSION['user'] ?? '')); echo json_encode(array('name' => (string)($pf['name'] ?? ''), 'phone' => (string)($pf['phone'] ?? ''), 'color' => (string)($pf['color'] ?? ''), 'views' => array_values(is_array($pf['views'] ?? null) ? $pf['views'] : array())), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG); ?>;
+const PROFILE = <?php $pf = user_profile((string)($_SESSION['user'] ?? '')); echo json_encode(array('name' => (string)($pf['name'] ?? ''), 'phone' => (string)($pf['phone'] ?? ''), 'color' => (string)($pf['color'] ?? ''), 'av' => (int)($pf['av'] ?? 0), 'views' => array_values(is_array($pf['views'] ?? null) ? $pf['views'] : array())), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG); ?>;
+const AV = <?php $__u = (string)($_SESSION['user'] ?? ''); echo json_encode((object)(!empty($pf['av']) ? array($__u => (int)$pf['av']) : array()), JSON_HEX_TAG); ?>;
+function avUrl(u) { return u && AV[u] ? 'api.php?action=avatar&u=' + encodeURIComponent(u) + '&v=' + AV[u] : ''; }
+function avImg(u) { const x = avUrl(u); return x ? '<img src="' + x + '" alt="" loading="lazy" draggable="false">' : ''; }
+function mergeAV(j) { if (j && j.avs) Object.keys(j.avs).forEach(k => { if (j.avs[k]) AV[k] = j.avs[k]; else delete AV[k]; }); }
 function track(t, d) { try { fetch('api.php?action=track', {method: 'POST', credentials: 'same-origin', keepalive: true, headers: {'X-CSRF-Token': CSRF, 'Content-Type': 'application/json'}, body: JSON.stringify({t: t, d: String(d || '').slice(0, 120)})}).catch(function () {}); } catch (e) {} }
 let __lastPg = '';
 const SCOPE = <?= json_encode((string)(user_scope() ?? '')) ?>;
@@ -2199,7 +2207,7 @@ function drawRecent() {
     const r = byId[e.deal], nm = r ? (r._NAME || r.TITLE || ('Deal ' + e.deal)) : ('Deal #' + e.deal);
     const ch = Object.keys(e.changes || {}).map(k => e.changes[k]).filter(c => !/comment history/i.test(c.field));
     const what = e.comment ? '💬 ' + e.comment : ch.length ? (ch[0].field + ' → ' + (ch[0].new === '' ? '(empty)' : ch[0].new)) : 'Updated';
-    return '<button type="button" class="ri" data-id="' + esc(e.deal) + '" style="--c:' + actColor(e.user || '?') + ';animation-delay:' + (.45 + i * .07) + 's"><i class="ic">' + (e.comment ? '💬' : '✏️') + '</i><span><b>' + esc(nm) + '</b><small>' + esc((e.user || '') + ' · ' + what) + '</small></span><time>' + esc(ago(e.at)) + '</time></button>';
+    return '<button type="button" class="ri" data-id="' + esc(e.deal) + '" style="--c:' + actColor(e.user || '?') + ';animation-delay:' + (.45 + i * .07) + 's"><i class="ic">' + (avImg(e.user) || (e.comment ? '💬' : '✏️')) + '</i><span><b>' + esc(nm) + '</b><small>' + esc((e.user || '') + ' · ' + what) + '</small></span><time>' + esc(ago(e.at)) + '</time></button>';
   }).join('') + '</div>';
   box.querySelectorAll('button.ri').forEach(b => { b.onclick = () => { const r = allRows.find(x => x.ID === b.dataset.id); if (r) openEdit(r); }; });
 }
@@ -2211,7 +2219,7 @@ async function loadRecent() {
     const r = await fetch('api.php?action=activity&limit=30', {credentials: 'same-origin'});
     if (r.status === 401) { location.reload(); return; }
     const j = await r.json();
-    if (j && j.ok) { recentItems = j.items || []; drawRecent(); }
+    if (j && j.ok) { mergeAV(j); recentItems = j.items || []; drawRecent(); }
   } catch (e) { if (!recentItems && $('chAct')) $('chAct').innerHTML = '<div class="empty">Could not load recent activity.</div>'; }
 }
 function renderStatusChart() {
@@ -3010,7 +3018,7 @@ function renderActivityRows() {
   $('rpSummary').textContent = fmtN(items.length) + ' of ' + fmtN(actItems.length) + ' entries';
   if (!items.length) { $('actTable').innerHTML = '<div class="empty">Nothing recorded yet. Saves made from this dashboard will appear here.</div>'; return; }
   $('actTable').innerHTML = '<table class="act"><thead><tr><th>When</th><th>Who</th><th>Deal</th><th>What happened</th></tr></thead><tbody>' + items.slice(0, 500).map(e => {
-    const who = '<span class="who2" style="--c:' + actColor(e.user || '?') + '"><i>' + esc((e.user || '?').charAt(0).toUpperCase()) + '</i>' + esc(e.user || '') + '</span>';
+    const who = '<span class="who2" style="--c:' + actColor(e.user || '?') + '"><i>' + (avImg(e.user) || esc((e.user || '?').charAt(0).toUpperCase())) + '</i>' + esc(e.user || '') + '</span>';
     if (e.type) return '<tr><td class="w">' + actWhen(e.at) + '</td><td>' + who + '</td><td></td><td class="ev">' + (e.type === 'login' ? 'Signed in' : e.type === 'password' ? 'Changed password' : 'Signed out') + (e.ip ? ' · ' + esc(e.ip) : '') + '</td></tr>';
     const r = byId[e.deal];
     const deal = r ? '<button class="dl" data-id="' + esc(e.deal) + '">' + esc(r._NAME || r.TITLE || ('Deal ' + e.deal)) + '</button><br><small class="sub">#' + esc(e.deal) + '</small>' : '#' + esc(e.deal);
@@ -3035,7 +3043,7 @@ async function renderActivity(def) {
   } catch (e) {}
   if (route.id !== 'activity' || !$('actTable')) return;
   if (!j || !j.ok) { $('rpSummary').textContent = ''; $('actTable').innerHTML = '<div class="empty">Could not load the activity log.</div>'; return; }
-  actItems = j.items || [];
+  mergeAV(j); actItems = j.items || [];
   const users = Array.from(new Set(actItems.map(e => e.user).filter(Boolean))).sort();
   $('actUser').innerHTML = '<option value="">Everyone</option>' + users.map(u => '<option>' + esc(u) + '</option>').join('');
   $('actApply').onclick = actRead; $('actClear').onclick = actClear;
@@ -4067,7 +4075,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   const disp = () => PROFILE.name || String(ME).replace(/_/g, ' ');
   function paint() {
     const n = disp(), ini = (n.charAt(0) || '?').toUpperCase(), c = PROFILE.color;
-    ['uAv', 'uAv2'].forEach(id => { const e = g(id); if (!e) return; e.textContent = ini; if (c) e.style.setProperty('--avc', 'linear-gradient(135deg,' + c + ',' + c + 'aa)'); else e.style.removeProperty('--avc'); });
+    ['uAv', 'uAv2'].forEach(id => { const e = g(id); if (!e) return; if (AV[ME]) { e.innerHTML = avImg(ME); return; } e.textContent = ini; if (c) e.style.setProperty('--avc', 'linear-gradient(135deg,' + c + ',' + c + 'aa)'); else e.style.removeProperty('--avc'); });
     g('uNm').textContent = n; g('uSc').textContent = role; g('uNm2').textContent = n; g('uUn2').textContent = '@' + ME + ' · ' + role;
     const hn = g('heroName'); if (hn && PROFILE.name) { const f = PROFILE.name.trim().split(/\s+/)[0]; hn.textContent = f.charAt(0).toUpperCase() + f.slice(1); }
   }
@@ -4099,15 +4107,49 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     let color = PROFILE.color || COLORS[0];
     box.innerHTML = '<h2>Your profile</h2><p class="sub">This is how you appear on the dashboard.</p>' +
       '<div class="pfp"><span class="av" id="pfAv"></span><div><b id="pfNm"></b><small>@' + esc(ME) + ' · ' + esc(role) + '</small></div></div>' +
+      '<div class="pff">Profile photo<div class="pfph"><button type="button" class="ghost" id="pfPick">Upload photo</button><button type="button" class="ghost" id="pfRm"' + (AV[ME] ? '' : ' hidden') + '>Remove photo</button><input type="file" id="pfFile" accept="image/*" hidden></div><div class="pfm" id="pfPm"></div></div>' +
       '<label class="pff">Display name<input id="pfName" maxlength="40" placeholder="' + esc(String(ME).replace(/_/g, ' ')) + '" value="' + esc(PROFILE.name) + '"></label>' +
       '<label class="pff">Phone<input id="pfPhone" maxlength="20" inputmode="tel" placeholder="Optional" value="' + esc(PROFILE.phone) + '"></label>' +
       '<label class="pff">Username<input value="' + esc(ME) + '" readonly></label>' +
       '<div class="pff">Avatar colour<div class="sw" id="pfSw">' + COLORS.map(c => '<button type="button" style="--c:' + c + '" data-c="' + c + '" aria-label="' + c + '"></button>').join('') + '</div></div>' +
       '<div class="pfm" id="pfMsg"></div><div class="pfa"><button type="button" class="ghost" id="pfX">Cancel</button><button type="button" id="pfOk">Save profile</button></div>';
     ov.hidden = false;
-    const prev = () => { const n = g('pfName').value.trim() || String(ME).replace(/_/g, ' '); g('pfNm').textContent = n; const a = g('pfAv'); a.textContent = n.charAt(0).toUpperCase(); a.style.setProperty('--avc', 'linear-gradient(135deg,' + color + ',' + color + 'aa)'); box.querySelectorAll('#pfSw button').forEach(b => b.classList.toggle('on', b.dataset.c === color)); };
+    const prev = () => { const n = g('pfName').value.trim() || String(ME).replace(/_/g, ' '); g('pfNm').textContent = n; const a = g('pfAv'); if (AV[ME]) a.innerHTML = avImg(ME); else a.textContent = n.charAt(0).toUpperCase(); a.style.setProperty('--avc', 'linear-gradient(135deg,' + color + ',' + color + 'aa)'); box.querySelectorAll('#pfSw button').forEach(b => b.classList.toggle('on', b.dataset.c === color)); };
     prev();
     g('pfName').oninput = prev;
+    const pm = g('pfPm'), refresh = () => { paint(); prev(); g('pfRm').hidden = !AV[ME]; try { if (typeof drawRecent === 'function') drawRecent(); if (g('actTable') && typeof renderActivityRows === 'function') renderActivityRows(); } catch (e) {} };
+    const sendAv = async (action, body) => {
+      const r = await fetch('api.php?action=' + action, {method: 'POST', credentials: 'same-origin', headers: {'X-CSRF-Token': CSRF, 'Content-Type': 'application/octet-stream'}, body: body || ''});
+      let j = {}; try { j = await r.json(); } catch (e) {}
+      if (r.status === 401) { location.reload(); return null; }
+      return r.ok && j.ok ? j : {error: j.error || 'Something went wrong. Please try again.'};
+    };
+    const toJpeg = file => new Promise((res, rej) => {
+      const fr = new FileReader(), im = new Image();
+      im.onload = () => { try {
+        const s = Math.min(im.naturalWidth, im.naturalHeight), c = document.createElement('canvas'); c.width = c.height = 256;
+        const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 256, 256);
+        x.drawImage(im, (im.naturalWidth - s) / 2, (im.naturalHeight - s) / 2, s, s, 0, 0, 256, 256);
+        c.toBlob(b => b ? res(b) : rej(), 'image/jpeg', .88);
+      } catch (e) { rej(e); } };
+      im.onerror = () => rej(); fr.onerror = () => rej(); fr.onload = () => { im.src = fr.result; }; fr.readAsDataURL(file);
+    });
+    g('pfPick').onclick = () => g('pfFile').click();
+    g('pfFile').onchange = async () => {
+      const f = g('pfFile').files[0]; g('pfFile').value = ''; if (!f) return;
+      if (!/^image\//.test(f.type)) { pm.className = 'pfm err'; pm.textContent = 'Please choose an image file.'; return; }
+      pm.className = 'pfm'; pm.textContent = 'Uploading…';
+      let blob; try { blob = await toJpeg(f); } catch (e) { pm.className = 'pfm err'; pm.textContent = 'That image could not be read. Try a JPG or PNG.'; return; }
+      const j = await sendAv('avatar_save', blob); if (!j) return;
+      if (j.error) { pm.className = 'pfm err'; pm.textContent = j.error; return; }
+      AV[ME] = j.av; PROFILE.av = j.av; pm.className = 'pfm ok'; pm.textContent = 'Photo updated.'; refresh();
+    };
+    g('pfRm').onclick = async () => {
+      pm.className = 'pfm'; pm.textContent = 'Removing…';
+      const j = await sendAv('avatar_del'); if (!j) return;
+      if (j.error) { pm.className = 'pfm err'; pm.textContent = j.error; return; }
+      delete AV[ME]; PROFILE.av = 0; pm.className = 'pfm ok'; pm.textContent = 'Photo removed.'; refresh();
+    };
     g('pfSw').onclick = e => { const b = e.target.closest('button[data-c]'); if (b) { color = b.dataset.c; prev(); } };
     g('pfX').onclick = closeOv;
     g('pfOk').onclick = async () => {
@@ -4123,12 +4165,13 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     box.innerHTML = '<h2>Usage · last 30 days</h2><p class="sub">Who is actually using the dashboard, and what for.</p><div id="usB"><div class="pfh">Loading…</div></div><div class="pfa"><button type="button" class="ghost" id="pfX">Close</button></div>';
     ov.hidden = false; g('pfX').onclick = closeOv; box.style.width = 'min(760px,100%)';
     let j = {}; try { j = await (await fetch('api.php?action=usage', {credentials: 'same-origin'})).json(); } catch (e) {}
+    mergeAV(j);
     if (!j.ok) { g('usB').innerHTML = '<div class="pfm err">' + esc(j.error || 'Could not load usage.') + '</div>'; return; }
     const ago = at => { if (!at) return 'never'; const m = Math.round((Date.now() - new Date(at).getTime()) / 60000); return m < 2 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
     const T = j.totals || {};
     let h = '<h3 class="ush" style="margin-top:4px">Data health</h3><div class="pfh">Compares what the dashboard shows with Bitrix24 right now.</div><div class="hcheck" id="hcOut"><button type="button" class="ghost" id="hcGo">Check against Bitrix24 now</button></div>';
     h += '<div class="usg">' + Object.keys(j.features).map(k => '<div><b>' + ((T[k] || {}).d7 || 0) + '</b><small>' + esc(j.features[k]) + ' · 7 days</small><em>' + ((T[k] || {}).d30 || 0) + ' in 30 days</em></div>').join('') + '</div>';
-    h += '<h3 class="ush">People</h3><div class="ust"><table><tr><th>Login</th><th>Last seen</th><th>Logins</th><th>Views</th><th>Bot</th><th>Search</th><th>Edits</th></tr>' + j.users.map(u => '<tr class="' + (u.last ? '' : 'dead') + '"><td>' + esc(u.user) + '</td><td>' + esc(ago(u.last)) + '</td><td>' + u.logins + '</td><td>' + u.view + '</td><td>' + u.bot + '</td><td>' + u.search + '</td><td>' + u.edits + '</td></tr>').join('') + '</table></div>';
+    h += '<h3 class="ush">People</h3><div class="ust"><table><tr><th>Login</th><th>Last seen</th><th>Logins</th><th>Views</th><th>Bot</th><th>Search</th><th>Edits</th></tr>' + j.users.map(u => '<tr class="' + (u.last ? '' : 'dead') + '"><td>' + (AV[u.user] ? '<img class="av2" src="' + avUrl(u.user) + '" alt="">' : '') + esc(u.user) + '</td><td>' + esc(ago(u.last)) + '</td><td>' + u.logins + '</td><td>' + u.view + '</td><td>' + u.bot + '</td><td>' + u.search + '</td><td>' + u.edits + '</td></tr>').join('') + '</table></div>';
     const pg = Object.keys(j.pages); if (pg.length) h += '<h3 class="ush">Most-visited pages</h3><div class="ust"><table>' + pg.map(k => '<tr><td>' + esc(k) + '</td><td>' + j.pages[k] + '</td></tr>').join('') + '</table></div>';
     const ms = Object.keys(j.misses); h += '<h3 class="ush">Questions the bot could not answer</h3>' + (ms.length ? '<div class="ust"><table>' + ms.map(k => '<tr><td>' + esc(k) + '</td><td>' + j.misses[k] + '×</td></tr>').join('') + '</table></div>' : '<div class="pfh">None yet.</div>');
     const mx = Math.max.apply(null, [1].concat(j.dau.map(d => d.n)));
@@ -4492,7 +4535,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     try {
       const r = await fetch('api.php?action=activity', {credentials: 'same-origin'});
       const j = await r.json();
-      ACT = j && j.ok ? j.items : []; ACTat = Date.now();
+      mergeAV(j); ACT = j && j.ok ? j.items : []; ACTat = Date.now();
     } catch (e) { ACT = ACT || []; }
     return ACT;
   }
