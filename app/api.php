@@ -83,6 +83,32 @@ try {
         exit;
     }
 
+    // New-deal notice: remembers, per login, the highest deal ID that person has already been told about.
+    if ($action === 'nd') {
+        $me = (string)$_SESSION['user'];
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $sent = isset($_SERVER['HTTP_X_CSRF_TOKEN']) ? (string)$_SERVER['HTTP_X_CSRF_TOKEN'] : '';
+            $want = isset($_SESSION['csrf']) ? (string)$_SESSION['csrf'] : '';
+            if ($want === '' || !hash_equals($want, $sent)) {
+                fail(403, 'Blocked. Reload the page and try again.');
+            }
+            $in = json_decode((string)file_get_contents('php://input', false, null, 0, 2000), true);
+            $max = (is_array($in) && isset($in['max'])) ? (int)$in['max'] : 0;
+            session_write_close();
+            $pr = user_profile($me);
+            $cur = isset($pr['nd_seen']) ? (int)$pr['nd_seen'] : 0;
+            if ($max > $cur) {
+                write_profile($me, array('nd_seen' => $max, 'nd_at' => date('c')));
+            }
+            echo json_encode(array('ok' => true));
+            exit;
+        }
+        session_write_close();
+        $pr = user_profile($me);
+        echo json_encode(array('ok' => true, 'seen' => isset($pr['nd_seen']) ? (int)$pr['nd_seen'] : null));
+        exit;
+    }
+
     if ($action === 'views_save') {
         $sent = isset($_SERVER['HTTP_X_CSRF_TOKEN']) ? (string)$_SERVER['HTTP_X_CSRF_TOKEN'] : '';
         $want = isset($_SESSION['csrf']) ? (string)$_SESSION['csrf'] : '';
