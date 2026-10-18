@@ -1273,7 +1273,7 @@ a.wapp{display:inline-flex;align-items:center;justify-content:center;flex:none;w
         <button type="button" role="menuitem" data-a="profile"><i>👤</i>Your profile</button>
         <button type="button" role="menuitem" data-a="pwd"><i>🔑</i>Change password</button>
         <button type="button" role="menuitem" data-a="wa"><i>💬</i><span id="waMode">WhatsApp opens in: Browser tab</span></button>
-        <button type="button" role="menuitem" data-a="monkey"><i>🐒</i><span id="monkeyMode">Monkey: roaming 🐒 (tap to rest)</span></button>
+        <button type="button" role="menuitem" data-a="monkey"><i>🐒</i><span id="monkeyMode">Monkey: playing 🐒 (tap to rest)</span></button>
         <?php if (user_scope() === null) { ?><button type="button" role="menuitem" data-a="usage"><i>📊</i>Usage (who uses what)</button><?php } ?>
         <a role="menuitem" href="#/reports/activity" data-a="act"><i>🕵️</i><?= user_scope() !== null ? 'Your activity' : 'Activity log' ?></a>
         <a role="menuitem" href="#/master/sheet?f=stale" data-a="stale"><i>⏰</i>Follow-up overdue</a>
@@ -5897,6 +5897,10 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     '.mkr.drag .arR{transform:rotate(-176deg)}.mkr.drag .arL{animation:mkDrA .5s ease-in-out infinite alternate}@keyframes mkDrA{from{transform:rotate(6deg)}to{transform:rotate(34deg)}}.mkr.drag .lgL{animation:mkDg .7s ease-in-out infinite alternate}.mkr.drag .lgR{animation:mkDg .7s ease-in-out infinite alternate-reverse}@keyframes mkDg{from{transform:rotate(-16deg)}to{transform:rotate(16deg)}}.mkr.drag .mbm1{display:none}.mkr.drag .mbm4{display:block}' +
     '.mkr.cheer .arL{transform:rotate(160deg)}.mkr.cheer .arR{transform:rotate(-160deg)}.mkr.cheer .all{animation:mkHop .38s ease-out 4 alternate}@keyframes mkHop{from{transform:translateY(0)}to{transform:translateY(-16px)}}' +
     '.mkr.land .all{animation:mkLand .3s ease-out}@keyframes mkLand{0%{transform:translateY(0) scaleY(1)}35%{transform:translateY(8px) scaleY(.88)}100%{transform:none}}' +
+    '.mkr.dance .all{animation:mkDance .45s ease-in-out infinite alternate}@keyframes mkDance{from{transform:rotate(-5deg) translateY(0)}to{transform:rotate(5deg) translateY(-8px)}}.mkr.dance .arL{animation:mkClA .45s ease-in-out infinite alternate}.mkr.dance .arR{animation:mkClB .45s ease-in-out infinite alternate-reverse}.mkr.dance .lgL{animation:mkLegA .45s ease-in-out infinite alternate}.mkr.dance .lgR{animation:mkLegA .45s ease-in-out infinite alternate-reverse}' +
+    '.mkr.stretch .arL{transform:rotate(172deg)}.mkr.stretch .arR{transform:rotate(-172deg)}.mkr.stretch .all{transform:translateY(-4px) scaleY(1.05)}.mkr.stretch .hd{transform:rotate(-7deg)}' +
+    '.mkr.tailplay .tail{animation:mkTailF .22s ease-in-out infinite alternate}@keyframes mkTailF{from{transform:rotate(-24deg)}to{transform:rotate(28deg)}}.mkr.tailplay .hd{transform:rotate(15deg)}' +
+    '.mkr.clap .arL{animation:mkClapL .3s ease-in-out infinite alternate}.mkr.clap .arR{animation:mkClapR .3s ease-in-out infinite alternate}@keyframes mkClapL{from{transform:rotate(-12deg)}to{transform:rotate(-44deg)}}@keyframes mkClapR{from{transform:rotate(12deg)}to{transform:rotate(44deg)}}' +
     /* speech bubble */
     '.mkbub{position:absolute;left:50%;bottom:calc(100% + 2px);transform:translateX(-50%) scale(.6);transform-origin:50% 100%;width:max-content;max-width:210px;padding:8px 12px;border-radius:14px;background:var(--card,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);box-shadow:0 10px 26px rgba(40,20,100,.3);font:600 13px/1.35 system-ui,-apple-system,Segoe UI,sans-serif;opacity:0;pointer-events:none;transition:opacity .18s,transform .28s cubic-bezier(.3,1.5,.5,1);z-index:2}' +
     '.mkbub.on{opacity:1;transform:translateX(-50%) scale(1)}.mkbub::after{content:"";position:absolute;left:50%;bottom:-7px;width:12px;height:12px;background:var(--card,#fff);border-right:1px solid var(--line,#ddd);border-bottom:1px solid var(--line,#ddd);transform:translateX(-50%) rotate(45deg)}' +
@@ -6106,17 +6110,35 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   }
 
   function blocked() { return rest || reduce || chatOpen || dragging || welcomeOn || uiBusy(); }
+  let lastAct2 = -1;
+  const ACTS = [
+    {p: 'eat', t: 4400, s: ['Nom nom nom 🍌', 'Banana break! 🍌', 'Mmm… best banana ever 😋']},
+    {p: 'dance', t: 4600, s: ['Dance break! 💃', 'Look at me go! 🕺']},
+    {p: 'scratch', t: 2800, s: ['Ooh, an itch 🙈', 'Hmm, where was I… 🤔']},
+    {p: 'wave', t: 2400, s: ['Hello hello! 👋', 'Psst, I’m here if you need me 🐒']},
+    {p: 'clap', t: 2600, s: ['Great work, boss! 👏', 'Yay, numbers! 👏']},
+    {p: 'stretch yawn', t: 2300, s: ['Aaah… stretch time 🥱']},
+    {p: 'tailplay', t: 3600, s: ['Hehe, my tail! 🙈', 'Gotcha, tail! 🌀']},
+    {p: 'sit', t: 3200, s: []},
+    {p: 'cheer', t: 2000, s: ['Woohoo! 🎉']},
+    {look: 1},
+    {nap: 1, t: 9000, s: ['Zzz… 😴']},
+    {p: 'sit', mood: 'conf', t: 3200, s: ['Hmm, which lead should I chase next? 🤔']}
+  ];
+  async function doAct() {
+    if (Date.now() - lastAct > 30000) { await napTime(); return; }
+    let i; do { i = Math.floor(Math.random() * ACTS.length); } while (i === lastAct2);
+    lastAct2 = i; const a = ACTS[i];
+    if (a.look) { await lookAround(); return; }
+    if (a.nap) { asleep = true; setPose('sleep'); say(pick(a.s), 2400); const ok = await sleep(a.t); asleep = false; if (ok) { setPose('yawn'); await sleep(1300); setPose(''); } return; }
+    setPose(a.p); if (a.mood) setMood(a.mood, a.t); if (a.s.length) say(pick(a.s), a.t > 3000 ? 3200 : 2200);
+    if (await sleep(a.t)) setPose('');
+  }
   async function step() {
     if (blocked()) { await sleep(600); return; }
-    const r = Math.random();
-    if (loc === 'ground') {
-      if (r < .38) await roamGround(); else if (r < .6) await perchOn(); else if (r < .74) await edgeOn(); else await doIdle(false);
-    } else if (loc === 'edge') {
-      if (r < .5) await climbMove(); else if (r < .82) await toGround(); else await doIdle(false);
-    } else {
-      if (r < .45) await doIdle(true); else if (r < .62) await perchWalk(); else await toGround();
-    }
-    await sleep(rand(600, 2000));
+    if (!nearHome()) { await goHome(); return; }
+    await doAct();
+    await sleep(rand(250, 800));
   }
   async function perchWalk() {
     if (!perchEl) { await toGround(); return; }
@@ -6252,13 +6274,13 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     }
   }, 500);
   addEventListener('resize', () => {
-    size(); P.x = clamp(P.x, W / 2, innerWidth - W / 2); if (loc === 'ground') P.y = ground(); P.y = Math.min(P.y, ground()); render();
+    size(); P.x = clamp(P.x, W / 2, innerWidth - W / 2); if (loc === 'ground') { P.y = ground(); if (!dragging && !chatOpen) P.x = innerWidth - (small() ? 56 : 82); } P.y = Math.min(P.y, ground()); render();
     if (chatOpen) placePanel(); blockCache = null;
   });
 
   /* ================= rest switch ================= */
   function paintMode() {
-    const m = g('monkeyMode'); if (m) m.textContent = rest || reduce ? 'Monkey: resting 😴 (tap to wake)' : 'Monkey: roaming 🐒 (tap to rest)';
+    const m = g('monkeyMode'); if (m) m.textContent = rest || reduce ? 'Monkey: resting 😴 (tap to wake)' : 'Monkey: playing 🐒 (tap to rest)';
   }
   function setRest(v) {
     rest = !!v; try { localStorage.setItem(LS, rest ? '1' : '0'); } catch (e) {}
@@ -6368,14 +6390,16 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       (async () => {
         await sleep(250);
         await leapTo(innerWidth - (small() ? 56 : 82), ground(), 140, 1);
-        if (!sessionStorage.getItem('pp_mk_hi')) { try { sessionStorage.setItem('pp_mk_hi', '1'); } catch (e) {} say('Ooh ooh! I live here now. Click me if you need help 🍌', 5200); setFx('cheer', 1200); }
+        face = 1; render(); setPose('wave'); setMood('happy', 3200); setFx('cheer', 1400);
+        say('Hello hello! 👋 Welcome, ' + firstName() + '!', 4200);
+        await sleep(4300); setPose('');
       })();
     } else {
       P.x = innerWidth + 70; P.y = ground(); face = 1; render();
       (async () => {
         await sleep(600);
         if (rest) { await goHome(); setPose('sit'); }
-        else { await walkTo(innerWidth - (small() ? 56 : 82), 110); setPose('wave'); await sleep(1400); setPose(''); }
+        else { await walkTo(innerWidth - (small() ? 56 : 82), 110); setPose('wave'); if (!sessionStorage.getItem('pp_mk_hi')) { try { sessionStorage.setItem('pp_mk_hi', '1'); } catch (e) {} say('Hello hello! 👋', 3000); } await sleep(2200); setPose(''); }
       })();
     }
   }
@@ -6383,7 +6407,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     toggle: () => setRest(!rest), say: say, welcome: welcome,
     state: () => ({x: P.x, y: P.y, loc: loc, pose: pose, rest: rest, chatOpen: chatOpen, dragging: dragging, asleep: asleep}),
     force: o => { cancel(); if (o.pose != null) setPose(o.pose); if (o.x != null) { P.x = o.x; } if (o.y != null) { P.y = o.y; } render(); },
-    act: n => ({perch: perchOn, edge: edgeOn, ground: toGround, roam: roamGround, idle: () => doIdle(false), climb: climbMove})[n](),
+    act: n => ({perch: perchOn, edge: edgeOn, ground: toGround, roam: roamGround, idle: () => doIdle(false), climb: climbMove, act: doAct})[n](),
     el: el
   };
   if (rest && !reduce) { /* resting from the start */ }
