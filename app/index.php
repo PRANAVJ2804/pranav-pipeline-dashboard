@@ -1137,6 +1137,20 @@ button.uchip[aria-expanded=true] .uc{transform:rotate(180deg)}
 .av>img,.who2 i>img,button.ri .ic>img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
 .pfph{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.pfph button{padding:8px 14px;font-size:13px}
 .ust td .av2{display:inline-block;vertical-align:middle;width:22px;height:22px;border-radius:50%;object-fit:cover;margin-right:6px}
+.today{max-width:1100px;margin:0 auto;padding:4px 2px 40px}.today[hidden]{display:none}
+.tdh{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:6px 0 16px}.tdh h1{margin:0;font-size:clamp(24px,3.4vw,34px);letter-spacing:-.02em}.tdh p{margin:4px 0 0;color:var(--muted);font-weight:600}
+.tdp{display:flex;align-items:center;gap:12px;padding:10px 18px 10px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh)}.tdp svg{width:46px;height:46px;transform:rotate(-90deg)}.tdp .bg{fill:none;stroke:var(--line);stroke-width:5}.tdp .fg{fill:none;stroke:#0e9f94;stroke-width:5;stroke-linecap:round;transition:stroke-dasharray .8s ease}.tdp b{display:block;font-size:20px;line-height:1}.tdp small{color:var(--muted);font-weight:600;font-size:12px}
+.tdc{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px}
+.tdk{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:14px 16px;border-radius:18px;border:1px solid var(--line);background:var(--card);box-shadow:var(--sh);cursor:pointer;text-align:left;color:var(--text);position:relative;overflow:hidden;transition:transform .18s,box-shadow .18s}.tdk::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--c)}.tdk:hover{transform:translateY(-2px)}.tdk i{font-style:normal;font-size:20px}.tdk b{font-size:28px;line-height:1.1;letter-spacing:-.02em}.tdk small{color:var(--muted);font-weight:600;font-size:12.5px}
+.tdl{margin:6px 2px 18px;color:var(--muted);font-weight:600}.tdl b{color:var(--text)}
+.tds{margin:0 0 18px;padding:14px 16px 12px;border-radius:20px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh);scroll-margin-top:14px;border-left:5px solid var(--c)}
+.tdt{display:flex;align-items:center;gap:10px;margin-bottom:6px}.tdt .ti{font-size:20px}.tdt h2{margin:0;font-size:17px}.tdt .tn{background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c);font-weight:800;border-radius:999px;padding:1px 10px;font-size:13px}.tdt a{margin-left:auto;font-weight:700;font-size:13px;color:var(--accent)}
+.tdr{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:12px;padding:9px 4px;border-top:1px solid var(--line)}.tdr:first-child{border-top:0}
+.tdn{background:transparent!important;border:0!important;box-shadow:none!important;width:calc(100% + 12px);padding:4px 6px!important;margin:0 -6px;text-align:left;cursor:pointer;color:var(--text);border-radius:10px;font:inherit;min-width:0}.tdn:hover{background:color-mix(in srgb,var(--c,#0e9f94) 10%,transparent)!important;transform:none}.tdn b{display:block;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tdn small{display:block;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tdw{font-size:12px;font-weight:700;color:var(--c);background:color-mix(in srgb,var(--c) 12%,transparent);border-radius:999px;padding:4px 10px;white-space:nowrap}
+.tdm{margin:8px 0 2px;padding:8px 14px;border-radius:12px;border:1px dashed var(--line);background:transparent;color:var(--accent);font-weight:700;cursor:pointer}.tde{padding:10px 4px 6px;color:var(--muted);font-weight:600}
+@media(max-width:700px){.tdr{grid-template-columns:minmax(0,1fr) auto}.tdw{grid-column:1/2;justify-self:start;grid-row:2}}
+@media(prefers-reduced-motion:reduce){.tdk,.tdp .fg{transition:none}}
 .pff{display:block;margin-top:12px;font-size:12.5px;font-weight:700;color:var(--muted)}
 .pff input{display:block;width:100%;margin-top:5px;padding:12px 14px;font:inherit;font-size:15px;font-weight:400;color:var(--text);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;outline:0;transition:border-color .2s,box-shadow .2s}
 .pff input:focus{background:var(--card);border-color:#2cdace;box-shadow:0 0 0 4px rgba(44,218,206,.16)}
@@ -1264,6 +1278,7 @@ a.wapp{display:inline-flex;align-items:center;justify-content:center;flex:none;w
   <a class="brand" href="#/"><span class="logo" id="logoBtn" title="Show / hide the side menu" role="button" tabindex="0" aria-label="Show or hide the side menu"><span class="lg-mark sbm" aria-hidden="true"><i></i><i></i><i></i><i></i></span></span><span class="t">Pranav Pipeline</span></a>
   <nav class="nav" id="nav">
     <a data-nav="home" href="#/" title="Dashboard"><i>🏠</i><span class="t">Dashboard</span></a>
+    <a data-nav="today" href="#/today" title="My day"><i>☀️</i><span class="t">My day</span><span class="bd" id="navToday" hidden></span></a>
     <a data-nav="master" href="#/master" title="Master overview"><i>📊</i><span class="t">Master overview</span></a>
     <a data-nav="all" href="#/master/sheet" title="All deals"><i>📋</i><span class="t">All deals</span></a>
     <div id="svNav"></div>
@@ -1325,6 +1340,7 @@ a.wapp{display:inline-flex;align-items:center;justify-content:center;flex:none;w
 <div class="gfbar" id="gfbar" hidden></div>
 <div class="wrap">
   <div id="banner" class="banner" hidden></div>
+  <section id="today" class="today" hidden></section>
   <section id="home" hidden>
     <div class="hero" id="hero">
       <div class="ht"><div class="hello" id="heroHi">Hello,</div><h1><span id="heroName">there</span> <span class="wave">👋</span></h1><p>Here’s your pipeline overview.</p><p id="masterNum" style="margin-top:6px;font-size:13.5px;opacity:.7"></p><a class="hbtn" href="#/master">Open master overview →</a></div>
@@ -1433,7 +1449,7 @@ const ME = <?= json_encode((string)($_SESSION['user'] ?? '')) ?>;
 const PROFILE = <?php $pf = user_profile((string)($_SESSION['user'] ?? '')); echo json_encode(array('name' => (string)($pf['name'] ?? ''), 'phone' => (string)($pf['phone'] ?? ''), 'color' => (string)($pf['color'] ?? ''), 'av' => (int)($pf['av'] ?? 0), 'views' => array_values(is_array($pf['views'] ?? null) ? $pf['views'] : array())), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG); ?>;
 const AV = <?php $__u = (string)($_SESSION['user'] ?? ''); echo json_encode((object)(!empty($pf['av']) ? array($__u => (int)$pf['av']) : array()), JSON_HEX_TAG); ?>;
 function avUrl(u) { return u && AV[u] ? 'api.php?action=avatar&u=' + encodeURIComponent(u) + '&v=' + AV[u] : ''; }
-function avImg(u) { const x = avUrl(u); return x ? '<img src="' + x + '" alt="" loading="lazy" draggable="false">' : ''; }
+function avImg(u) { const x = avUrl(u); return x ? '<img src="' + x + '" alt="" loading="lazy" draggable="false" onerror="this.replaceWith(document.createTextNode(\'' + String(u).charAt(0).toUpperCase().replace(/[^A-Z0-9]/g, '?') + '\'))">' : ''; }
 function mergeAV(j) { if (j && j.avs) Object.keys(j.avs).forEach(k => { if (j.avs[k]) AV[k] = j.avs[k]; else delete AV[k]; }); }
 function track(t, d) { try { fetch('api.php?action=track', {method: 'POST', credentials: 'same-origin', keepalive: true, headers: {'X-CSRF-Token': CSRF, 'Content-Type': 'application/json'}, body: JSON.stringify({t: t, d: String(d || '').slice(0, 120)})}).catch(function () {}); } catch (e) {} }
 let __lastPg = '';
@@ -1600,6 +1616,7 @@ function parseRoute() {
   if (qi >= 0) { qs = h.slice(qi + 1); h = h.slice(0, qi); }
   const r = {type: 'home', name: '', sheet: false, p: null, m: null, s: null, f: null, q: null, x: [], rb: null, bot: null, id: '', rq: {}};
   let mt;
+  if (/^\/today\/?$/.test(h)) { r.type = 'today'; return r; }
   if (/^\/reports\/?$/.test(h)) { r.type = 'reports'; return r; }
   if ((mt = /^\/reports\/([\w-]+)$/.exec(h))) { r.type = 'report'; r.id = mt[1]; r.rq = Object.fromEntries(new URLSearchParams(qs)); return r; }
   if ((mt = /^\/master(\/sheet)?$/.exec(h))) {
@@ -1893,7 +1910,7 @@ function placeGF(home) {
 }
 function renderGF() {
   const bar = $('gfbar');
-  const useAll = route.type === 'reports' || route.type === 'report' || !!route.rb || !!(route.sheet && route.bot);
+  const useAll = route.type === 'today' || route.type === 'reports' || route.type === 'report' || !!route.rb || !!(route.sheet && route.bot);
   bar.hidden = useAll || !allRows.length;
   if (bar.hidden) return;
   const defs = fieldDefs().filter(f => !(f.id === 'uni' && route.type === 'uni'));
@@ -1929,8 +1946,9 @@ function renderRoute(reset) {
   rows = (route.type === 'reports' || route.type === 'report' || route.rb || (route.sheet && route.bot)) ? allRows : gfRows;
   placeGF(route.type === 'home');
   renderGF();
+  if (route.type === 'today') { showToday(reset); return; }
   if (route.type === 'reports' || route.type === 'report') { baseList = rows; showReportsView(reset); return; }
-  $('reports').hidden = true; $('report').hidden = true;
+  $('reports').hidden = true; $('report').hidden = true; $('today').hidden = true;
   baseList = route.type === 'uni' ? rows.filter(r => route.name.split(MS).indexOf(uniOf(r)) >= 0) : rows;
   if (route.sheet && route.f) baseList = baseList.filter(r => passF(r, route.f));
   if (route.sheet && route.x.length) baseList = baseList.filter(r => route.x.every(p => xMatch(r, p)));
@@ -2083,7 +2101,8 @@ function renderSide() {
   renderUBar();
   { const ps = prioStats(); $('navPrio').textContent = ps.any ? fmtN(ps.any) : ''; $('navP').title = 'Priority leads · ' + fmtN(ps.any) + ' need attention'; }
   paintViews(); paintWaMode();
-  const cur = route.type === 'home' ? 'home' : route.sheet ? ((route.f === 'stale' || route.f === 'notcontacted' || route.f === 'paydue' || route.f === 'docpend') ? 'prio' : (route.type === 'master' && !route.f && route.p === null && route.m === null && route.s === null && !route.q ? 'all' : '')) : (route.type === 'master' ? 'master' : '');
+  { const n = tdCount(), b = $('navToday'); if (b) { b.hidden = !n; b.textContent = n > 99 ? '99+' : n; } }
+  const cur = route.type === 'today' ? 'today' : route.type === 'home' ? 'home' : route.sheet ? ((route.f === 'stale' || route.f === 'notcontacted' || route.f === 'paydue' || route.f === 'docpend') ? 'prio' : (route.type === 'master' && !route.f && route.p === null && route.m === null && route.s === null && !route.q ? 'all' : '')) : (route.type === 'master' ? 'master' : '');
   $('nav').querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.nav === cur));
   $('navP').classList.toggle('on', cur === 'prio');
   renderRepNav();
@@ -3106,7 +3125,7 @@ function renderRepNav() {
 function showReportsView(reset) {
   ['home', 'overview', 'dash'].forEach(id => { $(id).hidden = true; });
   $('reports').hidden = route.type !== 'reports';
-  $('report').hidden = route.type !== 'report';
+  $('report').hidden = route.type !== 'report'; $('today').hidden = true;
   document.querySelector('.wrap').classList.remove('full');
   $('shell').classList.remove('nosb');
   if (reset) window.scrollTo(0, 0);
@@ -3118,6 +3137,87 @@ function showReportsView(reset) {
     renderReport();
   }
 }
+
+/* ---------- My day: one page of what to do today ---------- */
+const TD = {act: null, actAt: 0};
+function tdParts() {
+  const T = todayStr(), a = new Date(), p = n => String(n).padStart(2, '0');
+  const plus = n => { const d = new Date(a.getFullYear(), a.getMonth(), a.getDate() + n); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); };
+  const fv = colByRole('fuview'), fu = colByRole('fuupd');
+  const fuRaw = r => (fv && String(r[fv.key] || '').trim()) || (fu && String(r[fu.key] || '').trim()) || '';
+  const iso = s => { const m = /(\d{4}-\d{2}-\d{2})/.exec(String(s || '')); return m ? m[1] : ''; };
+  const open = r => !isClosed(r) && !isAlumni(r);
+  const dd = (x, y) => Math.round((new Date(+y.slice(0, 4), +y.slice(5, 7) - 1, +y.slice(8, 10)) - new Date(+x.slice(0, 4), +x.slice(5, 7) - 1, +x.slice(8, 10))) / 864e5);
+  const L = {due: [], missed: [], stale: [], nc: [], pay: [], fresh: []};
+  allRows.forEach(r => {
+    const f = iso(fuRaw(r));
+    if (open(r) && f) { if (f === T) L.due.push(r); else if (f < T) L.missed.push(r); }
+    if (isStale(r)) L.stale.push(r);
+    if (isNotContacted(r)) L.nc.push(r);
+    if (passF(r, 'paydue')) L.pay.push(r);
+    else if (open(r)) { const n = payDates(r)[1]; if (n && n >= T && n <= plus(7)) L.pay.push(r); }
+    if (String(r.DATE_CREATE || '').slice(0, 10) >= plus(-1)) L.fresh.push(r);
+  });
+  const tm = r => { const m = /(\d{2}):(\d{2})/.exec(fuRaw(r)); return m ? m[1] + m[2] : '0000'; };
+  L.due.sort((x, y) => tm(x).localeCompare(tm(y)));
+  L.missed.sort((x, y) => iso(fuRaw(y)).localeCompare(iso(fuRaw(x))));
+  L.stale.sort((x, y) => (+x._ct || 0) - (+y._ct || 0));
+  L.nc.sort((x, y) => String(y.DATE_CREATE || '').localeCompare(String(x.DATE_CREATE || '')));
+  L.pay.sort((x, y) => (payDates(x)[1] || '9').localeCompare(payDates(y)[1] || '9'));
+  L.fresh.sort((x, y) => String(y.DATE_CREATE || '').localeCompare(String(x.DATE_CREATE || '')));
+  return {L: L, T: T, fuRaw: fuRaw, iso: iso, dd: dd};
+}
+function tdCount() { try { if (!allRows.length) return 0; const P = tdParts(); return P.L.due.length + P.L.missed.length; } catch (e) { return 0; } }
+function tdTime(s) { const m = /(\d{2}):(\d{2})/.exec(String(s || '')); if (!m || (m[1] === '00' && m[2] === '00')) return ''; const h = +m[1]; return ', ' + ((h % 12) || 12) + ':' + m[2] + ' ' + (h >= 12 ? 'pm' : 'am'); }
+const TD_MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const tdDay = s => s ? (+s.slice(8, 10)) + ' ' + TD_MON[+s.slice(5, 7) - 1] : '';
+const tdWa = r => { const d = String(r._PHONE || '').split(/[,;]/)[0].replace(/\D/g, ''); if (d.length < 10) return ''; const ph = d.length === 10 ? '91' + d : d; return '<a class="wapp" href="https://wa.me/' + esc(ph) + '" data-ph="' + esc(ph) + '" data-id="' + esc(r.ID) + '" title="WhatsApp" aria-label="WhatsApp"><svg viewBox="0 0 24 24"><path class="b" d="M12 2.5a9.5 9.5 0 0 0-8.1 14.4L2.7 21.5l4.7-1.2A9.5 9.5 0 1 0 12 2.5z"/><path class="h" d="M16.7 14.5c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1-1.3-.6-2.3-1.4-3.1-2.8-.1-.2 0-.3.1-.4l.6-.7c.1-.1.1-.3 0-.4l-.7-1.7c-.2-.4-.3-.4-.5-.4h-.4c-.2 0-.4.1-.6.3-.6.6-.9 1.3-.8 2.2.1.9.5 1.8 1.2 2.7 1.2 1.7 2.7 2.7 4.5 3.2.8.2 1.4.2 2-.2.5-.3.8-.8.9-1.3 0-.2 0-.4-.2-.5z"/></svg></a>'; };
+function showToday(reset) {
+  ['home', 'overview', 'dash', 'reports', 'report'].forEach(id => { const e = $(id); if (e) e.hidden = true; });
+  $('today').hidden = false;
+  document.querySelector('.wrap').classList.remove('full'); $('shell').classList.remove('nosb');
+  if (reset) window.scrollTo(0, 0);
+  document.title = 'My day · Pranav Pipeline';
+  renderSide(); renderToday();
+}
+function renderToday() {
+  const box = $('today'); if (!box || box.hidden) return;
+  if (!allRows.length) { box.innerHTML = '<div class="tdh"><h1>My day</h1><p>Loading your deals…</p></div>'; return; }
+  const P = tdParts(), L = P.L, T = P.T, pk = progKey();
+  const nm = (PROFILE.name || '').trim().split(/\s+/)[0] || String(ME).replace(/_/g, ' ');
+  const d0 = new Date(), hr = d0.getHours(), greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+  const SEC = [
+    {id: 'due', ic: '📞', c: '#0e9f94', t: 'Follow-ups due today', e: 'Nothing is booked for today. Nice and calm.', list: L.due, why: r => 'Today' + tdTime(P.fuRaw(r))},
+    {id: 'missed', ic: '⚠️', c: '#e11d48', t: 'Missed follow-ups', e: 'No missed follow-ups. Well done!', list: L.missed, why: r => { const f = P.iso(P.fuRaw(r)), n = P.dd(f, T); return 'Was due ' + tdDay(f) + ' · ' + n + ' day' + (n === 1 ? '' : 's') + ' ago'; }},
+    {id: 'stale', ic: '⏰', c: '#e8590c', t: 'Not touched for ' + STALE_DAYS + '+ days', e: 'Every lead has been touched recently.', list: L.stale, href: '#/master/sheet?f=stale', why: r => r._ct ? 'Last comment ' + Math.floor((nowLocal() - +r._ct) / 864e5) + ' days ago' : 'Last comment date unknown'},
+    {id: 'nc', ic: '📵', c: '#d9a400', t: 'Not contacted yet', e: 'Everyone has been contacted at least once.', list: L.nc, href: '#/master/sheet?f=notcontacted', why: r => { const c = String(r.DATE_CREATE || '').slice(0, 10), n = c ? P.dd(c, T) : null; return n === null ? 'No comment yet' : n <= 0 ? 'Created today · no comment' : 'Created ' + n + ' day' + (n === 1 ? '' : 's') + ' ago · no comment'; }},
+    {id: 'pay', ic: '💳', c: '#7c5cff', t: 'Payments: overdue or due in 7 days', e: 'No payments to chase this week.', list: L.pay, href: '#/master/sheet?f=paydue', why: r => { const n = payDates(r)[1]; if (!n) return 'No next payment date'; const k = P.dd(n, T); return k > 0 ? 'Overdue by ' + k + ' day' + (k === 1 ? '' : 's') + ' · ' + tdDay(n) : k === 0 ? 'Due today' : 'Due ' + tdDay(n) + ' · in ' + (-k) + ' day' + (k === -1 ? '' : 's'); }},
+    {id: 'fresh', ic: '🆕', c: '#2a78d6', t: 'New leads (since yesterday)', e: 'No new leads yet.', list: L.fresh, why: r => 'Created ' + tdDay(String(r.DATE_CREATE || '').slice(0, 10)) }
+  ];
+  const todo = L.due.length + L.missed.length;
+  const row = (r, s) => '<div class="tdr"><button type="button" class="tdn" data-id="' + esc(r.ID) + '"><b>' + esc(r._NAME || r.TITLE || ('Deal ' + r.ID)) + '</b><small>' + esc([uniOf(r), pk ? cellVal(r, pk) : ''].filter(x => x && x !== NONE && x !== UNASSIGNED).join(' · ')) + '</small></button><span class="tdw" style="--c:' + s.c + '">' + esc(s.why(r)) + '</span>' + tdWa(r) + '</div>';
+  box.innerHTML =
+    '<div class="tdh"><div><h1>' + esc(greet) + ', ' + esc(nm) + ' 👋</h1><p>' + esc(d0.toLocaleDateString(undefined, {weekday: 'long', day: 'numeric', month: 'long'})) + (SCOPE ? ' · Team ' + esc(SCOPE) : ' · all deals') + '</p></div>' +
+    '<div class="tdp" id="tdP" title="Updates you saved today"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" class="bg"/><circle cx="22" cy="22" r="18" class="fg" id="tdRing" stroke-dasharray="0 113"/></svg><div><b id="tdDone">–</b><small>updated today</small></div></div></div>' +
+    '<div class="tdc">' + SEC.map(s => '<button type="button" class="tdk" data-go="td-' + s.id + '" style="--c:' + s.c + '"><i>' + s.ic + '</i><b data-to="' + s.list.length + '">' + (matchMedia('(prefers-reduced-motion:reduce)').matches ? fmtN(s.list.length) : '0') + '</b><small>' + esc(s.t) + '</small></button>').join('') + '</div>' +
+    '<p class="tdl" id="tdLine">' + (todo ? '<b>' + todo + '</b> follow-up' + (todo === 1 ? '' : 's') + ' to clear today. Start with the first one below.' : 'No follow-ups booked or missed. A good day to work through the not-contacted list.') + '</p>' +
+    SEC.map(s => '<section class="tds" id="td-' + s.id + '" style="--c:' + s.c + '"><div class="tdt"><span class="ti">' + s.ic + '</span><h2>' + esc(s.t) + '</h2><span class="tn">' + fmtN(s.list.length) + '</span>' + (s.href && s.list.length ? '<a href="' + s.href + '">Open in table ›</a>' : '') + '</div>' +
+      (s.list.length ? '<div class="tdrs" data-sec="' + s.id + '">' + s.list.slice(0, 8).map(r => row(r, s)).join('') + '</div>' + (s.list.length > 8 ? '<button type="button" class="tdm" data-more="' + s.id + '">Show ' + Math.min(42, s.list.length - 8) + ' more' + (s.list.length > 50 ? ' (50 of ' + fmtN(s.list.length) + ')' : '') + '</button>' : '') : '<div class="tde">' + esc(s.e) + '</div>') + '</section>').join('');
+  box.querySelectorAll('.tdk b[data-to]').forEach(b => { const to = +b.dataset.to; if (!to || b.textContent !== '0') return; const t0 = performance.now(); (function f(now) { const k = Math.min(1, (now - t0) / 600); b.textContent = fmtN(Math.round(to * (1 - Math.pow(1 - k, 3)))); if (k < 1) requestAnimationFrame(f); })(t0); });
+  box.querySelectorAll('.tdk').forEach(b => { b.onclick = () => { const e = $(b.dataset.go); if (e) e.scrollIntoView({behavior: 'smooth', block: 'start'}); }; });
+  box.querySelectorAll('.tdm').forEach(b => { b.onclick = () => { const s = SEC.find(x => x.id === b.dataset.more), w = box.querySelector('.tdrs[data-sec="' + s.id + '"]'); w.innerHTML = s.list.slice(0, 50).map(r => row(r, s)).join(''); b.remove(); }; });
+  box.onclick = e => { const n = e.target.closest('.tdn'); if (n) { const r = allRows.find(x => String(x.ID) === n.dataset.id); if (r) openEdit(r); } };
+  tdProgress(todo);
+}
+async function tdProgress(todo) {
+  let items = TD.act;
+  if (!items || Date.now() - TD.actAt > 30000) { try { const j = await (await fetch('api.php?action=activity&limit=100', {credentials: 'same-origin'})).json(); if (j && j.ok) { if (typeof mergeAV === 'function') mergeAV(j); items = TD.act = j.items || []; TD.actAt = Date.now(); } } catch (e) {} }
+  const d = $('tdDone'); if (!d || !items) return;
+  const T = todayStr(), n = items.filter(e => !e.type && e.user === ME && String(e.at || '').slice(0, 10) === T).length;
+  d.textContent = n; const ring = $('tdRing'); if (ring) { const tot = n + todo, k = tot ? n / tot : 1; ring.setAttribute('stroke-dasharray', (113 * k).toFixed(1) + ' 113'); }
+  const p = $('tdP'); if (p) p.title = n + ' deal update' + (n === 1 ? '' : 's') + ' saved today · ' + todo + ' follow-up' + (todo === 1 ? '' : 's') + ' still to clear';
+}
+
 function selHtml(param, label, opts, cur, blank, multi) {
   if (multi) {
     const cs = cur ? String(cur).split(MS) : [];
