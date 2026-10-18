@@ -69,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
         session_regenerate_id(true);
         $_SESSION['auth'] = true;
         $_SESSION['user'] = $who;
+        $_SESSION['welcome'] = 1;
         try { log_event('login'); } catch (Throwable $e) {}
         $_SESSION['csrf'] = bin2hex(random_bytes(16));
         header('Location: ' . self_dir_url());
@@ -349,11 +350,11 @@ body.lg{margin:0;min-height:100vh;display:grid;place-items:center;padding:16px;b
   }
   function win(url) {
     det = false; foc = 'win'; mk.setAttribute('class', 'mk win');
-    if (tg) { tg.className = 'tag win'; tg.textContent = 'Yayy! It’s you! Welcome back 🎉'; }
+    if (tg) { tg.className = 'tag win'; tg.textContent = 'It’s you! Come on in 🐒'; }
     go.classList.remove('busy'); go.innerHTML = '<b>Welcome! ✓</b>';
     var er = f.querySelector('.err'); if (er) er.remove();
-    if (!reduce0) confetti();
-    setTimeout(function () { location.href = url; }, reduce0 ? 500 : 1900);
+    if (!reduce0) { card.style.transition = 'opacity .5s ease, transform .5s ease'; document.body.style.transition = 'background .5s ease'; setTimeout(function () { card.style.opacity = '0'; card.style.transform = 'translateY(-14px) scale(.985)'; document.body.style.background = '#2a0f63'; }, 180); }
+    setTimeout(function () { location.href = url; }, reduce0 ? 300 : 760);
   }
   function lose(msg) {
     busy = false; go.classList.remove('busy'); go.innerHTML = goHtml; pw.value = '';
@@ -1213,6 +1214,12 @@ a.wapp{display:inline-flex;align-items:center;justify-content:center;flex:none;w
 .lst .pkg .pkc.all{margin-bottom:4px;border-bottom:0}
 @media (max-width:700px){.lst .pkc>a{grid-template-columns:34px minmax(0,1fr) 54px;padding-left:44px}.lst .pkc .bar{display:none}.lst .pkc .ct{grid-column:3}}
 </style>
+<?php $welcome = !empty($_SESSION['welcome']); unset($_SESSION['welcome']); ?>
+<?php if ($welcome) { ?>
+<style>#ppwel{position:fixed;inset:0;z-index:10000;background:radial-gradient(120% 90% at 50% 36%,#8b3dff 0,#5b21b6 38%,#2a0f63 72%,#150736 100%);animation:ppwFail .5s 9s forwards}@keyframes ppwFail{to{opacity:0;visibility:hidden}}</style>
+<div id="ppwel" aria-hidden="true"></div>
+<?php } ?>
+<script>window.__ppWelcome = <?= $welcome ? 'true' : 'false' ?>;</script>
 <div class="shell" id="shell">
 <aside class="side" id="side">
   <a class="brand" href="#/"><span class="logo" id="logoBtn" title="Show / hide the side menu" role="button" tabindex="0" aria-label="Show or hide the side menu"><span class="lg-mark sbm" aria-hidden="true"><i></i><i></i><i></i><i></i></span></span><span class="t">Pranav Pipeline</span></a>
@@ -1266,6 +1273,7 @@ a.wapp{display:inline-flex;align-items:center;justify-content:center;flex:none;w
         <button type="button" role="menuitem" data-a="profile"><i>👤</i>Your profile</button>
         <button type="button" role="menuitem" data-a="pwd"><i>🔑</i>Change password</button>
         <button type="button" role="menuitem" data-a="wa"><i>💬</i><span id="waMode">WhatsApp opens in: Browser tab</span></button>
+        <button type="button" role="menuitem" data-a="monkey"><i>🐒</i><span id="monkeyMode">Monkey: roaming 🐒 (tap to rest)</span></button>
         <?php if (user_scope() === null) { ?><button type="button" role="menuitem" data-a="usage"><i>📊</i>Usage (who uses what)</button><?php } ?>
         <a role="menuitem" href="#/reports/activity" data-a="act"><i>🕵️</i><?= user_scope() !== null ? 'Your activity' : 'Activity log' ?></a>
         <a role="menuitem" href="#/master/sheet?f=stale" data-a="stale"><i>⏰</i>Follow-up overdue</a>
@@ -3854,6 +3862,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     const a = it.dataset.a; shut();
     if (a === 'profile') openProfile(); else if (a === 'pwd') openPwd(); else if (a === 'usage') openUsage();
     else if (a === 'wa') { try { localStorage.setItem(WA_KEY, waMode() === 'app' ? 'web' : 'app'); } catch (x) {} paintWaMode(); toastWa(); }
+    else if (a === 'monkey') { if (window.__monkeyLife) window.__monkeyLife.toggle(); }
     else if (a === 'search') { const s = g('gsearch'); if (s) { s.focus(); s.select(); } }
     else if (a === 'refresh') g('btnRefresh').click();
   });
@@ -5815,10 +5824,573 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     if (dl) { e.preventDefault(); const r = allRows.find(x => String(x.ID) === dl.dataset.deal); if (r) { S.deal = r; send('status of deal ' + r.ID); } }
   });
 
+  window.__mbFACE = FACE;
   window.__monkeyBot = {parseFilters: parseFilters, valueDict: valueDict, doCount: doCount, brain: brain, understand: understand, findDeals: findDeals, nlDate: nlDate, state: S, parseEdit: parseEdit, fixTok: fixTok};
   setTimeout(() => { if (panel.hidden) openB.classList.add('hint'); setTimeout(() => openB.classList.remove('hint'), 4200); }, 2500);
 })();
 
 </script>
 <!--/MONKEY-->
+<!--LIFE-->
+<script>
+(function () {
+  'use strict';
+  if (window.__monkeyLife) return;
+  const D = document, g = id => D.getElementById(id);
+  const FACE = window.__mbFACE || '';
+  const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const LS = 'pp_monkey_rest';
+  let rest = false; try { rest = localStorage.getItem(LS) === '1'; } catch (e) {}
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const small = () => innerWidth <= 600;
+
+  /* ================= the monkey (SVG rig) ================= */
+  function rig(extra) {
+    const fur = '#8a5632';
+    return '<svg class="mkr mbx' + (extra ? ' ' + extra : '') + '" viewBox="0 0 160 205" aria-hidden="true"><g class="all">' +
+      '<g class="tail"><path d="M98 172C146 178 158 130 134 112C124 103 132 90 146 97" fill="none" stroke="' + fur + '" stroke-width="11" stroke-linecap="round"/><circle cx="146" cy="97" r="6.5" fill="#f4d5b0"/></g>' +
+      '<g class="lgL"><path d="M64 158L60 184" stroke="' + fur + '" stroke-width="17" stroke-linecap="round"/><ellipse cx="55" cy="194" rx="17" ry="9" fill="#9a6338"/><ellipse cx="54" cy="196" rx="10" ry="4" fill="#f0c7a0"/></g>' +
+      '<g class="lgR"><path d="M96 158L100 184" stroke="' + fur + '" stroke-width="17" stroke-linecap="round"/><ellipse cx="105" cy="194" rx="17" ry="9" fill="#9a6338"/><ellipse cx="106" cy="196" rx="10" ry="4" fill="#f0c7a0"/></g>' +
+      '<g class="bod"><ellipse cx="80" cy="134" rx="34" ry="42" fill="#9a6338"/><ellipse cx="80" cy="142" rx="21" ry="29" fill="#f4d5b0"/></g>' +
+      '<g class="hd"><g transform="translate(80 60) scale(.56) translate(-100 -102)">' + FACE + '</g></g>' +
+      '<g class="arL"><path d="M54 106C37 122 30 140 34 158" fill="none" stroke="' + fur + '" stroke-width="14" stroke-linecap="round"/><circle cx="34" cy="161" r="10.5" fill="#9a6338"/><circle cx="34" cy="163" r="5.5" fill="#f0c7a0" opacity=".7"/></g>' +
+      '<g class="arR"><path d="M106 106C123 122 130 140 126 158" fill="none" stroke="' + fur + '" stroke-width="14" stroke-linecap="round"/><circle cx="126" cy="161" r="10.5" fill="#9a6338"/><circle cx="126" cy="163" r="5.5" fill="#f0c7a0" opacity=".7"/><path class="bn" d="M116 170c-9-4-12-20-3-29c3-3 7-2 7 1c-4 9 0 17 9 21c3 2 2 6-1 7z" fill="#fcd34d" stroke="#b45309" stroke-width="1.6" stroke-linejoin="round"/></g>' +
+      '<text class="zz" x="118" y="30" font-size="24" font-weight="800" fill="#7c5cf6">z</text><text class="zz z2" x="134" y="12" font-size="30" font-weight="800" fill="#a78bfa">Z</text>' +
+      '</g></svg>';
+  }
+
+  const CSS = '' +
+    '#mkLife{position:fixed;left:0;top:0;z-index:40;pointer-events:none;will-change:transform;transform-origin:50% 100%}' +
+    '#mkLife[hidden]{display:none}#mkLife.paused *{animation-play-state:paused!important}' +
+    '#mkLife .mkr,.ppw-mk .mkr{display:block;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 8px 8px rgba(40,20,90,.28))}' +
+    '#mkLife .mkr .all{pointer-events:auto;cursor:pointer}#mkLife.drag .mkr .all{cursor:grabbing}' +
+    '.mkr g{transform-box:view-box}' +
+    '.mkr .tail{transform-origin:98px 172px;animation:mkTail 2.8s ease-in-out infinite}@keyframes mkTail{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(10deg)}}' +
+    '.mkr .arL{transform-origin:54px 106px;transition:transform .25s}.mkr .arR{transform-origin:106px 106px;transition:transform .25s}' +
+    '.mkr .lgL{transform-origin:64px 158px;transition:transform .25s}.mkr .lgR{transform-origin:96px 158px;transition:transform .25s}' +
+    '.mkr .hd{transform-origin:80px 94px;transition:transform .3s}.mkr .all{transform-origin:80px 200px;transition:transform .25s}' +
+    '.mkr .bod{transform-origin:80px 176px;animation:mkBreath 3.2s ease-in-out infinite}@keyframes mkBreath{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.03)}}' +
+    '.mkr .bn,.mkr .zz{display:none}' +
+    '.mkr .mbp{transform:translate(calc(var(--ex,0)*1px),calc(var(--ey,0)*1px))}' +
+    /* walking */
+    '.mkr.walk .all{animation:mkBob .27s ease-in-out infinite alternate}@keyframes mkBob{from{transform:translateY(0)}to{transform:translateY(-5px)}}' +
+    '.mkr.walk .lgL{animation:mkLegA .54s ease-in-out infinite alternate}.mkr.walk .lgR{animation:mkLegA .54s ease-in-out infinite alternate-reverse}@keyframes mkLegA{from{transform:rotate(-28deg)}to{transform:rotate(28deg)}}' +
+    '.mkr.walk .arL{animation:mkArmA .54s ease-in-out infinite alternate-reverse}.mkr.walk .arR{animation:mkArmB .54s ease-in-out infinite alternate}@keyframes mkArmA{from{transform:rotate(-26deg)}to{transform:rotate(26deg)}}@keyframes mkArmB{from{transform:rotate(26deg)}to{transform:rotate(-26deg)}}' +
+    '.mkr.walk .tail{animation-duration:.9s}' +
+    /* leaping / hanging */
+    '.mkr.leap .arL{transform:rotate(158deg)}.mkr.leap .arR{transform:rotate(-158deg)}.mkr.leap .lgL{transform:rotate(22deg)}.mkr.leap .lgR{transform:rotate(-22deg)}.mkr.leap .tail{animation-duration:.5s}' +
+    /* climbing */
+    '.mkr.climb .arL{animation:mkClA .6s ease-in-out infinite alternate}.mkr.climb .arR{animation:mkClB .6s ease-in-out infinite alternate}@keyframes mkClA{from{transform:rotate(138deg)}to{transform:rotate(178deg)}}@keyframes mkClB{from{transform:rotate(-178deg)}to{transform:rotate(-138deg)}}' +
+    '.mkr.climb .lgL{animation:mkLgA .6s ease-in-out infinite alternate}.mkr.climb .lgR{animation:mkLgA .6s ease-in-out infinite alternate-reverse}@keyframes mkLgA{from{transform:rotate(-8deg)}to{transform:rotate(24deg)}}' +
+    '.mkr.cling .arL{transform:rotate(168deg)}.mkr.cling .arR{transform:rotate(-168deg)}.mkr.cling .lgL{transform:rotate(12deg)}.mkr.cling .lgR{transform:rotate(-12deg)}' +
+    /* sitting */
+    '.mkr.sit .all,.mkr.sleep .all{transform:translateY(22px)}.mkr.sit .lgL,.mkr.sleep .lgL{transform:rotate(60deg)}.mkr.sit .lgR,.mkr.sleep .lgR{transform:rotate(-60deg)}.mkr.sit .arL,.mkr.sleep .arL{transform:rotate(14deg)}.mkr.sit .arR,.mkr.sleep .arR{transform:rotate(-14deg)}' +
+    /* gestures */
+    '.mkr.wave .arR{animation:mkWave .45s ease-in-out infinite alternate}@keyframes mkWave{from{transform:rotate(-132deg)}to{transform:rotate(-176deg)}}' +
+    '.mkr.scratch .arR{animation:mkScr .22s ease-in-out infinite alternate}@keyframes mkScr{from{transform:rotate(-168deg)}to{transform:rotate(-184deg)}}.mkr.scratch .hd{transform:rotate(-6deg)}' +
+    '.mkr.eat .arR{transform:rotate(-150deg)}.mkr.eat .bn{display:block}.mkr.eat .hd{animation:mkChew .26s ease-in-out infinite alternate}@keyframes mkChew{from{transform:rotate(-2.5deg) translateY(0)}to{transform:rotate(2.5deg) translateY(1.5px)}}' +
+    '.mkr.yawn .mbm1{display:none}.mkr.yawn .mbm4{display:block;animation:mkYawn 1.5s ease-in-out both;transform-box:fill-box;transform-origin:50% 0}@keyframes mkYawn{0%{transform:scaleY(.1)}35%,70%{transform:scaleY(1.3)}100%{transform:scaleY(.1)}}.mkr.yawn .mbe{transform:scaleY(.25)}.mkr.yawn .arR{transform:rotate(-160deg)}' +
+    '.mkr.talk .mbm1{display:none}.mkr.talk .mbm4{display:block;animation:mkTalk .22s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 0}@keyframes mkTalk{from{transform:scaleY(.25)}to{transform:scaleY(.85)}}' +
+    '.mkr.sleep .mbe{animation:none;transform:scaleY(.1)}.mkr.sleep .hd{transform:rotate(16deg) translateY(2px)}.mkr.sleep .zz{display:block;animation:mkZ 2.4s ease-in-out infinite}.mkr.sleep .z2{animation-delay:1.2s}@keyframes mkZ{0%{opacity:0;transform:translateY(8px)}30%,70%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}' +
+    '.mkr.drag .arR{transform:rotate(-176deg)}.mkr.drag .arL{animation:mkDrA .5s ease-in-out infinite alternate}@keyframes mkDrA{from{transform:rotate(6deg)}to{transform:rotate(34deg)}}.mkr.drag .lgL{animation:mkDg .7s ease-in-out infinite alternate}.mkr.drag .lgR{animation:mkDg .7s ease-in-out infinite alternate-reverse}@keyframes mkDg{from{transform:rotate(-16deg)}to{transform:rotate(16deg)}}.mkr.drag .mbm1{display:none}.mkr.drag .mbm4{display:block}' +
+    '.mkr.cheer .arL{transform:rotate(160deg)}.mkr.cheer .arR{transform:rotate(-160deg)}.mkr.cheer .all{animation:mkHop .38s ease-out 4 alternate}@keyframes mkHop{from{transform:translateY(0)}to{transform:translateY(-16px)}}' +
+    '.mkr.land .all{animation:mkLand .3s ease-out}@keyframes mkLand{0%{transform:translateY(0) scaleY(1)}35%{transform:translateY(8px) scaleY(.88)}100%{transform:none}}' +
+    /* speech bubble */
+    '.mkbub{position:absolute;left:50%;bottom:calc(100% + 2px);transform:translateX(-50%) scale(.6);transform-origin:50% 100%;width:max-content;max-width:210px;padding:8px 12px;border-radius:14px;background:var(--card,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);box-shadow:0 10px 26px rgba(40,20,100,.3);font:600 13px/1.35 system-ui,-apple-system,Segoe UI,sans-serif;opacity:0;pointer-events:none;transition:opacity .18s,transform .28s cubic-bezier(.3,1.5,.5,1);z-index:2}' +
+    '.mkbub.on{opacity:1;transform:translateX(-50%) scale(1)}.mkbub::after{content:"";position:absolute;left:50%;bottom:-7px;width:12px;height:12px;background:var(--card,#fff);border-right:1px solid var(--line,#ddd);border-bottom:1px solid var(--line,#ddd);transform:translateX(-50%) rotate(45deg)}' +
+    '.mkbub.l{left:-8px;transform:scale(.6);transform-origin:20% 100%}.mkbub.l.on{transform:scale(1)}.mkbub.l::after{left:34px}.mkbub.r{left:auto;right:-8px;transform:scale(.6);transform-origin:80% 100%}.mkbub.r.on{transform:scale(1)}.mkbub.r::after{left:auto;right:28px;transform:rotate(45deg)}' +
+    '.mkbub.below{bottom:auto;top:calc(100% - 8px)}.mkbub.below::after{bottom:auto;top:-7px;transform:translateX(-50%) rotate(225deg)}' +
+    'body.mklife .mbl{display:none!important}' +
+    '@media(max-width:600px){#mkLife.hide{display:none}}' +
+    '@media(prefers-reduced-motion:reduce){.mkr *{animation:none!important}}';
+
+  const st = D.createElement('style'); st.textContent = CSS; D.head.appendChild(st);
+
+  /* ================= state ================= */
+  const el = D.createElement('div'); el.id = 'mkLife';
+  el.innerHTML = '<div class="mkbub" id="mkBub" role="status" aria-live="polite"></div>' + rig('');
+  D.body.appendChild(el); D.body.classList.add('mklife');
+  const svg = el.querySelector('.mkr'), bub = g('mkBub');
+  const openB = g('mbOpen'), panel = g('mbPanel');
+  let W = 96, H = 123, SC = 1;
+  const P = {x: innerWidth - 100, y: innerHeight - 4, s: 1};
+  let face = 1, rot = 0, pose = '', fx = '', moodCls = '', loc = 'ground', perchEl = null, perchTop = 0, edgeSide = 'right';
+  let tok = 0, chatOpen = false, dragging = false, lastAct = Date.now(), asleep = false, alive = true, started = false, welcomeOn = false;
+  const sl = new Set();
+
+  function size() { SC = small() ? .8 : 1; W = 96 * SC; H = 123 * SC; el.style.width = W + 'px'; el.style.height = H + 'px'; }
+  const ground = () => innerHeight - 4;
+  function render() {
+    el.style.transform = 'translate3d(' + (P.x - W / 2).toFixed(1) + 'px,' + (P.y - H).toFixed(1) + 'px,0)' + (P.s !== 1 ? ' scale(' + P.s.toFixed(3) + ')' : '');
+    svg.style.transform = 'scaleX(' + face + ') rotate(' + rot.toFixed(1) + 'deg)';
+  }
+  function paint() { svg.setAttribute('class', ('mkr mbx ' + pose + ' ' + fx + ' ' + moodCls).replace(/\s+/g, ' ').trim()); }
+  function setPose(p) { pose = p || ''; paint(); }
+  function setFx(f, ms) { fx = f || ''; paint(); clearTimeout(setFx.t); if (f && ms) setFx.t = setTimeout(() => { fx = ''; paint(); }, ms); }
+  function setMood(m, ms) { moodCls = m && m !== 'idle' ? m : ''; paint(); clearTimeout(setMood.t); if (moodCls && ms) setMood.t = setTimeout(() => { moodCls = ''; paint(); }, ms); }
+  function cancel() { tok++; Array.from(sl).forEach(f => f()); }
+  function sleep(ms) {
+    const my = tok;
+    return new Promise(res => { const t = setTimeout(done, ms); function done() { clearTimeout(t); sl.delete(done); res(my === tok); } sl.add(done); });
+  }
+  function tween(ms, step) {
+    const my = tok;
+    return new Promise(res => {
+      let acc = 0, last = performance.now();
+      (function f(now) {
+        if (my !== tok) { res(false); return; }
+        const dt = Math.min(50, now - last); last = now; if (!D.hidden) acc += dt;
+        const k = Math.min(1, acc / ms); step(k);
+        if (k >= 1) { res(true); return; }
+        requestAnimationFrame(f);
+      })(last);
+    });
+  }
+
+  /* ================= speech bubble ================= */
+  function say(html, ms) {
+    bub.innerHTML = html; bub.className = 'mkbub';
+    const cls = [P.x < 130 ? 'l' : P.x > innerWidth - 130 ? 'r' : '', P.y - H < 80 ? 'below' : ''].filter(Boolean).join(' ');
+    bub.className = 'mkbub ' + cls; void bub.offsetWidth; bub.classList.add('on');
+    clearTimeout(say.t); say.t = setTimeout(hideBub, ms || 3400);
+  }
+  function hideBub() { bub.classList.remove('on'); }
+
+  /* ================= what is in the way? ================= */
+  function visibleRects(sel) {
+    const out = [];
+    D.querySelectorAll(sel).forEach(n => {
+      const r = n.getBoundingClientRect();
+      if (r.width < 4 || r.height < 4 || r.bottom < 0 || r.top > innerHeight || r.right < 0 || r.left > innerWidth) return;
+      out.push(r);
+    });
+    return out;
+  }
+  let blockCache = null, blockAt = 0;
+  function blockers() {
+    const now = Date.now();
+    if (blockCache && now - blockAt < 350) return blockCache;
+    blockAt = now;
+    blockCache = visibleRects('.tablewrap,table,input,textarea,select,.udrop:not([hidden]),#mbPanel:not([hidden]),.side');
+    return blockCache;
+  }
+  function freeAt(x, y) {
+    const l = x - W * .45, r = x + W * .45, t = y - H, b = y;
+    if (l < 0 || r > innerWidth || t < 6 || b > innerHeight + 2) return false;
+    return !blockers().some(q => !(q.right < l || q.left > r || q.bottom < t || q.top > b));
+  }
+  function pathFree(x0, y0, x1, y1) {
+    const n = Math.max(2, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 50));
+    for (let i = 0; i <= n; i++) if (!freeAt(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n)) return false;
+    return true;
+  }
+  const uiBusy = () => !!D.querySelector('.pfov:not([hidden]),.pkov:not([hidden]),.gqov:not([hidden]),#modal:not([hidden]),.wapop:not([hidden])');
+
+  /* ================= movement ================= */
+  async function walkTo(x, speed) {
+    const x0 = P.x, d = Math.abs(x - x0);
+    if (d < 6) return true;
+    face = x > x0 ? -1 : 1; setPose('walk');
+    const ok = await tween(d / (speed || 92) * 1000, k => { P.x = x0 + (x - x0) * k; render(); });
+    if (ok) setPose('');
+    return ok;
+  }
+  async function leapTo(x, y, arc, spin) {
+    const x0 = P.x, y0 = P.y, s0 = P.s, d = Math.hypot(x - x0, y - y0);
+    face = x > x0 ? -1 : 1; if (Math.abs(x - x0) < 4) face = face || 1;
+    setPose('leap'); hideBub();
+    const ok = await tween(clamp(d * 1.25, 650, 1500), k => {
+      P.x = x0 + (x - x0) * k; P.y = y0 + (y - y0) * k - 4 * arc * k * (1 - k); P.s = s0 + (1 - s0) * k;
+      rot = spin ? spin * 360 * k * -face : Math.sin(Math.PI * k) * 8 * -face; render();
+    });
+    rot = 0; P.s = 1; render();
+    if (ok) { setPose(''); setFx('land', 320); }
+    return ok;
+  }
+  async function climbTo(y) {
+    const y0 = P.y; setPose('climb');
+    const ok = await tween(Math.abs(y - y0) / 62 * 1000, k => { P.y = y0 + (y - y0) * k; render(); });
+    if (ok) setPose('cling');
+    return ok;
+  }
+  const nearHome = () => Math.abs(P.x - (innerWidth - 80)) < 24 && Math.abs(P.y - ground()) < 10;
+  async function goHome() {
+    loc = 'ground';
+    const hx = innerWidth - (small() ? 56 : 82), hy = ground();
+    if (P.y < hy - 40 || Math.abs(P.x - hx) > 360) { if (!await leapTo(hx, hy, 90, 0)) return; } else if (!await walkTo(hx)) return;
+    face = 1; render();
+  }
+
+  /* ================= what the monkey does ================= */
+  async function roamGround() {
+    for (let i = 0; i < 10; i++) {
+      const x = rand(W, innerWidth - W), y = ground();
+      if (Math.abs(x - P.x) < 120) continue;
+      if (!pathFree(P.x, y, x, y)) continue;
+      loc = 'ground'; await walkTo(x);
+      if (Math.random() < .35 && !chatOpen) await lookAround();
+      return;
+    }
+    await doIdle(true);
+  }
+  async function toGround() {
+    for (let i = 0; i < 10; i++) {
+      const x = clamp(P.x + rand(-300, 300), W, innerWidth - W), y = ground();
+      if (!freeAt(x, y)) continue;
+      loc = 'ground'; perchEl = null; await leapTo(x, y, 70, Math.random() < .3 ? 1 : 0); return;
+    }
+    loc = 'ground'; perchEl = null; await leapTo(innerWidth - 82, ground(), 70, 0);
+  }
+  async function perchOn() {
+    const els = Array.from(D.querySelectorAll('.kpi,a.tile,.hero')).filter(n => { const r = n.getBoundingClientRect(); return r.width > 110 && r.top > H + 16 && r.top < innerHeight - 160 && r.bottom > 0 && r.right > 0 && r.left < innerWidth; });
+    for (let i = 0; i < 8 && els.length; i++) {
+      const n = pick(els), r = n.getBoundingClientRect();
+      if (r.width < W + 30) continue;
+      const x = rand(r.left + W / 2 + 6, r.right - W / 2 - 6), y = r.top + 3;
+      if (!freeAt(x, y)) continue;
+      const ok = await leapTo(x, y, rand(90, 170), Math.random() < .35 ? 1 : 0);
+      if (ok) { loc = 'perch'; perchEl = n; perchTop = r.top; face = Math.random() < .5 ? 1 : -1; render(); }
+      return;
+    }
+    await doIdle(true);
+  }
+  async function edgeOn() {
+    const side = Math.random() < .75 ? 'right' : 'left';
+    const x = side === 'right' ? innerWidth - W * .5 - 2 : W * .5 + 2;
+    const y = clamp(ground() - rand(60, 260), H + 20, ground());
+    if (!pathFree(x, ground(), x, y)) { await roamGround(); return; }
+    face = side === 'right' ? -1 : 1;
+    if (await leapTo(x, ground() - 30, 80, 0)) { loc = 'edge'; edgeSide = side; face = side === 'right' ? -1 : 1; setPose('cling'); render(); await climbTo(y); }
+  }
+  async function climbMove() {
+    for (let i = 0; i < 6; i++) {
+      const y = rand(H + 20, ground());
+      if (Math.abs(y - P.y) < 70 || !pathFree(P.x, P.y, P.x, y)) continue;
+      await climbTo(y); return;
+    }
+    await toGround();
+  }
+  async function lookAround() {
+    const seq = [[-5, 0], [5, 0], [0, -4], [4, 2], [0, 0]];
+    for (const s of seq) { svg.style.setProperty('--ex', s[0]); svg.style.setProperty('--ey', s[1]); if (!await sleep(520)) break; }
+    lastLookTrack = 0;
+  }
+  const IDLES = [
+    {p: 'scratch', t: 2600, say: ['Ooh ooh, an itch 🙈', 'Hmm, where was I… 🤔']},
+    {p: 'eat', t: 3800, say: ['Nom nom nom 🍌', 'Banana break! 🍌']},
+    {p: 'yawn', t: 1600, say: ['Aaaah-hm… 🥱']},
+    {p: 'wave', t: 2200, say: ['Hi there! 👋', 'Ooh ooh! 🐒']},
+    {p: 'sit', t: 4200, say: []}
+  ];
+  async function doIdle(sit) {
+    if (Date.now() - lastAct > 28000 && loc !== 'edge') { await napTime(); return; }
+    const it = (sit && Math.random() < .5) ? IDLES[4] : pick(IDLES.slice(0, 5));
+    if (loc === 'edge' && it.p === 'sit') { await sleep(1500); return; }
+    const keep = loc === 'edge' ? 'cling' : '';
+    if (it.p === 'sit' && loc === 'edge') return;
+    setPose(it.p); if (it.say.length && Math.random() < .7) say(pick(it.say), it.t + 600);
+    if (await sleep(it.t)) setPose(keep);
+  }
+  async function napTime() {
+    asleep = true; setPose('sleep'); say('Zzz… 😴', 2600);
+    const my = tok;
+    while (my === tok && Date.now() - lastAct > 5000 && !D.hidden) { if (!await sleep(500)) break; }
+    asleep = false;
+  }
+  function wake() {
+    if (!asleep) return;
+    asleep = false; cancel(); setPose('yawn'); say('Oh! You’re back 👀', 2400);
+    setTimeout(() => { if (!chatOpen && !dragging) setPose(loc === 'edge' ? 'cling' : ''); }, 1500);
+  }
+
+  function blocked() { return rest || reduce || chatOpen || dragging || welcomeOn || uiBusy(); }
+  async function step() {
+    if (blocked()) { await sleep(600); return; }
+    const r = Math.random();
+    if (loc === 'ground') {
+      if (r < .38) await roamGround(); else if (r < .6) await perchOn(); else if (r < .74) await edgeOn(); else await doIdle(false);
+    } else if (loc === 'edge') {
+      if (r < .5) await climbMove(); else if (r < .82) await toGround(); else await doIdle(false);
+    } else {
+      if (r < .45) await doIdle(true); else if (r < .62) await perchWalk(); else await toGround();
+    }
+    await sleep(rand(600, 2000));
+  }
+  async function perchWalk() {
+    if (!perchEl) { await toGround(); return; }
+    const r = perchEl.getBoundingClientRect();
+    const x = rand(r.left + W / 2 + 6, r.right - W / 2 - 6);
+    if (freeAt(x, P.y)) await walkTo(x, 70); else await doIdle(true);
+  }
+  async function loop() {
+    while (alive) {
+      if (D.hidden || !started) { await sleep(700); continue; }
+      try { await step(); } catch (e) { await sleep(1200); }
+    }
+  }
+
+  /* ================= being parked (resting / busy) ================= */
+  async function park() {
+    cancel(); await sleep(30);
+    await goHome();
+    if (!chatOpen && !dragging && rest) setPose('sit');
+  }
+
+  /* ================= cursor, activity ================= */
+  let lastLookTrack = 0;
+  D.addEventListener('mousemove', e => {
+    lastAct = Date.now(); if (asleep) wake();
+    const now = performance.now(); if (now - lastLookTrack < 40) return; lastLookTrack = now;
+    const dx = e.clientX - P.x, dy = e.clientY - (P.y - H * .72);
+    svg.style.setProperty('--ex', clamp(dx / 38, -6, 6).toFixed(2)); svg.style.setProperty('--ey', clamp(dy / 38, -5, 5).toFixed(2));
+  }, {passive: true});
+  ['keydown', 'pointerdown', 'wheel', 'touchstart'].forEach(ev => D.addEventListener(ev, () => { lastAct = Date.now(); if (asleep) wake(); }, {passive: true}));
+
+  /* ================= touching the monkey ================= */
+  let down = null, hoverT = 0;
+  svg.addEventListener('pointerdown', e => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    down = {x: e.clientX, y: e.clientY, moved: false, id: e.pointerId}; try { svg.setPointerCapture(e.pointerId); } catch (x) {}
+    e.preventDefault();
+  });
+  svg.addEventListener('pointermove', e => {
+    if (!down) return;
+    if (!down.moved && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 7) {
+      down.moved = true; dragging = true; cancel(); asleep = false; el.classList.add('drag'); loc = 'air'; perchEl = null;
+      setPose('drag'); setMood('conf'); say('Eek! Put me down! 🙈', 2200);
+    }
+    if (down.moved) {
+      face = 1; P.s = 1; P.x = clamp(e.clientX, W / 2, innerWidth - W / 2); P.y = clamp(e.clientY + H - 10, H, innerHeight + 40);
+      rot = clamp((e.clientX - down.x) * .12, -22, 22) * .5; render();
+    }
+  });
+  const upFn = e => {
+    if (!down) return;
+    const d = down; down = null;
+    try { svg.releasePointerCapture(d.id); } catch (x) {}
+    if (!d.moved) { openB.click(); return; }
+    dragging = false; el.classList.remove('drag'); drop();
+  };
+  svg.addEventListener('pointerup', upFn); svg.addEventListener('pointercancel', upFn);
+  async function drop() {
+    cancel(); const y0 = P.y, x0 = P.x, gy = ground();
+    setMood('happy', 2200); setPose('leap'); say('Wheeee! 🎢', 1800);
+    const fall = Math.max(260, Math.sqrt(Math.max(0, gy - y0)) * 38);
+    let ok = await tween(fall, k => { P.y = y0 + (gy - y0) * k * k; rot = (1 - k) * rot; render(); });
+    if (ok) { rot = 0; setPose(''); setFx('land', 320); loc = 'ground'; render(); await sleep(900); if (ok && rest) park(); }
+  }
+  svg.addEventListener('pointerenter', () => {
+    if (dragging || chatOpen) return;
+    clearTimeout(hoverT); hoverT = setTimeout(() => { if (!dragging && !chatOpen) { say(pick(['Psst — click me if you need help 🍌', 'Tickle tickle! 😆', 'Drag me around if you like 🐒', 'Need a hand? Click me!']), 3200); setMood('happy', 2500); } }, 1300);
+  });
+  svg.addEventListener('pointerleave', () => clearTimeout(hoverT));
+
+  /* ================= chat panel placement ================= */
+  function placePanel() {
+    const p = panel;
+    if (small()) { p.style.left = p.style.top = p.style.right = p.style.bottom = p.style.height = ''; return; }
+    const pw = Math.min(396, innerWidth - 24), ph = Math.min(620, innerHeight - 128);
+    let left, top, org;
+    const roomR = innerWidth - (P.x + W / 2 + 10) - 12, roomL = P.x - W / 2 - 10 - 12;
+    if (roomL >= pw) { left = P.x - W / 2 - 10 - pw; org = '100% 100%'; top = clamp(P.y - ph + 10, 12, innerHeight - ph - 12); }
+    else if (roomR >= pw) { left = P.x + W / 2 + 10; org = '0% 100%'; top = clamp(P.y - ph + 10, 12, innerHeight - ph - 12); }
+    else { left = clamp(P.x - pw / 2, 12, innerWidth - pw - 12); top = clamp(P.y - H - 10 - ph, 12, innerHeight - ph - 12); org = '50% 100%'; }
+    p.style.left = left + 'px'; p.style.top = top + 'px'; p.style.right = 'auto'; p.style.bottom = 'auto'; p.style.height = ph + 'px'; p.style.transformOrigin = org;
+  }
+  new MutationObserver(() => {
+    const open = !panel.hidden; if (open === chatOpen) return;
+    chatOpen = open;
+    if (open) {
+      cancel(); asleep = false; hideBub(); setPose(loc === 'edge' ? 'cling' : pose === 'sit' ? 'sit' : ''); setMood('happy', 2500);
+      face = (P.x < innerWidth / 2) ? -1 : 1; if (loc !== 'edge') { face = P.x < innerWidth / 2 ? -1 : 1; } render();
+      placePanel(); el.classList.add('hide');
+    } else {
+      el.classList.remove('hide'); lastAct = Date.now(); setMood('', 0); if (!rest) setPose(loc === 'edge' ? 'cling' : '');
+      if (rest) setPose('sit');
+    }
+  }).observe(panel, {attributes: true, attributeFilter: ['hidden']});
+  // bot mood -> monkey face; bot speaking -> monkey talks
+  const head = g('mbHead');
+  if (head) new MutationObserver(() => {
+    const m = (head.getAttribute('class') || '').replace('mbx', '').trim();
+    if (chatOpen) setMood(m === 'think' ? 'think' : m, m === 'think' ? 0 : 6500);
+  }).observe(head, {attributes: true, attributeFilter: ['class']});
+  const msgsEl = g('mbMsgs');
+  if (msgsEl) new MutationObserver(ms => {
+    ms.forEach(m => m.addedNodes.forEach(n => {
+      if (n.nodeType === 1 && n.classList.contains('mbr') && !n.classList.contains('me') && !n.querySelector('.mbty')) {
+        if (!chatOpen) return; const old = pose; setPose(pose === 'sit' ? 'sit talk' : 'talk'); setTimeout(() => { if (chatOpen) setPose(old); }, 1500);
+      }
+    }));
+  }).observe(msgsEl, {childList: true});
+
+  /* ================= reacting to what the user does ================= */
+  const toastEl = g('toast');
+  if (toastEl) new MutationObserver(() => {
+    if (toastEl.hidden || !toastEl.textContent) return;
+    const t = toastEl.textContent;
+    if (/not saved|fail|error|could not|couldn.t|wrong|unable|denied/i.test(t)) { setMood('cry', 3000); say('Oh no… 😢', 2600); }
+    else if (/saved|updated|done|success|added|copied|✓/i.test(t)) { setMood('happy', 2600); setFx('cheer', 1600); say(pick(['Yay! Nicely done 🎉', 'Ooh ooh! Saved! 🍌', 'That’s the way! 👏']), 2600); }
+  }).observe(toastEl, {attributes: true, attributeFilter: ['hidden']});
+  let lastRoute = 0;
+  addEventListener('hashchange', () => {
+    const h = location.hash, now = Date.now(); if (now - lastRoute < 6000 || chatOpen || dragging) return; lastRoute = now;
+    if (/f=(stale|notcontacted|paydue|docpend)/.test(h)) { setMood('conf', 3500); say(pick(['Oh dear, these need chasing! 😟', 'Lots to follow up… I’ll cheer you on 📣']), 3400); }
+    else if (/#\/reports/.test(h)) { setMood('happy', 2500); say('Ooh, reports! 📊', 2600); }
+  });
+
+  /* ================= watchdog ================= */
+  let wasBusy = false, wasHidden = false;
+  setInterval(() => {
+    const b = uiBusy(); if (b !== wasBusy) { wasBusy = b; if (b) { cancel(); hideBub(); if (loc !== 'ground' || !nearHome()) park(); } }
+    if (D.hidden !== wasHidden) { wasHidden = D.hidden; el.classList.toggle('paused', D.hidden); }
+    if (loc === 'perch' && perchEl && !dragging) {
+      const r = perchEl.getBoundingClientRect();
+      if (!perchEl.isConnected || Math.abs(r.top - perchTop) > 4 || r.bottom < 0 || r.top > innerHeight) { cancel(); say('Whoa! The ground moved! 🙈', 1800); toGround(); }
+    }
+  }, 500);
+  addEventListener('resize', () => {
+    size(); P.x = clamp(P.x, W / 2, innerWidth - W / 2); if (loc === 'ground') P.y = ground(); P.y = Math.min(P.y, ground()); render();
+    if (chatOpen) placePanel(); blockCache = null;
+  });
+
+  /* ================= rest switch ================= */
+  function paintMode() {
+    const m = g('monkeyMode'); if (m) m.textContent = rest || reduce ? 'Monkey: resting 😴 (tap to wake)' : 'Monkey: roaming 🐒 (tap to rest)';
+  }
+  function setRest(v) {
+    rest = !!v; try { localStorage.setItem(LS, rest ? '1' : '0'); } catch (e) {}
+    paintMode(); cancel(); asleep = false;
+    if (rest) { park(); say('Okay, I’ll rest here 😴', 2400); }
+    else { setPose(''); say('Yay, jungle time! 🌴', 2400); }
+  }
+  new MutationObserver(paintMode).observe(D.body, {childList: true, subtree: false});
+
+  /* ================= welcome cinematic ================= */
+  function firstName() {
+    let n = ''; try { n = String((typeof PROFILE !== 'undefined' && PROFILE.name) || (typeof ME !== 'undefined' && ME) || '').trim(); } catch (e) {}
+    n = n.split(/[_\s.\-0-9]+/)[0] || 'there'; return n.charAt(0).toUpperCase() + n.slice(1);
+  }
+  function leafCluster(n, seed, cols) {
+    let s = '';
+    for (let i = 0; i < n; i++) {
+      const a = -80 + (160 * i) / Math.max(1, n - 1) + ((i * seed) % 11) - 5, sc = .75 + ((i * seed) % 7) / 14;
+      s += '<g transform="rotate(' + a.toFixed(0) + ') scale(' + sc.toFixed(2) + ')"><path d="M0 0C-26 -34 -26 -92 0 -138C26 -92 26 -34 0 0Z" fill="' + cols[i % cols.length] + '"/><path d="M0 -4V-120" stroke="rgba(255,255,255,.18)" stroke-width="2.5"/></g>';
+    }
+    return s;
+  }
+  const GREENS = ['#14532d', '#166534', '#15803d', '#0f3d22', '#1a7a3c'];
+  const WCSS = '' +
+    '#ppwel{--hm:clamp(150px,29vh,250px);--r:0px;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden;cursor:pointer;user-select:none;-webkit-user-select:none}' +
+    '#ppwel *{box-sizing:border-box}' +
+    '.ppw-rays{position:absolute;left:50%;top:38%;width:240vmax;height:240vmax;margin:-120vmax 0 0 -120vmax;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.07) 0 6deg,transparent 6deg 18deg);-webkit-mask-image:radial-gradient(circle,#000 0,transparent 42%);mask-image:radial-gradient(circle,#000 0,transparent 42%);animation:ppwSpin 60s linear infinite}@keyframes ppwSpin{to{transform:rotate(360deg)}}' +
+    '.ppw-ff{position:absolute;width:6px;height:6px;border-radius:50%;background:#fde68a;box-shadow:0 0 12px 3px rgba(253,230,138,.8);animation:ppwFly 6s ease-in-out infinite alternate,ppwTw 1.8s ease-in-out infinite}@keyframes ppwFly{to{transform:translate(40px,-60px)}}@keyframes ppwTw{0%,100%{opacity:.25}50%{opacity:1}}' +
+    '.ppw-gr{position:absolute;left:-5%;right:-5%;bottom:0;height:19vh;background:radial-gradient(120% 100% at 50% 0,#166534 0,#0b3d1f 55%,#04210f 100%);border-radius:50% 50% 0 0/26px 26px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.3)}' +
+    '.ppw-sh{position:absolute;left:50%;bottom:calc(18vh - 8px);width:calc(var(--hm)*.6);height:calc(var(--hm)*.1);margin-left:calc(var(--hm)*-.3);border-radius:50%;background:rgba(0,0,0,.35);filter:blur(4px);opacity:0;animation:ppwShadow .4s 2.55s both}@keyframes ppwShadow{to{opacity:1}}' +
+    '.ppw-edge{position:absolute;width:min(46vw,420px);pointer-events:none;animation:ppwSway 5s ease-in-out infinite alternate}.ppw-edge svg{display:block;width:100%;height:auto;overflow:visible}.ppw-edge.bl{left:-6%;bottom:-6%;transform-origin:20% 100%}.ppw-edge.br{right:-6%;bottom:-6%;transform-origin:80% 100%;animation-delay:-2s}.ppw-edge.tl{left:-8%;top:-10%;transform:rotate(180deg) scaleX(-1);transform-origin:50% 50%;animation:none}.ppw-edge.tr{right:-8%;top:-10%;transform:rotate(180deg);animation:none}@keyframes ppwSway{from{transform:rotate(-2.4deg)}to{transform:rotate(2.4deg)}}' +
+    '.ppw-cur{position:absolute;top:-6%;bottom:-6%;width:64%;z-index:6;pointer-events:none}.ppw-cur svg{width:100%;height:100%;display:block}.ppw-cur.l{left:0;animation:ppwCurL 1.1s .12s cubic-bezier(.65,0,.3,1) both}.ppw-cur.r{right:0;animation:ppwCurR 1.1s .12s cubic-bezier(.65,0,.3,1) both}@keyframes ppwCurL{to{transform:translateX(-108%)}}@keyframes ppwCurR{to{transform:translateX(108%)}}' +
+    '.ppw-sw{position:absolute;left:50%;top:0;width:0;height:calc(81vh - var(--hm)*.92);transform-origin:50% 0;animation:ppwSwing 2.25s .35s cubic-bezier(.45,.05,.35,1) both;z-index:3}' +
+    '@keyframes ppwSwing{0%{transform:rotate(-98deg);opacity:0}7%{opacity:1}35%{transform:rotate(54deg)}58%{transform:rotate(-27deg)}77%{transform:rotate(11deg)}91%{transform:rotate(-3.5deg)}100%{transform:rotate(0)}}' +
+    '.ppw-sw .vn{position:absolute;left:-3.5px;top:0;width:7px;height:100%;border-radius:4px;background:linear-gradient(90deg,#14532d,#65a30d 45%,#14532d);box-shadow:0 0 0 1px rgba(0,0,0,.2);animation:ppwVine .6s 2.7s ease-in forwards}@keyframes ppwVine{to{transform:translateY(-115%)}}' +
+    '.ppw-sw .vn::after{content:"";position:absolute;left:7px;top:45%;width:26px;height:14px;border-radius:0 100% 0 100%;background:#22c55e;transform:rotate(-20deg)}' +
+    '.ppw-mk{position:absolute;left:calc(var(--hm)*-.39);top:calc(100% - var(--hm)*.08);width:calc(var(--hm)*.78);height:var(--hm)}' +
+    '.ppw-mk.drop{animation:ppwDrop .5s cubic-bezier(.3,0,.6,1) both}@keyframes ppwDrop{0%{transform:translateY(-10px)}55%{transform:translateY(0) scaleY(.9)}100%{transform:none}}' +
+    '.ppw-txt{position:absolute;left:0;right:0;top:8vh;text-align:center;padding:0 18px;z-index:4;pointer-events:none}' +
+    '.ppw-txt small{display:block;font-size:clamp(14px,2.4vw,24px);font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#e9d5ff;opacity:0;animation:ppwUp .7s 2.25s both}' +
+    '.ppw-txt h2{margin:6px 0 0;font-size:clamp(38px,8.2vw,92px);line-height:1.02;font-weight:900;letter-spacing:-.03em;text-shadow:0 6px 30px rgba(0,0,0,.35),0 0 40px rgba(250,204,21,.25)}' +
+    '.ppw-txt h2 span{display:inline-block;opacity:0;animation:ppwLetter .55s both cubic-bezier(.2,1.7,.4,1)}.ppw-txt h2 .sp{width:.28em}.ppw-txt h2 .y{color:#fcd34d}' +
+    '.ppw-txt p{margin:14px 0 0;font-size:clamp(15px,2.2vw,22px);font-weight:600;color:#fdf4ff;opacity:0;animation:ppwUp .7s 3.45s both}' +
+    '@keyframes ppwUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}@keyframes ppwLetter{from{opacity:0;transform:translateY(40px) scale(.4) rotate(-14deg)}to{opacity:1;transform:none}}' +
+    '.ppw-fall{position:absolute;top:-8vh;font-size:clamp(22px,3.4vw,40px);opacity:0;pointer-events:none;animation:ppwFall linear both;z-index:5}@keyframes ppwFall{0%{opacity:0;transform:translateY(0) rotate(0)}8%{opacity:1}100%{opacity:1;transform:translateY(118vh) rotate(var(--rt))}}' +
+    '.ppw-skip{position:absolute;right:16px;bottom:16px;z-index:8;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.14);color:#fff;border-radius:999px;padding:8px 16px;font:600 13px system-ui;cursor:pointer;backdrop-filter:blur(6px);opacity:0;animation:ppwUp .5s 1s both}.ppw-skip:hover{background:rgba(255,255,255,.28)}' +
+    '@media(prefers-reduced-motion:reduce){#ppwel *{animation:none!important}#ppwel .ppw-txt small,#ppwel .ppw-txt h2 span,#ppwel .ppw-txt p,#ppwel .ppw-skip{opacity:1!important}.ppw-cur,.ppw-sw,.ppw-fall,.ppw-rays{display:none}}';
+
+  function welcome() {
+    const ov = g('ppwel');
+    if (!ov) return Promise.resolve(null);
+    welcomeOn = true;
+    const S = D.createElement('style'); S.textContent = WCSS; D.head.appendChild(S);
+    const nm = firstName();
+    let letters = '', idx = 0; const t1 = 'Pranav', t2 = 'Pipeline';
+    [t1, t2].forEach((w, wi) => { for (const ch of w) { letters += '<span class="' + (wi ? 'y' : '') + '" style="animation-delay:' + (2.55 + idx * .055).toFixed(2) + 's">' + ch + '</span>'; idx++; } if (!wi) letters += '<span class="sp" aria-hidden="true" style="animation-delay:0s"> </span>'; });
+    let ff = '', fall = '';
+    for (let i = 0; i < 16; i++) ff += '<i class="ppw-ff" style="left:' + rand(4, 96).toFixed(0) + '%;top:' + rand(10, 80).toFixed(0) + '%;animation-delay:' + (-rand(0, 5)).toFixed(1) + 's,' + (-rand(0, 2)).toFixed(1) + 's"></i>';
+    const em = ['🍌', '🍌', '🍃', '✨', '🍌', '🌴'];
+    for (let i = 0; i < 20; i++) fall += '<span class="ppw-fall" style="left:' + rand(2, 96).toFixed(0) + '%;animation-duration:' + rand(2.2, 3.8).toFixed(1) + 's;animation-delay:' + rand(2.6, 4.2).toFixed(2) + 's;--rt:' + rand(-300, 300).toFixed(0) + 'deg">' + pick(em) + '</span>';
+    const clusterSvg = (n, seed, w, h, vb) => '<svg viewBox="' + vb + '" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><g transform="translate(' + (w / 2) + ' ' + h + ')">' + leafCluster(n, seed, GREENS) + '</g></svg>';
+    const curtain = side => '<div class="ppw-cur ' + side + '"><svg viewBox="0 0 400 800" preserveAspectRatio="none" aria-hidden="true"><rect width="400" height="800" fill="#0b3d1f"/><g transform="translate(' + (side === 'l' ? 0 : 400) + ' 400) rotate(' + (side === 'l' ? 90 : -90) + ') scale(3.1)">' + leafCluster(13, side === 'l' ? 5 : 7, GREENS) + '</g><g transform="translate(' + (side === 'l' ? 0 : 400) + ' 120) rotate(' + (side === 'l' ? 90 : -90) + ') scale(2.2)">' + leafCluster(9, 3, GREENS) + '</g><g transform="translate(' + (side === 'l' ? 0 : 400) + ' 690) rotate(' + (side === 'l' ? 90 : -90) + ') scale(2.4)">' + leafCluster(9, 9, GREENS) + '</g></svg></div>';
+    ov.innerHTML =
+      '<div class="ppw-rays"></div>' + ff +
+      '<div class="ppw-edge bl">' + clusterSvg(11, 5, 420, 240, '0 -130 420 372') + '</div><div class="ppw-edge br">' + clusterSvg(11, 7, 420, 240, '0 -130 420 372') + '</div><div class="ppw-edge tl">' + clusterSvg(8, 3, 420, 160, '0 -130 420 292') + '</div><div class="ppw-edge tr">' + clusterSvg(8, 9, 420, 160, '0 -130 420 292') + '</div>' +
+      '<div class="ppw-gr"></div><div class="ppw-sh"></div>' +
+      '<div class="ppw-txt"><small>Welcome to the world of</small><h2 aria-label="Pranav Pipeline">' + letters + '</h2><p>Hi ' + nm.replace(/[<>&]/g, '') + '! Hop in — I’ll show you around 🍌</p></div>' +
+      '<div class="ppw-sw"><div class="vn"></div><div class="ppw-mk">' + rig('leap') + '</div></div>' + fall +
+      curtain('l') + curtain('r') +
+      '<button type="button" class="ppw-skip" aria-label="Skip the welcome">Skip ›</button>';
+    ov.removeAttribute('aria-hidden'); ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Welcome to the world of Pranav Pipeline');
+    D.body.style.overflow = 'hidden';
+    const mk = ov.querySelector('.ppw-mk'), mkr = mk.querySelector('.mkr');
+    const timers = [];
+    timers.push(setTimeout(() => { mk.classList.add('drop'); mkr.setAttribute('class', 'mkr mbx wave happy'); }, 2650));
+    return new Promise(resolve => {
+      let done = false;
+      function end() {
+        if (done) return; done = true; timers.forEach(clearTimeout);
+        D.removeEventListener('keydown', onKey);
+        const r = mk.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height * .55;
+        resolve({x: cx, y: r.bottom, h: r.height});
+        ov.style.pointerEvents = 'none';
+        const m = 'radial-gradient(circle at ' + cx.toFixed(0) + 'px ' + cy.toFixed(0) + 'px, transparent calc(var(--r) - 2px), #000 var(--r))';
+        ov.style.webkitMaskImage = m; ov.style.maskImage = m;
+        const mx = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy)) * 1.08;
+        const t0 = performance.now(), dur = reduce ? 1 : 900;
+        (function f(now) {
+          const k = Math.min(1, (now - t0) / dur), e = k * k * (3 - 2 * k);
+          ov.style.setProperty('--r', (mx * e).toFixed(0) + 'px');
+          if (k < 1) requestAnimationFrame(f); else { ov.remove(); S.remove(); D.body.style.overflow = ''; welcomeOn = false; }
+        })(t0);
+      }
+      function onKey(e) { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); end(); } }
+      ov.addEventListener('click', end); D.addEventListener('keydown', onKey);
+      timers.push(setTimeout(end, reduce ? 1600 : 4900));
+    });
+  }
+
+  /* ================= start ================= */
+  size(); paintMode();
+  function setup(from) {
+    started = true; render();
+    if (reduce) { rest = true; P.x = innerWidth - 82; P.y = ground(); setPose('sit'); render(); return; }
+    if (from) {
+      P.x = from.x; P.y = Math.min(from.y, ground()); P.s = clamp(from.h / H, 1, 3); face = 1; setPose('wave'); setMood('happy', 3000); render();
+      (async () => {
+        await sleep(250);
+        await leapTo(innerWidth - (small() ? 56 : 82), ground(), 140, 1);
+        if (!sessionStorage.getItem('pp_mk_hi')) { try { sessionStorage.setItem('pp_mk_hi', '1'); } catch (e) {} say('Ooh ooh! I live here now. Click me if you need help 🍌', 5200); setFx('cheer', 1200); }
+      })();
+    } else {
+      P.x = innerWidth + 70; P.y = ground(); face = 1; render();
+      (async () => {
+        await sleep(600);
+        if (rest) { await goHome(); setPose('sit'); }
+        else { await walkTo(innerWidth - (small() ? 56 : 82), 110); setPose('wave'); await sleep(1400); setPose(''); }
+      })();
+    }
+  }
+  window.__monkeyLife = {
+    toggle: () => setRest(!rest), say: say, welcome: welcome,
+    state: () => ({x: P.x, y: P.y, loc: loc, pose: pose, rest: rest, chatOpen: chatOpen, dragging: dragging, asleep: asleep}),
+    force: o => { cancel(); if (o.pose != null) setPose(o.pose); if (o.x != null) { P.x = o.x; } if (o.y != null) { P.y = o.y; } render(); },
+    act: n => ({perch: perchOn, edge: edgeOn, ground: toGround, roam: roamGround, idle: () => doIdle(false), climb: climbMove})[n](),
+    el: el
+  };
+  if (rest && !reduce) { /* resting from the start */ }
+  if (window.__ppWelcome && g('ppwel')) welcome().then(from => { setup(from); }); else setup(null);
+  loop();
+})();
+</script>
+<!--/LIFE-->
+
 </body></html>
