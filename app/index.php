@@ -357,7 +357,7 @@ body.lg{margin:0;min-height:100vh;display:grid;place-items:center;padding:16px;b
   }
   function win(url) {
     det = false; foc = 'win'; mk.setAttribute('class', 'mk win');
-    if (tg) { tg.className = 'tag win'; tg.textContent = 'It’s you! Come on in 🐒'; }
+    if (tg) { tg.className = 'tag win'; tg.textContent = 'It’s you! Come on in'; }
     go.classList.remove('busy'); go.innerHTML = '<b>Welcome! ✓</b>';
     var er = f.querySelector('.err'); if (er) er.remove();
     if (!reduce0) { card.style.transition = 'opacity .5s ease, transform .5s ease'; document.body.style.transition = 'background .5s ease'; setTimeout(function () { card.style.opacity = '0'; card.style.transform = 'translateY(-14px) scale(.985)'; document.body.style.background = '#113f3c'; }, 180); }
@@ -1311,7 +1311,8 @@ a.wapp{display:inline-flex;align-items:center;justify-content:center;flex:none;w
         <div class="uhd"><span class="av" id="uAv2"></span><span class="t"><small>Signed in as</small><b id="uNm2"></b><em id="uUn2"></em></span></div>
         <button type="button" role="menuitem" data-a="profile"><i>👤</i>Your profile</button>
         <button type="button" role="menuitem" data-a="pwd"><i>🔑</i>Change password</button>
-        <button type="button" role="menuitem" data-a="monkey"><i>🐒</i><span id="monkeyMode">Pranav: playing 🐒 (tap to rest)</span></button>
+        <button type="button" role="menuitem" data-a="wake" id="wakeItem" hidden><i>🎙️</i><span id="wakeMode">Say “Hey Pranav”: off</span></button>
+        <button type="button" role="menuitem" data-a="monkey"><i>🐒</i><span id="monkeyMode">Pranav: playing (tap to rest)</span></button>
         <?php if (user_scope() === null) { ?><button type="button" role="menuitem" data-a="usage"><i>📊</i>Usage (who uses what)</button><?php } ?>
         <button type="button" role="menuitem" data-a="refresh"><i>↻</i>Refresh data</button>
         <hr>
@@ -4091,6 +4092,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     if (a === 'profile') openProfile(); else if (a === 'pwd') openPwd(); else if (a === 'usage') openUsage();
     else if (a === 'wa') { try { localStorage.setItem(WA_KEY, waMode() === 'app' ? 'web' : 'app'); } catch (x) {} paintWaMode(); toastWa(); }
     else if (a === 'monkey') { if (window.__monkeyLife) window.__monkeyLife.toggle(); }
+    else if (a === 'wake') { if (window.__ppWake) window.__ppWake.toggle(); }
     else if (a === 'search') { const s = g('gsearch'); if (s) { s.focus(); s.select(); } }
     else if (a === 'refresh') g('btnRefresh').click();
   });
@@ -5041,17 +5043,17 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     'Oo-oo-ah-ah… 😭 the admin has <b>not trained me</b> on that yet. I’m sitting here sobbing into my banana. Please tell him (nicely) to teach me! 🍌',
     'Waaah! 😢 I don’t know that one — the admin never taught me. I tried reading the manual but I ate the pages. Please tell the admin, pretty please! 🙏🍌',
     '😭 *sniff* That’s above my banana grade! The admin hasn’t trained me for this. Go tell him, and tell him I’m crying!',
-    'Ooh ooh, I wish I knew! 🥺 But the admin hasn’t trained me on that. Please tell him I need more lessons — I will even do my homework (and eat it).'
+    'Oh, I wish I knew! 🥺 But the admin hasn’t trained me on that. Please tell him I need more lessons — I will even do my homework (and eat it).'
   ];
   const OOT = [
     '🙈 Whoa, that’s way outside my jungle! I only talk about <b>this website</b> — deals, students, universities, programs, payments and follow-ups. Ask me something from here and I’ll swing right in! 🌴',
-    '🐒 Going out of the topic, my friend! I’m only trained for this dashboard. Try asking about a student, a university or a count of deals. 🍌',
+    'Going out of the topic, my friend! I’m only trained for this dashboard. Try asking about a student, a university or a count of deals. 🍌',
     '🌴 That’s not in my jungle! I know only this website’s data. Ask me about a student’s status, how many universities, or to open a deal to edit.'
   ];
   let ti = 0, oi = 0;
   const notTrained = () => ({h: TRAINED[ti++ % TRAINED.length], mood: 'cry', copy: true});
   const outOfTopic = () => ({h: OOT[oi++ % OOT.length], mood: 'conf'});
-  const HELP = '<b>I’m Pranav 🐒</b> — I read this dashboard’s data and I find things fast. Editing is your job, so I open the lead for you. Typos are fine!<ul class="mbl2"><li><b>A student:</b> “status of Rahul”, “phone of Rahul”, “who worked last on deal 108”, “when was Rahul’s deal created”</li><li><b>Counts:</b> “how many deals were created this month”, “how many in muj + smu + amity”, “overdue deals”, “sem 1 paid in Amity”, “which university has the most deals”</li><li><b>Latest:</b> “latest deal created”, “last 5 deals”</li><li><b>My work:</b> “last deal I worked on”, “last university I worked on”, “what filter was I using”</li><li><b>Filters:</b> “filter muj + smu + amity”, “only mba and bba”, “clear filters”</li><li><b>Reports:</b> “open alumni report”, “create a report of university by stage for muj + smu”</li><li><b>Edit:</b> “edit Rahul”, “change Rahul’s sem 1 status”. I open that lead’s edit form and walk you through it. No questions.</li><li><b>How-to:</b> refresh data, change password, export CSV, what “overdue” means…</li></ul>🍌';
+  const HELP = '<b>I’m Pranav</b> — I read this dashboard’s data and I find things fast. Editing is your job, so I open the lead for you. Typos are fine!<ul class="mbl2"><li><b>A student:</b> “status of Rahul”, “phone of Rahul”, “who worked last on deal 108”, “when was Rahul’s deal created”</li><li><b>Counts:</b> “how many deals were created this month”, “how many in muj + smu + amity”, “overdue deals”, “sem 1 paid in Amity”, “which university has the most deals”</li><li><b>Latest:</b> “latest deal created”, “last 5 deals”</li><li><b>My work:</b> “last deal I worked on”, “last university I worked on”, “what filter was I using”</li><li><b>Filters:</b> “filter muj + smu + amity”, “only mba and bba”, “clear filters”</li><li><b>Reports:</b> “open alumni report”, “create a report of university by stage for muj + smu”</li><li><b>Edit:</b> “edit Rahul”, “change Rahul’s sem 1 status”. I open that lead’s edit form and walk you through it. No questions.</li><li><b>How-to:</b> refresh data, change password, export CSV, what “overdue” means…</li></ul>🍌';
 
   /* ================= UI ================= */
   const FACE = (
@@ -5116,14 +5118,15 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   const wrap = document.createElement('div');
   wrap.innerHTML =
     '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="mbface" viewBox="0 0 200 190"><circle cx="36" cy="106" r="22" fill="#8a5632"/><circle cx="36" cy="106" r="12" fill="#f0c7a0"/><circle cx="164" cy="106" r="22" fill="#8a5632"/><circle cx="164" cy="106" r="12" fill="#f0c7a0"/><circle cx="100" cy="102" r="64" fill="#9a6338"/><path d="M100 72c-14-14-46-6-46 24 0 14 6 22 14 28 4 18 18 30 32 30s28-12 32-30c8-6 14-14 14-28 0-30-32-38-46-24z" fill="#f4d5b0"/><ellipse cx="78" cy="102" rx="13" ry="15" fill="#fff"/><circle cx="78" cy="104" r="7" fill="#2a1a12"/><ellipse cx="122" cy="102" rx="13" ry="15" fill="#fff"/><circle cx="122" cy="104" r="7" fill="#2a1a12"/><ellipse cx="100" cy="127" rx="9" ry="6" fill="#6b3f22"/><path d="M84 141q16 14 32 0" fill="none" stroke="#6b3f22" stroke-width="3.5" stroke-linecap="round"/></symbol></defs></svg>' +
-    '<button class="mbl hasq" id="mbOpen" type="button" aria-label="Open Pranav" aria-expanded="false"><span class="mbtip">Ask Pranav 🐒</span><svg class="mbx" id="mbLaunch" viewBox="0 0 200 190" aria-hidden="true">' + FACE + '</svg></button>' +
+    '<button class="mbl hasq" id="mbOpen" type="button" aria-label="Open Pranav" aria-expanded="false"><span class="mbtip">Ask Pranav</span><svg class="mbx" id="mbLaunch" viewBox="0 0 200 190" aria-hidden="true">' + FACE + '</svg></button>' +
     '<section class="mbp2" id="mbPanel" role="dialog" aria-label="Pranav chat" hidden>' +
-    '<div class="mbh mbhead"><div class="av"><svg class="mbx" id="mbHead" viewBox="0 0 200 190" aria-hidden="true">' + FACE + '</svg></div><div class="sp"><h3>Pranav</h3><p id="mbSub">Pranav Pipeline’s own monkey 🐒 · ask me anything</p></div><div class="mbhb"><button type="button" id="mbClear" title="Clear chat" aria-label="Clear chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M18.5 2.5V7H14"/></svg></button><button type="button" id="mbClose" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>' +
+    '<div class="mbh mbhead"><div class="av"><svg class="mbx" id="mbHead" viewBox="0 0 200 190" aria-hidden="true">' + FACE + '</svg></div><div class="sp"><h3>Pranav</h3><p id="mbSub">Pranav Pipeline’s own assistant · ask me anything</p></div><div class="mbhb"><button type="button" id="mbClear" title="Clear chat" aria-label="Clear chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M18.5 2.5V7H14"/></svg></button><button type="button" id="mbClose" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>' +
     '<div class="mbmsgs" id="mbMsgs" aria-live="polite"></div><div class="mbch" id="mbChips"></div>' +
     '<form class="mbf" id="mbForm" autocomplete="off"><input id="mbIn" type="text" maxlength="400" placeholder="Ask me anything about the deals…" aria-label="Message Pranav"><button type="button" class="mbmic" id="mbMic" aria-label="Speak your question" title="Speak your question"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8.5 21h7"/></svg></button><button type="submit" aria-label="Send">➤</button></form></section>';
   document.body.appendChild(wrap);
 
   const msgs = g('mbMsgs'), chips = g('mbChips'), input = g('mbIn'), panel = g('mbPanel'), openB = g('mbOpen');
+  const WHO = () => { let n = ''; try { n = String((PROFILE && PROFILE.name) || '').trim(); } catch (e) {} return n || String(ME || '').replace(/_/g, ' ').trim(); };
   const S = {deal: null, pending: null, edit: null, busy: false, asked: ''};
   function mood(m, hold) {
     const hd = g('mbHead'); hd.setAttribute('class', 'mbx' + (m && m !== 'idle' ? ' ' + m : ''));
@@ -5158,7 +5161,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     if (rep.copy) h += '<div class="mbact"><button type="button" data-act="copyq">📋 Copy my question for the admin</button></div>';
     addBot(h);
     mood(rep.mood || 'idle');
-    g('mbSub').textContent = rep.mood === 'cry' ? 'Sniff… I need more training 😭' : rep.mood === 'conf' ? 'Hmm? That is not my jungle 🙈' : 'Pranav Pipeline’s own monkey 🐒 · ask me anything';
+    g('mbSub').textContent = rep.mood === 'cry' ? 'Sniff… I need more training 😭' : rep.mood === 'conf' ? 'Hmm? That is not my jungle 🙈' : 'Pranav Pipeline’s own assistant · ask me anything';
     setChips(rep.chips || dealChips());
   }
   async function think(fn, ms) {
@@ -5487,7 +5490,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     const VG = valueGroups(U.T, U.C, {});
     const ids = Object.keys(VG.G);
     if (!ids.length) {
-      if (explicit && /\bfilters?\b/.test(low)) return {h: 'Tell me what to filter, for example “filter muj + smu + amity”, “only mba and bba” or “filter batch january 2025”. 🐒', mood: 'idle', chips: ['Filter by university', 'What filter is on?', 'Clear filters']};
+      if (explicit && /\bfilters?\b/.test(low)) return {h: 'Tell me what to filter, for example “filter muj + smu + amity”, “only mba and bba” or “filter batch january 2025”.', mood: 'idle', chips: ['Filter by university', 'What filter is on?', 'Clear filters']};
       return null;
     }
     // bare list of values, or explicit/show verb
@@ -5573,7 +5576,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       const def = REPORTS.find(r => r.id === target);
       const hash = '#/reports/' + target + (flt ? '?' + flt : '');
       setTimeout(() => { location.hash = hash; }, 250);
-      return {h: (create ? 'That report already exists, so I’m taking you there: ' : 'Opening ') + def.icon + ' <b>' + E(def.title) + '</b>… 🐒' + fnote + (create ? '<div class="mbs">If you want a different table, say “create a report of X by Y”.</div>' : ''), mood: 'happy', chips: ['Show all reports', 'How many deals?']};
+      return {h: (create ? 'That report already exists, so I’m taking you there: ' : 'Opening ') + def.icon + ' <b>' + E(def.title) + '</b>…' + fnote + (create ? '<div class="mbs">If you want a different table, say “create a report of X by Y”.</div>' : ''), mood: 'happy', chips: ['Show all reports', 'How many deals?']};
     }
     if (axes.length && !create) {
       // "report of university by stage" without a create verb → still build it
@@ -5586,7 +5589,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   /* ---- editing by phone / email: guide, never edit ---- */
   function guideEdit(list, U, how) {
     if (list.length > 1) {
-      return {h: '🐒 Ooh ooh! Editing is <b>your</b> job, boss. I only swing around the data! This matches <b>' + list.length + '</b> leads. Tap the one you want and I’ll open it for you:<div class="mbact">' + list.slice(0, 8).map(r => '<button type="button" data-act="form" data-id="' + E(r.ID) + '">' + E(nameOf(r)) + ' · #' + E(r.ID) + '</button>').join('') + '</div>', mood: 'happy'};
+      return {h: 'Oh! Editing is <b>your</b> job, boss. I only swing around the data! This matches <b>' + list.length + '</b> leads. Tap the one you want and I’ll open it for you:<div class="mbact">' + list.slice(0, 8).map(r => '<button type="button" data-act="form" data-id="' + E(r.ID) + '">' + E(nameOf(r)) + ' · #' + E(r.ID) + '</button>').join('') + '</div>', mood: 'happy'};
     }
     const r = list[0];
     let want = [];
@@ -5597,9 +5600,9 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     steps.push('Write a <b>comment</b> and your <b>name</b>.');
     steps.push('Press <b>Save</b>.');
     S.edit = null; S.pending = null; S.deal = r; S.via = how || 'name';
-    try { openEdit(r); const b = document.getElementById('mBanner'); if (b) { b.textContent = '🐒 Pranav: ' + steps.map((x, i) => (i + 1) + '. ' + x.replace(/<[^>]+>/g, '')).join('  ') ; b.hidden = false; } } catch (e) {}
+    try { openEdit(r); const b = document.getElementById('mBanner'); if (b) { b.textContent = 'Pranav: ' + steps.map((x, i) => (i + 1) + '. ' + x.replace(/<[^>]+>/g, '')).join('  ') ; b.hidden = false; } } catch (e) {}
     setTimeout(() => { try { openPanel(false); } catch (e) {} }, 200);
-    return {h: '🐒 Ooh ooh! That one’s <b>your work</b>, boss. I only swing around the data! I opened <b>' + E(nameOf(r)) + '</b> (#' + E(r.ID) + ') for you. Quick drill:<ol class="mbl2">' + steps.map(x => '<li>' + x + '</li>').join('') + '</ol>I’ll be right here if you need me. 🍌', mood: 'happy'};
+    return {h: 'Oh! That one’s <b>your work</b>, boss. I only swing around the data! I opened <b>' + E(nameOf(r)) + '</b> (#' + E(r.ID) + ') for you. Quick drill:<ol class="mbl2">' + steps.map(x => '<li>' + x + '</li>').join('') + '</ol>I’ll be right here if you need me. 🍌', mood: 'happy'};
   }
 
   /* ---- everyday questions & how-tos ---- */
@@ -5613,16 +5616,16 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     if (/\b(what.?s (happening|going on|new|up)|what is (happening|going on)|what am i (doing|looking|viewing|seeing)|where am i|what (did|have) i (just )?(do|done|open|opened|change|changed)|any (news|updates?|changes)|what.?s new|are you watching|what are you (seeing|watching)|current page|which page|recent activity|what happened)\b/.test(low)) return R(watchSummary(), 'happy', ['Overdue follow-ups', 'Latest deal created']);
     if (/\b(who am i|my name|who is logged|logged in as|my login|my username|which user|my role|my access|what access|what can i see|which team am i)\b/.test(low)) return R('You’re <b>' + E(ME || 'a user') + '</b>. ' + (SCOPE ? 'This is a team login, so you see only the deals of team <b>' + E(SCOPE) + '</b>' : 'You see <b>all</b> deals') + ' (' + fmtN(allRows.length) + ' loaded).');
     if (/\b(what|which)\b.*\b(fields?|things|columns?)\b.*\b(edit|change|update)\b|\bwhat can (i|you) (edit|change|update)\b|\bwhich fields\b/.test(low)) { const ed = colsEd().map(c => c.label); return R(ed.length ? 'With your login I can edit: ' + list_(ed.map(E)) + '<div class="mbs">Every save needs a next follow-up date, a comment and a name.</div>' : 'Your login is read-only, so I can’t edit anything. 🙈', 'happy'); }
-    if (/\bwho (is|s) (the |your |our )?(admin|boss|owner|developer|creator)\b/.test(low)) return R('The <b>admin</b> is the person who set up this dashboard and trained me. 🐒 If I can’t answer, tell him — I’ll be crying in the corner.');
+    if (/\bwho (is|s) (the |your |our )?(admin|boss|owner|developer|creator)\b/.test(low)) return R('The <b>admin</b> is the person who set up this dashboard and trained me. If I can’t answer, tell him — I’ll be crying in the corner.');
     if (/\b(who|what)\b.*\b(made|built|created|developed|trained|programmed|designed|owns?|is)\b.*\b(you|ur|your)\b|\bwho is your (admin|boss|maker|creator|developer|owner)\b|\byour (admin|creator|maker|developer)\b/.test(low)) return R('My <b>admin</b> built me and keeps me in the jungle. 🌴 If I don’t know something, it’s his fault — tell him to train me! 🍌');
-    if (/\b(are you|r u|u r|you are)\b.*\b(ai|a\.i|chatgpt|gpt|claude|robot|real|human|bot|alive|smart|intelligent|monkey)\b/.test(low)) return R('I’m a <b>rule-based monkey bot</b> 🐒 — not a human, not a big AI. I read this dashboard’s data and follow rules my admin taught me. I get confused easily, so be nice!');
+    if (/\b(are you|r u|u r|you are)\b.*\b(ai|a\.i|chatgpt|gpt|claude|robot|real|human|bot|alive|smart|intelligent|monkey)\b/.test(low)) return R('I’m a <b>rule-based bot</b> — not a human, not a big AI. I read this dashboard’s data and follow rules my admin taught me. I get confused easily, so be nice!');
     if (/\bhow old (are|r) (you|u)\b|\byour age\b|\bwhen were you born|\bwhere do you live|\bwhere are you from|\byour (family|friend|girlfriend|boyfriend|wife|husband)\b/.test(low)) return R('I live inside this dashboard, rent-free, paid in bananas. 🍌 Age: ageless.');
-    if (/\b(i love you|love u|luv u|marry me|be my friend|you are cute|ur cute|you are sweet)\b/.test(low)) return R('Aww! 🙈 *blushes in monkey* I love you too — but I love clean data even more. 🍌');
+    if (/\b(i love you|love u|luv u|marry me|be my friend|you are cute|ur cute|you are sweet)\b/.test(low)) return R('Aww! 🙈 *blushes* I love you too — but I love clean data even more. 🍌');
     if (/\b(stupid|dumb|idiot|useless|worst bot|bad bot|nonsense|shut up|hate you|fool|donkey)\b/.test(low)) return R('😢 Ouch, that hurt my banana. I’m trying my best! Tell me what I got wrong and the admin will train me.', 'cry');
-    if (/\b(good bot|well done|great job|good job|nice work|you are smart|you are clever|clever|smart bot|brilliant|you rock|superb|excellent)\b/.test(low)) return R('Yay! 🎉 Thank you! *does a tiny backflip* 🐒');
-    if (/\b(sorry|my bad|oops|apologies|pardon)\b/.test(low) && low.split(' ').length <= 4) return R('No worries at all! 🍌 Monkeys forgive fast.');
+    if (/\b(good bot|well done|great job|good job|nice work|you are smart|you are clever|clever|smart bot|brilliant|you rock|superb|excellent)\b/.test(low)) return R('Yay! 🎉 Thank you! *does a tiny backflip*');
+    if (/\b(sorry|my bad|oops|apologies|pardon)\b/.test(low) && low.split(' ').length <= 4) return R('No worries at all! 🍌 Bots forgive fast.');
     if (/\b(banana|bananas|favourite food|favorite food|do you eat|hungry)\b/.test(low) && !/\bdeal|student|count/.test(low)) return R('Bananas! 🍌🍌🍌 Forget deals, I’d trade ten universities for one ripe banana.');
-    if (/\b(what is|whats|what s|explain|tell me about|about|describe)\b.*\b(this (site|website|dashboard|page|app|portal|tool)|pranav pipeline|the dashboard|the website)\b|\bwhat does this (site|website|dashboard|do)\b/.test(low)) return R('This is the <b>Pranav Pipeline dashboard</b> — a live view of every deal (student) in the Bitrix24 pipeline: stages, universities, programs, semester payments and follow-ups. You can filter, open reports, edit deals (with a comment) and ask me. 🐒', 'happy', ['How many deals?', 'Show all reports', 'What can you do?']);
+    if (/\b(what is|whats|what s|explain|tell me about|about|describe)\b.*\b(this (site|website|dashboard|page|app|portal|tool)|pranav pipeline|the dashboard|the website)\b|\bwhat does this (site|website|dashboard|do)\b/.test(low)) return R('This is the <b>Pranav Pipeline dashboard</b> — a live view of every deal (student) in the Bitrix24 pipeline: stages, universities, programs, semester payments and follow-ups. You can filter, open reports, edit deals (with a comment) and ask me.', 'happy', ['How many deals?', 'Show all reports', 'What can you do?']);
     if ((/\b(data|dashboard|site|website)\b.*\b(old|fresh|stale|updated|refreshed|latest|sync|synced|current|live)\b|\b(last|when)\b.*\b(refresh|refreshed|sync|synced)\b|\bhow old\b.*\bdata\b/.test(low)) && !/\bwho\b|\bstudent\b|\bdeal #?\d|status of\b/.test(low)) { const u = document.getElementById('updated'); return R('The data was loaded: <b>' + E(u ? u.textContent.replace(/^Updated\s*/i, '') : 'a little while ago') + '</b>.<div class="mbs">To get the newest data: account menu (your name, top right) → <b>Refresh data</b>. Your own saves show up straight away.</div>'); }
     if (/\b(how|where)\b.*\b(refresh|reload)\b|\brefresh data\b|\bupdate the data\b/.test(low)) return R('Click your <b>name (top right)</b> → <b>Refresh data</b>. It pulls the latest from Bitrix24. Your own saves show up instantly without that. 🔄');
     if (/\b(log ?out|sign ?out|logoff|log off)\b/.test(low)) return R('Click your <b>name (top right)</b> → <b>Log out</b>. 👋');
@@ -5633,7 +5636,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     if (/\b(dark|light)\s*(mode|theme)\b|\btheme\b/.test(low)) return R('The dashboard follows your <b>device’s dark/light setting</b>. 🌗 Change it in your phone/computer settings.');
     if (/\b(delete|remove|erase)\b.*\b(deal|lead|student|record)\b/.test(low)) return R('I can’t delete deals. 🙊 I only <b>edit</b> them. Deleting must be done in Bitrix24 by someone with permission.', 'cry');
     if (/\b(create|add|new|make)\s+(a\s+|the\s+|one\s+)?(new\s+)?(deal|lead|student|record|entry)\b/.test(low) && !/\breport|latest|last|newest|created|how many|count/.test(low)) return R('I can’t create new deals — I only edit existing ones. 🙈 New deals come from Bitrix24.', 'cry');
-    if (/\b(send|write|draft)\b.*\b(email|mail|whatsapp|sms|message)\b|\b(call|dial|ring)\b.*\b(student|him|her|them|phone|number)\b/.test(low)) return R('I’m a monkey, not a post office! 🐒 I can’t send messages or make calls. But I can tell you a student’s phone or email.');
+    if (/\b(send|write|draft)\b.*\b(email|mail|whatsapp|sms|message)\b|\b(call|dial|ring)\b.*\b(student|him|her|them|phone|number)\b/.test(low)) return R('I’m a bot, not a post office! I can’t send messages or make calls. But I can tell you a student’s phone or email.');
     if (/\b(undo|revert|rollback|roll back)\b/.test(low)) return R('I can’t undo a save. 🙈 But you can just tell me to change it back (for example “make sem 1 status not paid for Rahul”). Every change is recorded in the <b>Activity log</b> report.');
     if (/\b(what|whats|what s|meaning|mean|define|explain)\b.*\b(overdue|stale)\b/.test(low) && !/\bhow many\b|percent|%|count/.test(low)) return R('<b>Follow-up overdue</b> = an active student who has comments, but the latest comment is <b>' + (typeof STALE_DAYS !== 'undefined' ? STALE_DAYS : 15) + '+ days old</b> (or has no date). Closed and alumni deals are not counted.', 'happy', ['How many overdue?']);
     if (/\b(what|whats|what s|meaning|mean|define|explain)\b.*\bnot contacted\b/.test(low)) return R('<b>Not contacted</b> = an active student whose <b>Comment History is empty</b> — nobody has commented on that deal yet.', 'happy', ['How many not contacted?']);
@@ -5642,8 +5645,8 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     if (/\b(what|meaning|mean|define|explain)\b/.test(low) && /\b(active|closed)\b/.test(low) && !/\b(how many|count|list|percent|percentage|%|share)\b/.test(low) && /\b(mean|meaning|define|explain|definition|what is|what are|whats)\b/.test(low) && low.split(' ').length <= 8) return R('<b>Closed</b> deals are in a finished stage (completed, dropped, refund, lost…). Everything else is <b>Active</b>.');
     if (/\b(what|which)\b.*\b(stages?)\b.*\b(are there|exist|available|do we have|have)\b|\blist (of )?(all )?stages\b/.test(low)) { const g = groupBy(allRows, 'stage'); return R('Stages in use:' + list_(g.map(x => E(x.k) + ' <span class="mbn">' + fmtN(x.n) + '</span>'))); }
     if (/\b(thank you so much|thanks a lot|many thanks)\b/.test(low)) return R('You’re welcome! 🍌🍌');
-    if (/\b(i am|im|i m)\b.*\b(bored|tired|sad|angry|happy|excited)\b/.test(low) && low.split(' ').length <= 5) return R('Aww! 🐒 Here, have a virtual banana 🍌. Then let’s clear some follow-ups, shall we?', 'happy', ['Overdue follow-ups']);
-    if (/\b(test|testing|check|ping)\b\W*$/.test(low) && low.split(' ').length <= 2) return R('I’m awake and swinging! 🐒 Ask me something.');
+    if (/\b(i am|im|i m)\b.*\b(bored|tired|sad|angry|happy|excited)\b/.test(low) && low.split(' ').length <= 5) return R('Aww! Here, have a virtual banana 🍌. Then let’s clear some follow-ups, shall we?', 'happy', ['Overdue follow-ups']);
+    if (/\b(test|testing|check|ping)\b\W*$/.test(low) && low.split(' ').length <= 2) return R('I’m awake and swinging! Ask me something.');
     return null;
   }
 
@@ -5755,7 +5758,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     if (/\bhow (many|much|old|long|far|often|is|are|was|were|big|come)\b/.test(low)) return null;
     const id = howTopic(low);
     if (!id) {
-      if (/^(how|guide|guidance|process|steps|instructions|tutorial|teach me|help me|what should i do)\b/.test(low) && low.split(' ').length <= 6) return {h: 'Happy to guide you! 🐒 What do you want to learn?<div class="mbact">' + GUIDE_MENU.map(g => '<button type="button" data-q="How to ' + E(g[1].toLowerCase()) + '">' + E(g[1]) + '</button>').join('') + '</div>', mood: 'happy', chips: ['How to edit a lead', 'How to use you']};
+      if (/^(how|guide|guidance|process|steps|instructions|tutorial|teach me|help me|what should i do)\b/.test(low) && low.split(' ').length <= 6) return {h: 'Happy to guide you! What do you want to learn?<div class="mbact">' + GUIDE_MENU.map(g => '<button type="button" data-q="How to ' + E(g[1].toLowerCase()) + '">' + E(g[1]) + '</button>').join('') + '</div>', mood: 'happy', chips: ['How to edit a lead', 'How to use you']};
       return null;
     }
     const gd = GUIDES[id];
@@ -5831,7 +5834,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
         const Un = understand(nm[1]);
         if (!valueGroups(Un.T, Un.C, {}).used[0] && !Object.keys(valueGroups(Un.T, Un.C, {}).G).length) {
           const fn = findDeals(Un.T, Un.C);
-          const openIt = r => { S.edit = null; S.pending = null; S.deal = r; S.via = fn.how || 'name'; try { openEdit(r); } catch (e) {} setTimeout(() => { try { openPanel(false); } catch (e) {} }, 250); return {h: '📂 Opened <b>' + E(nameOf(r)) + '</b> (#' + E(r.ID) + ') with its edit form. Change what you need, add the follow-up date, a comment and your name, then Save. I’ll be here if you need me. 🐒', mood: 'happy'}; };
+          const openIt = r => { S.edit = null; S.pending = null; S.deal = r; S.via = fn.how || 'name'; try { openEdit(r); } catch (e) {} setTimeout(() => { try { openPanel(false); } catch (e) {} }, 250); return {h: '📂 Opened <b>' + E(nameOf(r)) + '</b> (#' + E(r.ID) + ') with its edit form. Change what you need, add the follow-up date, a comment and your name, then Save. I’ll be here if you need me.', mood: 'happy'}; };
           if (fn.list.length === 1) return openIt(fn.list[0].r);
           if (fn.list.length > 1) { S.edit = null; S.viaNext = fn.how; return showWho(fn.list, openIt); }
         }
@@ -5879,14 +5882,14 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     }
     if (NO.test(low) && !S.edit && !S.pending) return {h: 'Okay 👍 nothing pending on my side.', mood: 'idle'};
     { const g1 = low.split(' ')[0] || ''; const nw = low.split(' ').length;
-      if (nw <= 2 && g1.length >= 3) { if (near(g1, 'hello') || near(g1, 'namaste') || near(g1, 'hiii')) return {h: 'Ooh ooh! 🐒 Hello' + (ME ? ' <b>' + E(ME) + '</b>' : '') + '! Ask me about any student or a count, or tell me which lead to open for editing.', mood: 'happy', chips: baseChips()}; if (near(g1, 'thanks') || near(g1, 'thankyou')) return {h: 'Anytime! 🍌', mood: 'happy'}; } }
+      if (nw <= 2 && g1.length >= 3) { if (near(g1, 'hello') || near(g1, 'namaste') || near(g1, 'hiii')) return {h: 'Hello' + (WHO() ? ' <b>' + E(WHO()) + '</b>' : '') + '! Ask me about any student or a count, or tell me which lead to open for editing.', mood: 'happy', chips: baseChips()}; if (near(g1, 'thanks') || near(g1, 'thankyou')) return {h: 'Anytime! 🍌', mood: 'happy'}; } }
     // social
     for (const sc of SOCIAL) {
       if (sc[0].test(low)) {
-        if (sc[1] === 'hi') return {h: 'Ooh ooh! 🐒 Hello' + (ME ? ' <b>' + E(ME) + '</b>' : '') + '! Ask me about any student or a count, or tell me which lead to open for editing.', mood: 'happy', chips: baseChips()};
+        if (sc[1] === 'hi') return {h: 'Hello' + (WHO() ? ' <b>' + E(WHO()) + '</b>' : '') + '! Ask me about any student or a count, or tell me which lead to open for editing.', mood: 'happy', chips: baseChips()};
         if (sc[1] === 'thanks') return {h: 'Anytime! 🍌 A banana for you too.', mood: 'happy'};
         if (sc[1] === 'bye') return {h: 'Bye bye! 🙊 I’ll be hanging around here.', mood: 'happy'};
-        if (sc[1] === 'who') return {h: 'I’m <b>Pranav</b> 🐒 — the monkey built to look after this dashboard. I answer from your live data, and when you want to edit a lead I open it for you.', mood: 'happy'};
+        if (sc[1] === 'who') return {h: 'I’m <b>Pranav</b> — the bot built to look after this dashboard. I answer from your live data, and when you want to edit a lead I open it for you.', mood: 'happy'};
         if (sc[1] === 'help') return {h: HELP, mood: 'happy', chips: baseChips()};
         if (sc[1] === 'ok') return {h: '👍', mood: 'idle'};
         if (sc[1] === 'howru') return {h: 'Swinging great! 🍌 What shall we look up?', mood: 'happy'};
@@ -5910,7 +5913,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
         return go(curDeal());
       }
       setTimeout(() => { try { openPanel(false); const g = document.getElementById('gsearch'); if (g) g.focus(); } catch (e) {} }, 350);
-      return {h: '🐒 Ooh ooh! Editing is <b>your</b> job, boss, I only swing around the data! I don’t know which lead you mean, so I opened the <b>search box</b>. Pick the lead there and its edit form opens. 🍌', mood: 'happy'};
+      return {h: 'Oh! Editing is <b>your</b> job, boss, I only swing around the data! I don’t know which lead you mean, so I opened the <b>search box</b>. Pick the lead there and its edit form opens. 🍌', mood: 'happy'};
     }
     // ---- counting ----
     const isCount = (/\b(least|fewest|lowest|smallest|most|highest|biggest|largest)\b/.test(low) && /\b(universit\w*|program\w*|batch\w*|team\w*|payment mode|deals?)\b/.test(low) && !/\b(worked|filter)\b/.test(low)) || /\b(how many|count|total|number of|no of)\b/.test(U.s.replace(/\bhow\b \bmany\b/, 'how many')) || (/\bhow\b/.test(U.s) && /\bmany\b/.test(U.s)) || /\b(each|most|least|fewest|lowest|smallest)\b/.test(U.s) && /\b(university|program|batch|team|status|mode|deal)\b/.test(U.s) || /^(list|show|display)?\s*(all )?(universit|program|batch|team)/.test(U.s);
@@ -5918,7 +5921,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     if (isCount && f.list.length && cntKw && !/\b(least|fewest|lowest|smallest|most|highest|biggest|largest|each)\b/.test(low)) {
       if (parseFilters(U.T, U.C, U.skip).length) return doCount(U);
       const L = f.list.map(x => x.r), n = L.length;
-      return {h: '🐒 I found <b>' + numLink(L, 'Matching “' + raw.slice(0, 40) + '”') + '</b> deal' + (n === 1 ? '' : 's') + ' matching that.' + (n <= 6 ? list_(L.map(r => dealLink(r))) : '<div class="mbs">Too many to list; be more specific (full name, phone or deal number).</div>'), mood: 'happy'};
+      return {h: 'I found <b>' + numLink(L, 'Matching “' + raw.slice(0, 40) + '”') + '</b> deal' + (n === 1 ? '' : 's') + ' matching that.' + (n <= 6 ? list_(L.map(r => dealLink(r))) : '<div class="mbs">Too many to list; be more specific (full name, phone or deal number).</div>'), mood: 'happy'};
     }
     if (isCount && !f.list.length) { return doCount(U); }
     if (/^(overdue|stale|not contacted)\b/.test(U.s) || /\b(overdue|not (yet )?(contacted|worked|touched|called))\b/.test(U.s) && !f.list.length) return doCount(Object.assign(U, {s: 'how many ' + U.s}));
@@ -5934,7 +5937,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     if (attrs.length && /\b(who|when|status|phone|email|follow|created)\b/.test(U.s) && DOMAIN_RX.test(U.s) && (U.question || attrs.length)) {
       if (/\b(student|deal)\b/.test(U.s) || /\b(status|created|phone|email|worked)\b/.test(U.s)) {
         S.pending = {t: 'which', then: d => answerAttr(d, attrs, U.s), list: []};
-        return {h: 'Sure! Which student? Tell me the name, phone number or deal number. 🐒', mood: 'idle', chips: ['Cancel']};
+        return {h: 'Sure! Which student? Tell me the name, phone number or deal number.', mood: 'idle', chips: ['Cancel']};
       }
     }
     // names not found but looks like a person lookup
@@ -6010,17 +6013,17 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     'Hide the bananas, <b>{n}</b> is here! 🙈 What do you want this time?',
     'Mmm? Huh? I wasn’t sleeping! I was… resting my eyes. 😪 Go on, <b>{n}</b>.',
     'I was just counting deals in my sleep… 1,193… 1,194… and you made me lose count! 😤',
-    'Poke poke! 🐒 Who woke the monkey? Oh, it’s you, <b>{n}</b>. Fine, I’m up.',
+    'Poke poke! Who woke me up? Oh, it’s you, <b>{n}</b>. Fine, I’m up.',
     'Reporting for duty (after a short nap). 🫡🍌 What’s the emergency, <b>{n}</b>?',
     'Ah, the human who types too much returns. 🙊 Questions? Complaints? Bananas?',
     'Oo-oo-ah-ah! 🎉 Oh, it’s just you. I thought it was the admin coming to train me. 😭',
     'Back already?! I haven’t even finished my banana. 🍌 Make it quick, <b>{n}</b>.',
     'Did someone say follow-ups? No? Then why did you wake me up? 😴 Okay okay, ask away.',
-    'Knock knock… oh wait, you don’t knock, you just poke me. 🐒 Yes, <b>{n}</b>?'
+    'Knock knock… oh wait, you don’t knock, you just poke me. Yes, <b>{n}</b>?'
   ];
   const GREET_LONG = ['Where have you been, <b>{n}</b>?! I got so lonely I started reading the activity log. 🥲', 'It’s been ages! I almost started talking to the progress bars. 🙊 Welcome back, <b>{n}</b>!'];
   const GREET_QUICK = ['Back <i>already</i>?! I haven’t even finished my banana. 🍌 You’re making me dizzy, <b>{n}</b>.', 'Again?! I just sat down! 😤 Fine, what is it?'];
-  const GREET_NIGHT = ['It’s late, <b>{n}</b>! Even monkeys sleep at night. 🌙 But go on, I’ll stay up.'];
+  const GREET_NIGHT = ['It’s late, <b>{n}</b>! Even bots need rest at night. 🌙 But go on, I’ll stay up.'];
   const GREET_MORN = ['Good morning, <b>{n}</b>! ☀️ Is it banana time yet?'];
   let lastGreet = 0, lastClose = 0, gi = -1;
   function ctxNotes() {
@@ -6042,13 +6045,13 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   function greetOpen(first) {
     if (Date.now() - lastGreet < 1500) return;
     lastGreet = Date.now();
-    const nm = ME || 'friend', h = new Date().getHours(), away = lastClose ? Date.now() - lastClose : 0;
+    const nm = WHO() || 'friend', h = new Date().getHours(), away = lastClose ? Date.now() - lastClose : 0;
     let pool = GREET;
     if (away && away < 25000) pool = GREET_QUICK; else if (away > 40 * 60000) pool = GREET_LONG; else if (h >= 23 || h < 5) pool = GREET_NIGHT; else if (h >= 5 && h < 9 && Math.random() < .5) pool = GREET_MORN;
     let i; do { i = Math.floor(Math.random() * pool.length); } while (pool === GREET && i === gi && pool.length > 1); if (pool === GREET) gi = i;
     let t = pool[i].replace(/\{n\}/g, E(nm));
     const notes = allRows.length ? ctxNotes() : [];
-    if (first) t += '<div class="mbs" style="margin-top:6px">I’m <b>Pranav</b>, the monkey built for this dashboard. I watch it, answer from its data, and open any lead you want to edit. Typos are fine!</div>';
+    if (first) t += '<div class="mbs" style="margin-top:6px">I’m <b>Pranav</b>, the bot built for this dashboard. I watch it, answer from its data, and open any lead you want to edit. Typos are fine!</div>';
     if (notes.length) t += '<div class="mbs" style="margin-top:6px">' + notes.join('<br>') + '</div>';
     respond({h: t, mood: 'happy', chips: baseChips()});
   }
@@ -6077,7 +6080,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     micB.onclick = () => {
       if (S.busy) return;
       if (listening) { try { rec.stop(); } catch (e) {} return; }
-      micErr = ''; input.value = '';
+      micErr = ''; input.value = ''; try { wkStop(); } catch (e) {}
       rec = new SR(); rec.lang = 'en-IN'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
       rec.onstart = () => { listening = true; micB.classList.add('rec'); input.classList.add('lis'); input.placeholder = 'Listening… speak now 🎙️'; micB.title = 'Tap to stop'; };
       rec.onresult = ev => { let f = '', i2 = ''; for (let i = 0; i < ev.results.length; i++) { const r = ev.results[i]; if (r.isFinal) f += r[0].transcript; else i2 += r[0].transcript; } input.value = (f + ' ' + i2).replace(/\s+/g, ' ').trim(); };
@@ -6094,6 +6097,74 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       try { rec.start(); } catch (e) { micNote('Voice did not start. Please try again.', 3500); }
     };
   }
+
+  /* ================= say "Hey Pranav" to wake the bot (opt-in) ================= */
+  const WKEY = 'pp_wake', wkItem = g('wakeItem'), wkTxt = g('wakeMode');
+  let wkOn = false, wkRec = null, wkRun = false, wkFail = 0, wkLast = 0;
+  try { wkOn = localStorage.getItem(WKEY) === '1'; } catch (e) {}
+  const wkPaint = () => { if (wkTxt) wkTxt.textContent = 'Say “Hey Pranav”: ' + (wkOn ? 'on 🟢' : 'off'); };
+  const GREETW = /^(hey|hay|hi|hii|hello|ok|okay|ay|a|he)$/;
+  const lev = (x, y) => { const m = []; for (let i = 0; i <= x.length; i++) { m[i] = [i]; } for (let j = 1; j <= y.length; j++) m[0][j] = j; for (let i = 1; i <= x.length; i++) for (let j = 1; j <= y.length; j++) m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + (x[i - 1] === y[j - 1] ? 0 : 1)); return m[x.length][y.length]; };
+  function wkMatch(t) {
+    const w = String(t || '').toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(Boolean);
+    for (let i = 0; i < w.length; i++) {
+      const x = w[i], near = x.length >= 4 && lev(x, 'pranav') <= 2 && /^[pbf]r/.test(x);
+      if (near && (i > 0 && GREETW.test(w[i - 1]) || x === 'pranav' || x === 'pranab' || x === 'pranay')) return true;
+    }
+    return false;
+  }
+  const pill = document.createElement('button'); pill.type = 'button'; pill.id = 'wkPill'; pill.hidden = true;
+  pill.setAttribute('aria-label', 'Voice wake is on. Click to open Pranav'); document.body.appendChild(pill);
+  const wst = document.createElement('style'); wst.textContent = '#wkPill{position:fixed;right:104px;bottom:34px;z-index:39;max-width:min(300px,calc(100vw - 150px));padding:8px 14px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--text);font:600 12.5px/1.3 inherit;box-shadow:0 8px 22px rgba(19,51,49,.22);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#wkPill[hidden]{display:none}#wkPill small{font-weight:500;color:var(--muted)}#wkPill i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#e11d48;margin-right:7px;animation:mbRec 1.2s ease-out infinite}#wkPill.err i{animation:none;background:#f59e0b}@media(max-width:600px){#wkPill{display:none}}';
+  document.head.appendChild(wst);
+  let wkMsg = '', wkMsgAt = 0;
+  function wkSay(t) { wkMsg = String(t || '').trim().slice(-46); wkMsgAt = Date.now(); wkDraw(); }
+  function wkDraw(err) {
+    const show = wkOn && panel.hidden && !document.hidden;
+    pill.hidden = !show; if (!show) return;
+    pill.className = err ? 'err' : '';
+    pill.innerHTML = '<i></i>' + (err ? esc2(err) : (wkMsg && Date.now() - wkMsgAt < 6000 ? 'Heard: <small>“' + esc2(wkMsg) + '”</small>' : 'Say “Hey Pranav” <small>· listening</small>'));
+  }
+  const esc2 = t => String(t).replace(/[<>&"]/g, c => ({'<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;'}[c]));
+  pill.onclick = () => { openPanel(true); };
+  function wkStop() { if (wkRec) { const r = wkRec; wkRec = null; wkRun = false; r.onend = r.onerror = r.onresult = null; try { r.abort(); } catch (e) {} } }
+  function wkStart() {
+    if (!SR || wkRun || !wkOn) return;
+    wkRun = true; wkLast = Date.now(); wkDraw();
+    const r = new SR(); wkRec = r; r.lang = 'en-IN'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 3;
+    r.onresult = ev => {
+      for (let i = ev.resultIndex; i < ev.results.length; i++) for (let k = 0; k < ev.results[i].length; k++) {
+        { const tx = ev.results[i][k].transcript; if (k === 0) wkSay(tx); if (wkMatch(tx)) { wkStop(); wkHeard(); return; } }
+      }
+    };
+    r.onerror = ev => {
+      const e = ev && ev.error;
+      if (e === 'not-allowed' || e === 'service-not-allowed') { wkOn = false; try { localStorage.setItem(WKEY, '0'); } catch (x) {} wkPaint(); micNote('Mic is blocked, so “Hey Pranav” is off. Allow the microphone in the address bar and turn it on again 🎙️', 6000); }
+      else if (e !== 'no-speech' && e !== 'aborted') { wkFail++; wkDraw(e === 'network' ? 'Voice needs internet' : e === 'audio-capture' ? 'No microphone found' : 'Voice error: ' + e); }
+    };
+    r.onend = () => { if (wkRec !== r) return; wkRec = null; wkRun = false; };
+    try { r.start(); } catch (e) { wkRec = null; wkRun = false; wkFail++; }
+  }
+  function wkHeard() {
+    try { document.dispatchEvent(new MouseEvent('mousemove')); } catch (e) {}
+    lastGreet = Date.now();
+    if (panel.hidden) openPanel(true);
+    setTimeout(() => { respond({h: 'Did you just call me? 👀', mood: 'happy', chips: baseChips()}); input.focus(); }, 350);
+  }
+  // keep it running only while the page is visible, the chat is closed and the mic button is idle
+  setInterval(() => {
+    const want = wkOn && !!SR && panel.hidden && !listening && !document.hidden;
+    wkDraw(); if (!want) { if (wkRec) wkStop(); return; }
+    if (!wkRun && Date.now() - wkLast > (wkFail > 3 ? 8000 : 700)) wkStart();
+  }, 700);
+  if (SR && wkItem) wkItem.hidden = false;
+  wkPaint();
+  window.__ppWake = {
+    toggle() {
+      wkOn = !wkOn; try { localStorage.setItem(WKEY, wkOn ? '1' : '0'); } catch (e) {} wkPaint(); wkFail = 0;
+      if (wkOn) { wkStart(); micNote('Listening for “Hey Pranav” while this tab is open 🎙️', 4500); } else wkStop();
+    }
+  };
   g('mbForm').onsubmit = e => { e.preventDefault(); send(input.value); };
   chips.addEventListener('click', e => { const b = e.target.closest('button[data-q]'); if (b) send(b.dataset.q); });
   msgs.addEventListener('click', e => {
@@ -6113,7 +6184,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       if (act === 'yes' || act === 'no') { if (S.busy) return; a.closest('.mbact').querySelectorAll('button').forEach(b => { b.disabled = true; }); send(act === 'yes' ? 'Yes' : 'No'); }
       else if (act === 'edit') { const r = allRows.find(x => String(x.ID) === a.dataset.id); if (r) { think(() => guideEdit([r], understand('edit this deal'), S.via || 'name'), 300); } }
       else if (act === 'form') { const r = allRows.find(x => String(x.ID) === a.dataset.id); if (r && typeof openEdit === 'function') { try { openEdit(r); } catch (x) {} } }
-      else if (act === 'copyq') { try { navigator.clipboard.writeText('Pranav could not answer: “' + S.asked + '”. Please train it. 🐒'); a.textContent = '✓ Copied'; } catch (x) { a.textContent = 'Copy failed'; } }
+      else if (act === 'copyq') { try { navigator.clipboard.writeText('Pranav could not answer: “' + S.asked + '”. Please train it.'); a.textContent = '✓ Copied'; } catch (x) { a.textContent = 'Copy failed'; } }
       return;
     }
     const nl = e.target.closest('a.mbnum');
@@ -6403,10 +6474,10 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     lastLookTrack = 0;
   }
   const IDLES = [
-    {p: 'scratch', t: 2600, say: ['Ooh ooh, an itch 🙈', 'Hmm, where was I… 🤔']},
+    {p: 'scratch', t: 2600, say: ['Hmm, an itch 🙈', 'Hmm, where was I… 🤔']},
     {p: 'eat', t: 3800, say: ['Nom nom nom 🍌', 'Banana break! 🍌']},
     {p: 'yawn', t: 1600, say: ['Aaaah-hm… 🥱']},
-    {p: 'wave', t: 2200, say: ['Hi there! 👋', 'Ooh ooh! 🐒']},
+    {p: 'wave', t: 2200, say: ['Hi there! 👋', 'Hello again!']},
     {p: 'sit', t: 4200, say: []}
   ];
   async function doIdle(sit) {
@@ -6436,7 +6507,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     {p: 'eat', t: 4400, s: ['Nom nom nom 🍌', 'Banana break! 🍌', 'Mmm… best banana ever 😋']},
     {p: 'dance', t: 4600, s: ['Dance break! 💃', 'Look at me go! 🕺']},
     {p: 'scratch', t: 2800, s: ['Ooh, an itch 🙈', 'Hmm, where was I… 🤔']},
-    {p: 'wave', t: 2400, s: ['Hello hello! 👋', 'Psst, I’m here if you need me 🐒']},
+    {p: 'wave', t: 2400, s: ['Hello hello! 👋', 'Psst, I’m here if you need me']},
     {p: 'clap', t: 2600, s: ['Great work, boss! 👏', 'Yay, numbers! 👏']},
     {p: 'stretch yawn', t: 2300, s: ['Aaah… stretch time 🥱']},
     {p: 'tailplay', t: 3600, s: ['Hehe, my tail! 🙈', 'Gotcha, tail! 🌀']},
@@ -6571,7 +6642,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   }
   svg.addEventListener('pointerenter', () => {
     if (dragging || chatOpen) return;
-    clearTimeout(hoverT); hoverT = setTimeout(() => { if (!dragging && !chatOpen) { say(pick(['Psst — click me if you need help 🍌', 'Tickle tickle! 😆', 'Drag me around if you like 🐒', 'Need a hand? Click me!']), 3200); setMood('happy', 2500); } }, 1300);
+    clearTimeout(hoverT); hoverT = setTimeout(() => { if (!dragging && !chatOpen) { say(pick(['Psst — click me if you need help 🍌', 'Tickle tickle! 😆', 'Drag me around if you like', 'Need a hand? Click me!']), 3200); setMood('happy', 2500); } }, 1300);
   });
   svg.addEventListener('pointerleave', () => clearTimeout(hoverT));
 
@@ -6621,7 +6692,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     const t = toastEl.textContent;
     if (/not saved|fail|error|could not|couldn.t|wrong|unable|denied/i.test(t)) { setMood('cry', 3000); say('Oh no… 😢', 2600); }
     else if (/saved|updated|done|success|added|copied|✓/i.test(t)) {
-      setMood('happy', 2600); setFx('cheer', 1600); say(pick(['Yay! Nicely done 🎉', 'Ooh ooh! Saved! 🍌', 'That’s the way! 👏']), 2600);
+      setMood('happy', 2600); setFx('cheer', 1600); say(pick(['Yay! Nicely done 🎉', 'Saved! 🍌', 'That’s the way! 👏']), 2600);
       if (window.__fx) window.__fx.saved();
       if (/saved to bitrix/i.test(t)) { const n = Date.now(); saves.push(n); while (saves.length && n - saves[0] > 180000) saves.shift(); if (saves.length >= 3 && n - lastStreak > 180000) { lastStreak = n; setTimeout(() => { say('Hat-trick! Three saves in a row 🍌🎉', 3600); setFx('cheer', 2600); fxb(P.x, P.y - H * .7, 26, ['🍌', '🎉', '🎊', '✨'], 1.3); }, 900); } }
     }
@@ -6650,7 +6721,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
 
   /* ================= rest switch ================= */
   function paintMode() {
-    const m = g('monkeyMode'); if (m) m.textContent = rest || reduce ? 'Pranav: resting 😴 (tap to wake)' : 'Pranav: playing 🐒 (tap to rest)';
+    const m = g('monkeyMode'); if (m) m.textContent = rest || reduce ? 'Pranav: resting 😴 (tap to wake)' : 'Pranav: playing (tap to rest)';
   }
   function setRest(v) {
     rest = !!v; try { localStorage.setItem(LS, rest ? '1' : '0'); } catch (e) {}
@@ -6726,7 +6797,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     ov.innerHTML =
       stars + '<div class="ppw-sun"></div>' +
       '<div class="ppw-scene">' + campusSVG() + '</div><div class="ppw-gr"></div>' +
-      '<div class="ppw-txt"><small>Welcome to</small><h2 aria-label="Pranav Pipeline">' + letters + '</h2><p>Hi ' + nm.replace(/[<>&]/g, '') + '! I’m <b>Pranav</b> 🐒 — I keep an eye on every university’s deals for you.</p></div>' +
+      '<div class="ppw-txt"><small>Welcome to</small><h2 aria-label="Pranav Pipeline">' + letters + '</h2><p>Hi ' + nm.replace(/[<>&]/g, '') + '! I’m <b>Pranav</b> — I keep an eye on every university’s deals for you.</p></div>' +
       '<div class="ppw-unis" id="ppwUnis"></div>' +
       '<div class="ppw-mk"><div class="bob">' + rig('grad walk') + '</div></div>' +
       '<div class="ppw-gates"><div class="ppw-gate l"></div><div class="ppw-gate r"></div></div><div class="ppw-seam">P</div><div class="ppw-plaque">PRANAV PIPELINE</div>' +
