@@ -1,7 +1,7 @@
-# 🐒 Pranav Pipeline Dashboard
+# Pranav Pipeline Dashboard
 
 > A login-protected, mobile-friendly web dashboard on top of a **Bitrix24** deal pipeline (Category 46, *Pranav Pipeline*).
-> See every student deal, filter it, report on it, edit it safely, message the student on WhatsApp, and ask **Monkey bot** questions, all from one page on plain **cPanel / PHP hosting**.
+> See every student deal, filter it, report on it, edit it safely, message the student on WhatsApp, and ask **Pranav** (the built-in bot) questions, all from one page on plain **cPanel / PHP hosting**.
 
 ![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4?logo=php&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-vanilla-F7DF1E?logo=javascript&logoColor=black)
@@ -17,8 +17,10 @@
 1. [What this project is](#-what-this-project-is)
 2. [Feature list](#-feature-list)
 3. [Screens and reports](#-screens-and-reports)
-4. [Monkey bot](#-monkey-bot-)
+4. [Pranav, the built-in bot](#-pranav-the-built-in-bot)
 5. [WhatsApp templates](#-whatsapp-templates)
+   - [Voice, sound and the mascot](#-voice-sound-and-the-mascot)
+   - [Images and icons](#-images-and-icons)
 6. [Architecture](#-architecture)
 7. [Folder structure](#-folder-structure)
 8. [Install on cPanel](#-install-on-cpanel)
@@ -45,8 +47,23 @@ The original code was an older university dashboard. This project is a **rebuild
 | Always fresh data | Auto-refresh every **5 minutes**, with a progress bar and "Updated X min ago" label |
 | Safe editing | Edits go back to Bitrix24; comment, name and next follow-up date are enforced |
 | Team separation | Admins see everything; team logins see only their own **Team Name** |
-| Fast answers | Built-in **Monkey bot**, no external AI service |
+| Fast answers | Built-in **Pranav bot**, no external AI service |
 | Low cost | **Bitrix24 is the database** (no separate DB to host), no Composer, no npm, no build step |
+
+
+### 🆕 Latest additions
+
+| Area | What was added |
+|---|---|
+| 🎙️ **Voice** | Speak to Pranav (voice to text), say **"Hey Pranav"** to wake it, replies read aloud in a **male voice with emotion**, a voice picker |
+| 🔊 **Sound** | Gate-opening, chime, squeak, thud, crying and grunt effects, all synthesised in the browser (no audio files) |
+| 🐒 **Corner mascot** | Scared when you drag it, cries while falling, gets angry and walks back home |
+| 🖼️ **Images** | Glossy 3D icon set (63 SVG icons), university photos on the welcome screen, a hero palace image on the dashboard banner |
+| 🙂 **Profile photo** | Each person can upload a photo that replaces their initial everywhere their name shows |
+| 🆕 **New-deals pop-up** | At login, deals created since your last visit, grouped by **Team Name** |
+| 🚪 **Log out** | Menu item renamed, with a confirmation pop-up |
+| 📥 **Dropdowns** | Always open downward and never push the page sideways |
+| 🏷️ **Tab icon** | Browser-tab icon recoloured to match the teal and orange brand |
 
 ---
 
@@ -61,6 +78,11 @@ The original code was an older university dashboard. This project is a **rebuild
 - 🌗 **Dark / light theme** toggle. In night mode the hero scene, clouds, sparkles and background glows are boosted so the animations stay visible.
 - 💾 **Saved views**: save any filtered table under a name; it appears in the sidebar and follows your login to any device.
 - 📱 Mobile-friendly layout (checked at 390 px, no sideways scrolling).
+- 🎬 **Welcome screen** after login: gates open, the mascot walks out and greets you, with a card per university.
+- ⭐ **Priority leads** pop-up and 🆕 **New-deals pop-up** (deals created since your last visit, grouped by Team Name; clicking a deal opens it).
+- 📥 **Excel export** of any filtered table (one coloured sheet plus a summary).
+- 🙂 **Profile photos** that show in the top bar, the account menu, the Activity log, recent activity and the Usage screen.
+- 📥 **Dropdown behaviour**: every filter and menu opens downward and only flips left or right to stay on screen, so the page never jumps sideways.
 
 ### 🔍 Filters
 - Global filter bar: **University, Program, Batch, Mode of payment, Stage, Current semester, Team Name** (admins only).
@@ -93,7 +115,11 @@ Every number in every report, chart and tile is **clickable** and opens exactly 
 ### 👥 Access control
 - **Admin logins** see all data. Several admins are supported.
 - **Team logins** see and edit only deals whose *Team Name* matches. Enforced on the server, not just in the UI.
-- Account menu: edit display name, colour, phone and password.
+- Account menu: **Your profile** (display name, colour, phone, **profile photo**), **Change password**, sound / voice / "Hey Pranav" switches, the corner mascot toggle, **Usage** (admin only), **Refresh data** and **Log out** (asks for confirmation).
+
+### 🙂 Profile photos
+- **Your profile → Upload photo**. The browser crops it square and shrinks it to 256 px; the server re-encodes it (so only pixels are kept) and stores it in `cache/avatars/`.
+- Admins see everyone's photo in the Activity log and Usage; team logins only see their own.
 
 ### 📈 Usage and data health (admin only)
 - **Usage screen** (account menu): page views, bot questions, bot misses, searches, edit forms opened, per-login activity, most-visited pages, questions the bot could not answer, and people per day.
@@ -124,7 +150,7 @@ The app is a **single-page app** with hash routing. The `#/` in the address bar 
 
 ---
 
-## 🐒 Monkey bot 
+## 🤖 Pranav, the built-in bot
 
 A **rule-based, offline** assistant embedded in the page. No AI API, no data leaves your server.
 
@@ -137,9 +163,10 @@ A **rule-based, offline** assistant embedded in the page. No AI API, no data lea
 - ✏️ **Edit requests open the lead's edit form**, with a friendly "that's your work, boss" line. The bot never writes to Bitrix24.
 - ⚠️ **Honest about gaps**: if a word in a question is not understood, the reply says so and states that it was **not** counted.
 - 😢 Unanswerable in-domain questions get the "admin has not trained me" reply (and are logged for the Usage screen); off-topic questions get "out of my jungle".
-- 🎭 Moods and humour, a greeting joke each time it opens.
+- 🎭 Moods and humour, a greeting joke each time it opens. It greets people by the **display name in their profile** (falling back to the username).
+- 🎙️ Voice in and out: see [Voice, sound and the mascot](#-voice-sound-and-the-mascot).
 
-Source: `src/monkey-bot/bot.js`, embedded into `app/index.php` between `<!--MONKEY-->` markers by `tools/inject_bot.py`.
+Source: the bot now lives **inside `app/index.php`**, between the `<!--MONKEY-->` and `<!--/MONKEY-->` markers (voice, speech and sound code sits in the `<!--SFX-->` block just above it). `src/monkey-bot/bot.js` is the older stand-alone copy.
 
 ---
 
@@ -162,17 +189,78 @@ Clicking the 🟢 button next to a phone number opens a pop-up with four options
 
 ---
 
+## 🎙️ Voice, sound and the mascot
+
+All of this runs **in the browser** (Web Speech API and Web Audio). No server code, no audio files, nothing extra to install.
+
+### Talk to Pranav (voice to text)
+- A **mic button** sits next to Send in the chat. Tap it, speak, and the words appear in the text box live. Nothing is sent automatically: press **Send** or **Enter** when you are happy.
+- Language is set to Indian English (`en-IN`).
+
+### "Hey Pranav" wake word (opt-in)
+- Account menu → **Say "Hey Pranav": off / on**. Off by default.
+- When on, a small pill beside the mascot shows *Listening* and the words it last heard, so you can see what the browser understood.
+- Saying "hey / hi / ok / hello + Pranav" (close spellings such as *Pranab* are accepted) opens the chat and Pranav asks **"Did you just call me?"**.
+- It listens only while the tab is visible and the chat is closed, and pauses while the bot is speaking.
+
+### Pranav speaks back
+- If you **dictated** your question, the reply is read aloud. If you typed, it stays silent. The **speaker button** in the chat header switches to "always read replies".
+- A **male English voice** is preferred automatically (Indian English first). If none is installed the pitch is lowered instead.
+- **Emotion**: the voice changes with the bot's mood (happy, excited, surprised, crying, angry, confused) and with punctuation (`!`, `?`, `...`) per sentence.
+- Account menu → **Voice: … · tap to change** cycles through the English voices installed on that device and plays a sample.
+- Account menu → **Sound & voice** is the master switch: it silences every effect and the speech.
+
+### Sound effects
+Synthesised with the Web Audio API: gate creak and clunk, whoosh, welcome chime, squeak, falling whistle, thud, crying, grunt, chat pop, mic blips and the wake ding. If the browser blocks sound on first load, the welcome screen shows **"🔊 Tap for sound"**.
+
+### Corner mascot
+- Roams the page, perches on cards, sleeps when idle, reacts to new deals and overdue follow-ups, and can be fed a banana.
+- **Drag it**: it looks scared, then **cries while falling**, then gets **angry** and walks back to its corner.
+- Account menu lets you put it to rest (setting is remembered per browser).
+- Reduced-motion users get a static, seated mascot.
+
+### Browser support and privacy
+| | |
+|---|---|
+| Chrome, Edge | Full support |
+| Safari | Speech output works; voice input is limited |
+| Firefox | No speech recognition: the mic button and wake word are hidden; speech output works |
+
+- Chrome sends microphone audio to Google's speech service to convert it. It needs internet, and the browser shows a "microphone in use" indicator, constantly when "Hey Pranav" is on. Tell your team before enabling it on a shared floor.
+- Settings are remembered per browser in `localStorage`: `pp_sound`, `pp_voice_all`, `pp_voice_name`, `pp_wake`.
+
+---
+
+## 🖼️ Images and icons
+
+Put an `images/` folder **inside `app/`** (next to `index.php`) in GitHub and upload it to the server beside `index.php`:
+
+```
+app/images/
+  icons/                 63 glossy SVG icons (university.svg, hourglass.svg, ...)
+  universities/          muj.jpg  vit.jpg  smu.jpg  dsu.jpg  amity.jpg   (your own photos)
+  university_hero.png    dashboard banner picture (transparent PNG recommended)
+```
+
+- **Icons** replace the emoji on tiles, the sidebar and stats. Faces and animals stay as native emoji. If an icon is missing, the emoji shows instead, so nothing breaks.
+- **University photos** appear on the welcome screen cards. Name each file after the university's short name; the page finds them automatically (`?imglist=1` lists what the server sees).
+- **Hero picture**: `university_hero.png` (also `.webp`, `.jpg`, `.jpeg`) is fitted into the dashboard banner. Use a PNG with a transparent background so it blends with the banner; the page hides the built-in clouds and trees when it is present.
+- The folder is searched in `images/`, `images/images/` and a few similar paths, so a mis-nested upload still works.
+
+---
+
 ## 🧱 Architecture
 
 ```
 Browser (single-page app, vanilla JS, hash routing)
    │  fetch() + X-CSRF-Token
    ▼
-app/index.php         login, sign-out, whole UI (HTML + CSS + JS, Monkey bot embedded)
+app/index.php         login, sign-out, whole UI (HTML + CSS + JS, Pranav bot embedded)
 app/api.php           JSON API
                         data | refresh | progress | update | activity
                         profile_save | password_change
-                        track | usage | reconcile | views_save
+                        avatar | avatar_save | avatar_del
+                        nd (new-deals pop-up) | track | usage | reconcile | views_save
 app/lib.php           config, sessions, Bitrix24 REST client (cURL), cache, field metadata,
                       edit validation, activity log, usage log, daily backup, reconcile check
 app/refresh.php       optional cron: refresh the cache from the command line
@@ -196,7 +284,9 @@ app/                         ← the only folder you upload to the server
   config.sample.php          ← copy to config.php (git-ignored)
   .htaccess                  ← blocks config/lib/cache, hides /index.php
   cache/.htaccess            ← denies web access to cached data
-src/monkey-bot/bot.js        ← Monkey bot source (injected into app/index.php)
+  cache/avatars/             ← profile photos (created automatically, git-ignored)
+  images/                    ← icons, university photos, hero picture (see Images and icons)
+src/monkey-bot/bot.js        ← older stand-alone copy of the bot (see warning below)
 tools/
   inject_bot.py              ← embed bot.js into app/index.php
   dev.sh                     ← local dev server with a fake Bitrix24
@@ -273,7 +363,9 @@ Key Bitrix24 custom fields used (full list at the top of `app/lib.php`): Documen
 - Writes are POST-only with a per-session **CSRF token**; sessions are regenerated on login; HttpOnly cookies; 8-hour session lifetime; failed logins are delayed.
 - Team logins are restricted **on the server**.
 - The usage log stores the event type, login name, a short detail (page name, search text, bot question) and time. Searches and bot questions are stored as typed, so treat them as not private.
-- Never commit `config.php` or anything under `cache/`.
+- Profile photos are validated server-side (JPEG only, size-limited, re-encoded) and served only to logged-in users.
+- The microphone is used only after the person turns a voice feature on and the browser grants permission.
+- Never commit `config.php` or anything under `cache/` (this includes `cache/avatars/`).
 
 ---
 
@@ -286,6 +378,8 @@ Key Bitrix24 custom fields used (full list at the top of `app/lib.php`): Documen
 | Data source | Bitrix24 REST API (`crm.deal.list/get/update`, `crm.contact.*`, `crm.status.list`, `crm.deal.fields`) via inbound webhook |
 | Hosting | cPanel shared hosting, `.htaccess`, cron |
 | Bot | Hand-written NLP: tokenising, Levenshtein typo fixing, field-value dictionary, rule engine |
+| Voice and sound | Web Speech API (recognition and synthesis), Web Audio API (synthesised effects) |
+| Images | Hand-built SVG icon set, inline SVG campus scene, user-supplied photos |
 | Testing | **Playwright** (headless Chromium), **jsdom**, a **mock Bitrix24 server** (Python) with 1,193 sample deals, local PHP built-in server |
 | Tooling | Python scripts to inject the bot and generate fixtures; **Claude Code** for pair-programming |
 | Version control | Git / GitHub (private repo recommended) |
@@ -318,9 +412,9 @@ Key Bitrix24 custom fields used (full list at the top of `app/lib.php`): Documen
 - Admin / team logins, several admins, `profiles.php` with hashed passwords, activity log "who did what".
 
 ### Phase 6 🎨 Look and feel
-- Violet theme, hero banner, animated login with **monkey mascot** (typing, peeking, detective, celebration), logo, account menu, bar-graph brand mark, dark / light toggle, auto-refresh with progress bar and "Updated X min ago".
+- Hero banner, animated login with a **monkey mascot** (typing, peeking, detective, celebration), logo, account menu, bar-graph brand mark, dark / light toggle, auto-refresh with progress bar and "Updated X min ago".
 
-### Phase 7 🐒 Monkey bot
+### Phase 7 🤖 Pranav bot
 - Spec → rule-based bot → many upgrade rounds: typo handling, field-value dictionary, count engine, how-tos, watcher jokes, edit-opens-lead flow, Hinglish counts, clickable numbers, "semester" payment-mode fix, unrecognised-word warning.
 - Regression suites of a few hundred questions, diffed against saved baselines after every change.
 
@@ -332,7 +426,16 @@ Key Bitrix24 custom fields used (full list at the top of `app/lib.php`): Documen
 ### Phase 9 📞 Counsellor workflow
 - Payment overdue and Docs pending lists, Lead status report, saved views, Updated by column, WhatsApp button and four message templates.
 
-### Phase 10 📦 Packaging
+### Phase 10 🎨 Polish: images, mascot and account
+- Glossy 3D SVG icon set, university photos and hero palace image, redrawn welcome campus, hidden clouds / trees when the hero image is used.
+- Downward-only dropdowns, new-deals pop-up, simplified account menu with a confirmed **Log out**, teal tab icon.
+- Corner mascot reactions (scared, crying, angry, back home).
+
+### Phase 11 🎙️ Voice, sound and profile photos
+- Voice to text, "Hey Pranav" wake word with a live "heard" pill, spoken replies in a male voice with emotion, a voice picker, synthesised sound effects and a master mute.
+- Profile photos everywhere a name appears. The bot now greets people by profile name and no longer calls itself a monkey.
+
+### Phase 12 📦 Packaging
 - GitHub-ready project: `app/`, `src/`, `tools/`, `tests/`, `.gitignore`, config sample with placeholders only, and this README.
 
 ---
@@ -344,15 +447,12 @@ Requirements: PHP 7.4+, Python 3, Node 18+ (tests only).
 ```bash
 tools/dev.sh        # fake Bitrix24 + dashboard on http://127.0.0.1:8080  (admin / S3cret-Pass-123)
 
-# after editing the bot
-python3 tools/inject_bot.py
-
 # bot tests (dev server must be running)
 cd tests/bot && npm install && npx playwright install chromium
 node run.js bt2_q.json        # prints each question with the bot's answer
 ```
 
-> ✏️ Edit the bot in `src/monkey-bot/bot.js`, never inside the `<!--MONKEY-->` block of `app/index.php`: re-injecting overwrites it.
+> ⚠️ **Do not run `tools/inject_bot.py` any more.** The bot has since been edited directly inside `app/index.php` (voice, name handling, wording), and re-injecting the older `src/monkey-bot/bot.js` would overwrite those changes. Edit the `<!--MONKEY-->` block in `app/index.php` instead, or first copy it back into `src/` if you want the split layout again.
 
 > ⚠️ All development testing used **mock data**. Run the **Data health check** and spot-check numbers against Bitrix24 on your live data.
 
@@ -365,9 +465,12 @@ node run.js bt2_q.json        # prints each question with the bot's answer
 | 🔑 Passkey / fingerprint sign-in (WebAuthn) | Built and tested, then **removed** on request. The browser's "ask for PC password before autofill" prompt is a browser setting; a website cannot force it. |
 | 📞 Call icon next to phone numbers | Removed; only WhatsApp remains |
 | 🪟 Reuse one WhatsApp tab | **Not possible** from a website: WhatsApp Web severs the link to the opener. A desktop-app mode exists instead; a Chrome extension was offered and declined |
-| 🖼️ Per-option icon set in the sidebar | Rejected |
+| 🖼️ Per-option emoji icon set in the sidebar | Replaced later by the glossy 3D icon set (see Images) |
 | 🌐 `pranavpipeline.com` domain | Optional, not required |
 | 🔐 Password hardening | Offered, declined for now (see Known limitations) |
+| ☁️ Generated realistic clouds for the hero banner | Dropped; the hero picture is supplied by the owner |
+| 📲 *WhatsApp opens in…*, *Follow-up overdue*, *Search* and *Activity log* items in the account menu | Removed to keep the menu short (all still reachable from the page itself) |
+| 🐒 Calling the bot "the monkey" in its replies | Removed; the bot is just Pranav. The corner mascot is still drawn as a monkey |
 
 ---
 
@@ -379,6 +482,9 @@ node run.js bt2_q.json        # prints each question with the bot's answer
 - The Lead status grouping is wording-based; check the printed group list once.
 - WhatsApp opens a new browser tab on each click (browser limitation). The desktop-app mode avoids this but needs the app installed.
 - WhatsApp signatures come from each user's profile; an empty profile falls back to the sample signer.
+- **Voice** needs Chrome or Edge for dictation and "Hey Pranav". The wake word only works while the tab is open and visible, and it cannot judge loudness, only words. Voice quality and the male voice depend on the voices installed on each device (Edge's "Natural" voices are best). Chrome's online voices may ignore pitch.
+- Browsers can block sound on first load; the welcome screen then offers a tap-for-sound button.
+- Profile photos are stored as files under `cache/`; keep that folder writable and out of Git.
 - Mock-data tested; the Bitrix24 cross-check, daily e-mail delivery and real-WhatsApp opening should be verified once on live systems.
 
 ---
@@ -394,6 +500,13 @@ node run.js bt2_q.json        # prints each question with the bot's answer
 | `500` after editing `.htaccess` | Remove the `<FilesMatch>` block first; keep the `<IfModule mod_rewrite.c>` block |
 | Summary e-mail not arriving | Check `summary_admin` / `summary_to`, the cron job, and that PHP `mail()` is enabled on the host |
 | WhatsApp message shows the wrong signer | Fill in *Your profile* → display name and phone |
+| Icons or university photos not showing | The `images/` folder must sit next to `index.php` on the server. Open `…/index.php?imglist=1` to see which folders and files the server finds |
+| Mic button missing | The browser has no speech recognition (Firefox). Use Chrome or Edge |
+| "Mic is blocked" | Click the lock icon in the address bar → Microphone → Allow, then reload |
+| "Hey Pranav" does nothing | Turn it on in the account menu, then check the pill: it should show *Listening* and the words heard. No pill = switch is off or the mic is blocked |
+| No welcome sound | The browser blocked it; tap **🔊 Tap for sound** on the welcome screen. Check **Sound & voice** is on |
+| Voice sounds female or flat | Account menu → **Voice** → tap until a male voice appears; in Edge pick a *Natural* voice |
+| Profile photo will not upload | Use a JPG or PNG under a few MB; make sure `cache/` is writable |
 
 ---
 
@@ -401,9 +514,9 @@ node run.js bt2_q.json        # prints each question with the bot's answer
 
 - 🔒 Hash all passwords in `config.php`, per-IP login lockout, idle-session timeout.
 - 📲 WhatsApp summaries (needs a paid messaging API).
-- 📤 Excel export of any filtered view.
 - 🧾 Unit tests for the validation rules in `lib.php`.
 - 🔗 Optional history-API routing (clean URLs without `#/`).
+- 🗣️ Language switch for voice input (Hindi, Tamil, Kannada).
 - 🧠 Review the Usage screen's "bot could not answer" list weekly and add the missing phrasing.
 
 ---
