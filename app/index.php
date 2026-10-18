@@ -1311,6 +1311,8 @@ a.wapp{display:inline-flex;align-items:center;justify-content:center;flex:none;w
         <div class="uhd"><span class="av" id="uAv2"></span><span class="t"><small>Signed in as</small><b id="uNm2"></b><em id="uUn2"></em></span></div>
         <button type="button" role="menuitem" data-a="profile"><i>👤</i>Your profile</button>
         <button type="button" role="menuitem" data-a="pwd"><i>🔑</i>Change password</button>
+        <button type="button" role="menuitem" data-a="sound"><i>🔊</i><span id="soundMode">Sound &amp; voice: on 🔊</span></button>
+        <button type="button" role="menuitem" data-a="voice"><i>🗣️</i><span id="voiceName">Voice: default</span></button>
         <button type="button" role="menuitem" data-a="wake" id="wakeItem" hidden><i>🎙️</i><span id="wakeMode">Say “Hey Pranav”: off</span></button>
         <button type="button" role="menuitem" data-a="monkey"><i>🐒</i><span id="monkeyMode">Pranav: playing (tap to rest)</span></button>
         <?php if (user_scope() === null) { ?><button type="button" role="menuitem" data-a="usage"><i>📊</i>Usage (who uses what)</button><?php } ?>
@@ -4093,6 +4095,8 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     else if (a === 'wa') { try { localStorage.setItem(WA_KEY, waMode() === 'app' ? 'web' : 'app'); } catch (x) {} paintWaMode(); toastWa(); }
     else if (a === 'monkey') { if (window.__monkeyLife) window.__monkeyLife.toggle(); }
     else if (a === 'wake') { if (window.__ppWake) window.__ppWake.toggle(); }
+    else if (a === 'sound') { if (window.PPSound) window.PPSound.toggle(); }
+    else if (a === 'voice') { if (window.PPSound) window.PPSound.nextVoice(); }
     else if (a === 'search') { const s = g('gsearch'); if (s) { s.focus(); s.select(); } }
     else if (a === 'refresh') g('btnRefresh').click();
   });
@@ -4328,6 +4332,146 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   window.addEventListener('load', apply);
 })();
 </script>
+<!--SFX-->
+<script>
+(function () {
+  const KEY = 'pp_sound', VKEY = 'pp_voice_all';
+  let on = true, all = false;
+  try { on = localStorage.getItem(KEY) !== '0'; all = localStorage.getItem(VKEY) === '1'; } catch (e) {}
+  let ctx = null, master = null, speaking = false, pending = null, pendingAt = 0, noise = null;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  function ac() {
+    if (!AC) return null;
+    if (!ctx) { try { ctx = new AC(); master = ctx.createGain(); master.gain.value = .55; master.connect(ctx.destination); } catch (e) { ctx = null; return null; } }
+    return ctx;
+  }
+  const locked = () => !!ac() && ctx.state !== 'running';
+  function nb() {
+    if (noise) return noise;
+    const n = ctx.sampleRate * 1.5, b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; return (noise = b);
+  }
+  // one oscillator with a pitch glide and a gain envelope
+  function tone(f0, f1, dur, type, vol, at, vib) {
+    const t = ctx.currentTime + (at || 0), o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(f0, t); if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol || .2, t + Math.min(.03, dur / 4)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    if (vib) { const l = ctx.createOscillator(), lg = ctx.createGain(); l.frequency.value = vib[0]; lg.gain.value = vib[1]; l.connect(lg); lg.connect(o.frequency); l.start(t); l.stop(t + dur + .05); }
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + .05);
+  }
+  function hiss(f0, f1, dur, vol, at, q, kind) {
+    const t = ctx.currentTime + (at || 0), s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    s.buffer = nb(); f.type = kind || 'bandpass'; f.Q.value = q || 1; f.frequency.setValueAtTime(f0, t); if (f1) f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol || .2, t + dur * .25); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(f); f.connect(g); g.connect(master); s.start(t, Math.random() * .5); s.stop(t + dur + .05);
+  }
+  const FX = {
+    gate() { hiss(160, 90, 1.9, .5, 0, .7, 'lowpass'); tone(95, 55, 1.6, 'sawtooth', .07, .05, [7, 6]); tone(220, 180, .12, 'square', .08, 0); tone(1400, 900, .5, 'triangle', .03, .2, [18, 60]); tone(70, 38, .35, 'sine', .35, 1.75); hiss(900, 200, .25, .25, 1.75, 1, 'lowpass'); },
+    whoosh() { hiss(350, 2600, .55, .35, 0, 1.2); },
+    chime() { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => { tone(f, f, .55, 'triangle', .16, i * .11); tone(f * 2, f * 2, .35, 'sine', .04, i * .11); }); },
+    eek() { [0, .13, .26].forEach(d => tone(950, 1700, .11, 'sine', .14, d, [30, 40])); },
+    fall() { tone(1300, 180, .95, 'sine', .14, 0, [9, 25]); hiss(1500, 300, .9, .06, 0, .8); },
+    thud() { tone(130, 38, .2, 'sine', .45, 0); hiss(600, 100, .15, .2, 0, 1, 'lowpass'); },
+    cry() { [0, .5, 1.0].forEach(d => { tone(560, 380, .42, 'triangle', .13, d, [8, 14]); tone(1120, 760, .42, 'sine', .03, d); }); },
+    grunt() { [0, .28].forEach(d => { tone(125, 82, .26, 'sawtooth', .12, d, [22, 5]); hiss(400, 160, .22, .08, d, 1, 'lowpass'); }); },
+    pop() { tone(520, 880, .09, 'sine', .14, 0); },
+    blip() { tone(740, 1100, .08, 'sine', .12, 0); },
+    unblip() { tone(900, 560, .08, 'sine', .1, 0); },
+    ding() { tone(880, 880, .22, 'sine', .15, 0); tone(1320, 1320, .3, 'sine', .12, .12); }
+  };
+  function play(name) {
+    if (!on) return false; const c = ac(); if (!c || !FX[name]) return false;
+    if (c.state !== 'running') { try { c.resume(); } catch (e) {} if (c.state !== 'running') return false; }
+    try { FX[name](); } catch (e) { return false; } return true;
+  }
+  /* ---------- voice ---------- */
+  const synth = window.speechSynthesis;
+  const MALE = /\b(male|ravi|prabhat|madhur|hemant|rishi|david|mark|george|james|guy|daniel|aaron|brian|ryan|christopher|eric|roger|steffan|alex|fred|thomas|oliver|arthur|reed|rocko|ravi)\b/i, FEM = /female|woman|heera|veena|neerja|swara|kalpana|zira|samantha|susan|hazel|aria|jenny|libby|sonia|karen|moira|tessa|fiona|victoria|google हिन्दी/i;
+  const isMale = v => !!v && MALE.test(v.name) && !FEM.test(v.name);
+  function enVoices() {
+    if (!synth) return []; const v = (synth.getVoices() || []).filter(x => /^en/i.test(x.lang));
+    const rank = x => (isMale(x) ? 100 : FEM.test(x.name) ? 0 : 40) + (/^en[-_]IN/i.test(x.lang) ? 30 : /^en[-_]GB/i.test(x.lang) ? 20 : /^en[-_]US/i.test(x.lang) ? 15 : 5) + (/natural|neural|online/i.test(x.name) ? 8 : 0) + (/google/i.test(x.name) ? 4 : 0);
+    return v.sort((a, b) => rank(b) - rank(a));
+  }
+  let chosen = ''; try { chosen = localStorage.getItem('pp_voice_name') || ''; } catch (e) {}
+  function pickVoice() { const l = enVoices(); return l.find(x => x.name === chosen) || l[0] || null; }
+  // emotion -> how the voice is shaped (pitch, speed, loudness)
+  const EMO = {
+    happy: {p: 1.12, r: 1.1, v: 1}, excited: {p: 1.28, r: 1.22, v: 1}, surprised: {p: 1.4, r: 1.12, v: 1},
+    cry: {p: .78, r: .8, v: .8}, angry: {p: .7, r: 1.15, v: 1}, conf: {p: 1.08, r: .9, v: 1}, think: {p: 1, r: .95, v: 1}, idle: {p: 1, r: 1, v: 1}
+  };
+  function feel(sen, mood) {
+    let m = EMO[mood] ? mood : 'idle';
+    if (m === 'idle' || m === 'happy' || m === 'think') {
+      if (/(!{1,}\s*$)|\b(yay|hooray|great|awesome|congrat|wow|amazing|superb)\b/i.test(sen)) m = 'excited';
+      if (/\b(whoa|oh no|oops|really|what)\b|\?!|!\?/i.test(sen)) m = 'surprised';
+    }
+    const e = EMO[m]; let p = e.p, r = e.r;
+    if (/\?\s*$/.test(sen)) p += .1;               // questions lift
+    if (/\.\.\.|…/.test(sen)) r -= .08;            // trailing off is slower
+    if (/!\s*$/.test(sen) && m !== 'cry' && m !== 'angry') { p += .06; r += .04; }
+    return {p: p, r: r, v: e.v, m: m};
+  }
+  function speakNow(text, mood) {
+    if (!synth || !text) return false;
+    try {
+      synth.cancel(); const v = pickVoice(), male = isMale(v), base = male ? .92 : .78;   // no male voice installed: lower the pitch instead
+      const parts = text.match(/[^.!?…]+[.!?…]*/g) || [text]; let left = 0;
+      parts.map(x => x.trim()).filter(Boolean).forEach(sen => {
+        const f = feel(sen, mood), u = new SpeechSynthesisUtterance(sen);
+        if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-IN';
+        u.pitch = Math.max(0, Math.min(2, base * f.p)); u.rate = Math.max(.5, Math.min(1.8, f.r)); u.volume = f.v;
+        left++;
+        u.onstart = () => { speaking = true; window.__ppSpeaking = true; };
+        u.onend = u.onerror = () => { if (--left <= 0) { speaking = false; window.__ppSpeaking = false; } };
+        setTimeout(() => { try { synth.speak(u); } catch (e) { left--; } }, 0);
+      });
+      return true;
+    } catch (e) { return false; }
+  }
+  function clean(t) {
+    t = String(t || '').replace(/<(style|script)[\s\S]*?<\/\1>/gi, ' ').replace(/<br\s*\/?>|<\/(p|div|li|ul|ol)>/gi, '. ').replace(/<[^>]+>/g, ' ');
+    const d = document.createElement('textarea'); d.innerHTML = t; t = d.value;
+    t = t.replace(/[\u{1F000}-\u{1FFFF}\u{2190}-\u{21FF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, ' ').replace(/₹/g, ' rupees ').replace(/#(\d+)/g, ' number $1').replace(/[“”"*_`]/g, '').replace(/\s*[·•|]\s*/g, ', ').replace(/\s+/g, ' ').replace(/(\.\s*){2,}/g, '. ').trim();
+    if (t.length > 320) { t = t.slice(0, 320); const i = Math.max(t.lastIndexOf('. '), t.lastIndexOf('? '), t.lastIndexOf('! ')); t = i > 120 ? t.slice(0, i + 1) : t; }
+    return t;
+  }
+  function speak(text, mood) {
+    if (!on) return; const t = clean(text); if (!t) return;
+    const wait = mood === 'cry' ? 700 : mood === 'angry' ? 450 : 0;
+    if (wait) { play(mood === 'cry' ? 'cry' : 'grunt'); setTimeout(() => speakNow(t, mood), wait); } else speakNow(t, mood);
+  }
+  function voiceLabel() { const v = pickVoice(); return v ? v.name.replace(/^(Microsoft|Google)\s+/i, '').replace(/\s*-\s*English.*$/i, '').slice(0, 26) + (isMale(v) ? ' (male)' : '') : 'default'; }
+  function nextVoice() {
+    const l = enVoices(); if (!l.length) return false; const i = l.findIndex(x => x.name === (pickVoice() || {}).name), n = l[(i + 1) % l.length];
+    chosen = n.name; try { localStorage.setItem('pp_voice_name', chosen); } catch (e) {} paint(); if (on) speakNow('Hi, I am Pranav. How does this voice sound?', 'happy'); return true;
+  }
+  function stopVoice() { try { if (synth) synth.cancel(); } catch (e) {} speaking = false; window.__ppSpeaking = false; }
+  if (synth && synth.addEventListener) synth.addEventListener('voiceschanged', () => { try { paint(); } catch (e) {} });
+  /* ---------- browsers only allow sound after a tap: remember the welcome and play it on the first tap ---------- */
+  function unlock() {
+    const c = ac(); if (!c) return; try { c.resume(); } catch (e) {}
+    if (pending && Date.now() - pendingAt < 15000) { const f = pending; pending = null; setTimeout(f, 60); } else pending = null;
+  }
+  ['pointerdown', 'keydown', 'touchstart'].forEach(ev => window.addEventListener(ev, unlock, {capture: true, passive: true}));
+  window.PPSound = {
+    get on() { return on; }, get all() { return all; }, get speaking() { return speaking; }, locked: locked,
+    play: play, speak: speak, stop: stopVoice, clean: clean, nextVoice: nextVoice, voices: enVoices,
+    later(fn) { pending = fn; pendingAt = Date.now(); },
+    toggle() { on = !on; try { localStorage.setItem(KEY, on ? '1' : '0'); } catch (e) {} if (!on) stopVoice(); else play('ding'); paint(); return on; },
+    setAll(v) { all = !!v; try { localStorage.setItem(VKEY, all ? '1' : '0'); } catch (e) {} paint(); return all; }
+  };
+  function paint() {
+    const vn = document.getElementById('voiceName'); if (vn) vn.textContent = 'Voice: ' + voiceLabel() + ' · tap to change';
+    const m = document.getElementById('soundMode'); if (m) m.textContent = 'Sound & voice: ' + (on ? 'on 🔊' : 'off 🔇');
+    const b = document.getElementById('mbSpk'); if (b) { b.classList.toggle('on', all && on); b.title = 'Read replies aloud: ' + (all ? 'always' : 'only when I speak'); b.setAttribute('aria-pressed', all ? 'true' : 'false'); }
+  }
+  window.__ppSoundPaint = paint;
+  document.addEventListener('DOMContentLoaded', paint); window.addEventListener('load', paint); paint();
+  window.addEventListener('pagehide', stopVoice);
+})();
+</script>
+<!--/SFX-->
 <!--MONKEY-->
 <script>
 (function () {
@@ -5097,7 +5241,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     '.mbf .mbmic{background:var(--bg);color:#12877f;border:1.5px solid var(--line);display:grid;place-items:center;padding:0;transition:background .2s,color .2s}.mbf .mbmic svg{width:20px;height:20px}.mbf .mbmic:hover{border-color:#2cdace}.mbf .mbmic[hidden]{display:none}' +
     '.mbf .mbmic.rec{background:#e11d48;color:#fff;border-color:#e11d48;animation:mbRec 1.2s ease-out infinite}@keyframes mbRec{0%{box-shadow:0 0 0 0 rgba(225,29,72,.5)}100%{box-shadow:0 0 0 12px rgba(225,29,72,0)}}.mbf input.lis{border-color:#e11d48;background:color-mix(in srgb,#e11d48 6%,var(--bg))}' +
     '.mbf button{width:44px;border:0;border-radius:14px;background:linear-gradient(135deg,#2cdace,#28c1b6);color:#fff;font-size:18px;cursor:pointer}.mbf button:disabled{opacity:.5}' +
-    '.mbhead svg .mbhap,.mbhead svg .mbm2x{display:none}' +
+    '.mbhead svg .mbhap,.mbhead svg .mbm2x{display:none}.mbhb #mbSpk.on{background:rgba(255,255,255,.55);color:#0d5c56}' +
     /* face moods */
     '.mbx{overflow:visible}.mbx .mbe{transform-box:fill-box;transform-origin:center;animation:mbBlink 5s infinite}@keyframes mbBlink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}' +
     '.mbx .mbp{transition:transform .25s}.mbx .mbhap{display:none;fill:none;stroke:#2a1a12;stroke-width:5;stroke-linecap:round}.mbx .mbbr{fill:none;stroke:#5a3118;stroke-width:5;stroke-linecap:round;transform-box:fill-box;transform-origin:center;transition:transform .3s}' +
@@ -5120,7 +5264,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="mbface" viewBox="0 0 200 190"><circle cx="36" cy="106" r="22" fill="#8a5632"/><circle cx="36" cy="106" r="12" fill="#f0c7a0"/><circle cx="164" cy="106" r="22" fill="#8a5632"/><circle cx="164" cy="106" r="12" fill="#f0c7a0"/><circle cx="100" cy="102" r="64" fill="#9a6338"/><path d="M100 72c-14-14-46-6-46 24 0 14 6 22 14 28 4 18 18 30 32 30s28-12 32-30c8-6 14-14 14-28 0-30-32-38-46-24z" fill="#f4d5b0"/><ellipse cx="78" cy="102" rx="13" ry="15" fill="#fff"/><circle cx="78" cy="104" r="7" fill="#2a1a12"/><ellipse cx="122" cy="102" rx="13" ry="15" fill="#fff"/><circle cx="122" cy="104" r="7" fill="#2a1a12"/><ellipse cx="100" cy="127" rx="9" ry="6" fill="#6b3f22"/><path d="M84 141q16 14 32 0" fill="none" stroke="#6b3f22" stroke-width="3.5" stroke-linecap="round"/></symbol></defs></svg>' +
     '<button class="mbl hasq" id="mbOpen" type="button" aria-label="Open Pranav" aria-expanded="false"><span class="mbtip">Ask Pranav</span><svg class="mbx" id="mbLaunch" viewBox="0 0 200 190" aria-hidden="true">' + FACE + '</svg></button>' +
     '<section class="mbp2" id="mbPanel" role="dialog" aria-label="Pranav chat" hidden>' +
-    '<div class="mbh mbhead"><div class="av"><svg class="mbx" id="mbHead" viewBox="0 0 200 190" aria-hidden="true">' + FACE + '</svg></div><div class="sp"><h3>Pranav</h3><p id="mbSub">Pranav Pipeline’s own assistant · ask me anything</p></div><div class="mbhb"><button type="button" id="mbClear" title="Clear chat" aria-label="Clear chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M18.5 2.5V7H14"/></svg></button><button type="button" id="mbClose" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>' +
+    '<div class="mbh mbhead"><div class="av"><svg class="mbx" id="mbHead" viewBox="0 0 200 190" aria-hidden="true">' + FACE + '</svg></div><div class="sp"><h3>Pranav</h3><p id="mbSub">Pranav Pipeline’s own assistant · ask me anything</p></div><div class="mbhb"><button type="button" id="mbSpk" title="Read replies aloud: only when I speak" aria-label="Read replies aloud" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg></button><button type="button" id="mbClear" title="Clear chat" aria-label="Clear chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M18.5 2.5V7H14"/></svg></button><button type="button" id="mbClose" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>' +
     '<div class="mbmsgs" id="mbMsgs" aria-live="polite"></div><div class="mbch" id="mbChips"></div>' +
     '<form class="mbf" id="mbForm" autocomplete="off"><input id="mbIn" type="text" maxlength="400" placeholder="Ask me anything about the deals…" aria-label="Message Pranav"><button type="button" class="mbmic" id="mbMic" aria-label="Speak your question" title="Speak your question"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8.5 21h7"/></svg></button><button type="submit" aria-label="Send">➤</button></form></section>';
   document.body.appendChild(wrap);
@@ -5159,7 +5303,8 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     if (rep.deal && rep.actions) { S.deal = rep.deal; h += actionsFor(rep.deal); }
     if (rep.copy) track('bot_miss', S.asked);
     if (rep.copy) h += '<div class="mbact"><button type="button" data-act="copyq">📋 Copy my question for the admin</button></div>';
-    addBot(h);
+    const d0 = addBot(h);
+    try { if (window.PPSound && window.PPSound.on) { window.PPSound.play('pop'); if (S.speakNext || window.PPSound.all) { S.speakNext = false; window.PPSound.speak(h, rep.mood); } } } catch (e) {}
     mood(rep.mood || 'idle');
     g('mbSub').textContent = rep.mood === 'cry' ? 'Sniff… I need more training 😭' : rep.mood === 'conf' ? 'Hmm? That is not my jungle 🙈' : 'Pranav Pipeline’s own assistant · ask me anything';
     setChips(rep.chips || dealChips());
@@ -5954,6 +6099,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
 
   async function send(text) {
     text = String(text || '').trim(); if (!text || S.busy) return;
+    S.speakNext = !!S.voiceDraft; S.voiceDraft = false; try { if (window.PPSound) window.PPSound.stop(); } catch (e) {}
     addMe(text); input.value = ''; S.asked = text; setChips([]); track('bot', text);
     await think(() => brain(text), Math.min(900, 380 + text.length * 6));
   }
@@ -6082,7 +6228,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       if (listening) { try { rec.stop(); } catch (e) {} return; }
       micErr = ''; input.value = ''; try { wkStop(); } catch (e) {}
       rec = new SR(); rec.lang = 'en-IN'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
-      rec.onstart = () => { listening = true; micB.classList.add('rec'); input.classList.add('lis'); input.placeholder = 'Listening… speak now 🎙️'; micB.title = 'Tap to stop'; };
+      rec.onstart = () => { try { window.PPSound && window.PPSound.play('blip'); window.PPSound && window.PPSound.stop(); } catch (e) {} listening = true; micB.classList.add('rec'); input.classList.add('lis'); input.placeholder = 'Listening… speak now 🎙️'; micB.title = 'Tap to stop'; };
       rec.onresult = ev => { let f = '', i2 = ''; for (let i = 0; i < ev.results.length; i++) { const r = ev.results[i]; if (r.isFinal) f += r[0].transcript; else i2 += r[0].transcript; } input.value = (f + ' ' + i2).replace(/\s+/g, ' ').trim(); };
       rec.onerror = ev => {
         const e = ev && ev.error; if (e === 'aborted') return; micErr = e || 'err';
@@ -6090,8 +6236,8 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       };
       rec.onend = () => {
         listening = false; micB.classList.remove('rec'); input.classList.remove('lis'); input.placeholder = PH; micB.title = 'Speak your question';
-        const t = input.value.trim();
-        if (!micErr && t) { input.focus(); try { input.setSelectionRange(t.length, t.length); } catch (e) {} } else if (micErr === 'x') input.value = '';
+        const t = input.value.trim(); try { window.PPSound && window.PPSound.play('unblip'); } catch (e) {}
+        if (!micErr && t) { S.voiceDraft = true; input.focus(); try { input.setSelectionRange(t.length, t.length); } catch (e) {} } else if (micErr === 'x') input.value = '';
         else if (!micErr) micNote('I did not catch that. Tap the mic and try again 🙉', 3500);
       };
       try { rec.start(); } catch (e) { micNote('Voice did not start. Please try again.', 3500); }
@@ -6147,13 +6293,13 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   }
   function wkHeard() {
     try { document.dispatchEvent(new MouseEvent('mousemove')); } catch (e) {}
-    lastGreet = Date.now();
+    lastGreet = Date.now(); S.speakNext = true; try { window.PPSound && window.PPSound.play('ding'); } catch (e) {}
     if (panel.hidden) openPanel(true);
     setTimeout(() => { respond({h: 'Did you just call me? 👀', mood: 'happy', chips: baseChips()}); input.focus(); }, 350);
   }
   // keep it running only while the page is visible, the chat is closed and the mic button is idle
   setInterval(() => {
-    const want = wkOn && !!SR && panel.hidden && !listening && !document.hidden;
+    const want = wkOn && !!SR && panel.hidden && !listening && !document.hidden && !window.__ppSpeaking;
     wkDraw(); if (!want) { if (wkRec) wkStop(); return; }
     if (!wkRun && Date.now() - wkLast > (wkFail > 3 ? 8000 : 700)) wkStart();
   }, 700);
@@ -6165,6 +6311,9 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       if (wkOn) { wkStart(); micNote('Listening for “Hey Pranav” while this tab is open 🎙️', 4500); } else wkStop();
     }
   };
+  input.addEventListener('keydown', e => { if (e.key.length === 1 || e.key === 'Backspace') S.voiceDraft = false; });
+  g('mbSpk').onclick = () => { if (window.PPSound) { const v = window.PPSound.setAll(!window.PPSound.all); micNote(v ? 'I will read every reply aloud 🔊' : 'I will read replies aloud only when you speak 🎙️', 3500); if (!v) window.PPSound.stop(); } };
+  try { window.__ppSoundPaint && window.__ppSoundPaint(); } catch (e) {}
   g('mbForm').onsubmit = e => { e.preventDefault(); send(input.value); };
   chips.addEventListener('click', e => { const b = e.target.closest('button[data-q]'); if (b) send(b.dataset.q); });
   msgs.addEventListener('click', e => {
@@ -6302,6 +6451,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   let W = 96, H = 123, SC = 1;
   const P = {x: innerWidth - 100, y: innerHeight - 4, s: 1};
   let face = 1, rot = 0, pose = '', fx = '', moodCls = '', loc = 'ground', perchEl = null, perchTop = 0, edgeSide = 'right';
+  const sfx = n => { try { window.PPSound && window.PPSound.play(n); } catch (e) {} };
   let tok = 0, chatOpen = false, dragging = false, lastAct = Date.now(), asleep = false, alive = true, started = false, welcomeOn = false;
   const sl = new Set();
   let season = '', acting = false;
@@ -6606,7 +6756,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     if (!down) return;
     if (!down.moved && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 7) {
       clearTimeout(down.lt); down.moved = true; dragging = true; cancel(); asleep = false; el.classList.add('drag'); loc = 'air'; perchEl = null;
-      setPose('drag'); setMood('scared'); say(pick(['Eeek! Put me down! 🙈','Aaah! Too high! Too high! 😱','Let go, let go, LET GO! 🙀']), 4000);
+      setPose('drag'); setMood('scared'); sfx('eek'); say(pick(['Eeek! Put me down! 🙈','Aaah! Too high! Too high! 😱','Let go, let go, LET GO! 🙀']), 4000);
     }
     if (down.moved) {
       face = 1; P.s = 1; P.x = clamp(e.clientX, W / 2, innerWidth - W / 2); P.y = clamp(e.clientY + H - 10, H, innerHeight + 40);
@@ -6627,14 +6777,14 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   svg.addEventListener('pointerup', upFn); svg.addEventListener('pointercancel', upFn);
   async function drop() {
     cancel(); const y0 = P.y, x0 = P.x, gy = ground();
-    setMood('cry'); setPose('leap'); say(pick(['Waaaah! 😭','Aaaaah! Waaah! 😭']), 2200);
+    sfx('fall'); setMood('cry'); setPose('leap'); say(pick(['Waaaah! 😭','Aaaaah! Waaah! 😭']), 2200);
     const fall = Math.max(420, Math.sqrt(Math.max(0, gy - y0)) * 46);
     let ok = await tween(fall, k => { P.y = y0 + (gy - y0) * k * k; rot = (1 - k) * rot; render(); });
     if (ok) {
       rot = 0; setPose(''); setFx('land', 320); loc = 'ground'; render();
-      setMood('cry'); say('Ouch... that hurt! 😭', 1500); await sleep(1500);
+      sfx('thud'); setTimeout(() => sfx('cry'), 250); setMood('cry'); say('Ouch... that hurt! 😭', 1500); await sleep(1500);
       if (!ok || dragging) return;
-      setMood('angry'); say(pick(['Hmph! Who did that?! 😤','That was NOT funny! 😠','Grrr... I\u2019m going back! 😡']), 2800); await sleep(1700);
+      sfx('grunt'); setMood('angry'); say(pick(['Hmph! Who did that?! 😤','That was NOT funny! 😠','Grrr... I\u2019m going back! 😡']), 2800); await sleep(1700);
       if (dragging) return;
       await park();
       if (!dragging) setMood('');
@@ -6769,6 +6919,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     '.ppw-mk .mkr{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 10px 10px rgba(8,38,36,.4))}' +
     '.ppw-mk .bob{width:100%;height:100%;animation:ppwBob .3s 1.9s ease-in-out 5 alternate both}@keyframes ppwBob{from{transform:translateY(0)}to{transform:translateY(-3.5vh)}}' +
     '.ppw-gr{position:absolute;left:-5%;right:-5%;bottom:0;height:13vh;background:radial-gradient(120% 100% at 50% 0,#2f8f4e 0,#14532d 60%,#052e16 100%);border-radius:50% 50% 0 0/22px 22px 0 0;z-index:2}' +
+    '.ppw-snd{position:absolute;left:16px;bottom:16px;z-index:9;padding:8px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.14);color:#fff;font-weight:700;font-size:13px;cursor:pointer;animation:ppwTw 1.6s ease-in-out infinite}' +
     '.ppw-skip{position:absolute;right:16px;bottom:16px;z-index:9;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.14);color:#fff;border-radius:999px;padding:8px 16px;font:600 13px system-ui;cursor:pointer;backdrop-filter:blur(6px);opacity:0;animation:ppwUp .5s .8s both}.ppw-skip:hover{background:rgba(255,255,255,.28)}' +
     '.mkr .gcap{display:none}.mkr.grad .gcap{display:block}' +
     '@media(prefers-reduced-motion:reduce){#ppwel *{animation:none!important}.ppw-txt small,.ppw-txt h2 span,.ppw-txt p,.ppw-skip,.ppw-uc{opacity:1!important;transform:none!important}.ppw-gates,.ppw-plaque,.ppw-seam{display:none}.ppw-sun{opacity:1}}';
@@ -6806,6 +6957,17 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     D.body.style.overflow = 'hidden';
     const mk = ov.querySelector('.ppw-mk'), mkr = mk.querySelector('.mkr');
     const timers = []; let cardsDone = false;
+    const snd = window.PPSound, hello = 'Hi ' + nm + '! Welcome to Pranav Pipeline.';
+    if (snd && snd.on) {
+      if (!snd.locked()) {
+        timers.push(setTimeout(() => snd.play('gate'), 550)); timers.push(setTimeout(() => snd.play('whoosh'), 1900));
+        timers.push(setTimeout(() => { snd.play('chime'); snd.speak(hello, 'excited'); }, 3350));
+      } else {
+        const hint = D.createElement('div'); hint.className = 'ppw-snd'; hint.textContent = '🔊 Tap for sound'; ov.appendChild(hint);
+        hint.addEventListener('click', e => e.stopPropagation());
+        snd.later(() => { hint.remove(); snd.play('chime'); snd.speak(hello, 'excited'); });
+      }
+    }
     timers.push(setTimeout(() => { mkr.setAttribute('class', 'mkr mbx grad wave happy'); }, 3350));
     function countUp(el, to) { const t0 = performance.now(); (function f(now) { const k = Math.min(1, (now - t0) / 1100), e = 1 - Math.pow(1 - k, 3); el.textContent = Math.round(to * e).toLocaleString('en-IN'); if (k < 1) requestAnimationFrame(f); })(t0); }
     function showCards() {
