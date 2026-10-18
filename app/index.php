@@ -7112,7 +7112,7 @@ a.ucard .ucov{height:96px;margin:-14px -16px 12px;border-radius:14px 14px 0 0;ba
     e.preventDefault();
     if (document.querySelector('.lgcf')) return;
     var ov = document.createElement('div'); ov.className = 'lgcf'; ov.setAttribute('role', 'alertdialog'); ov.setAttribute('aria-modal', 'true');
-    ov.innerHTML = '<div class="lgcb"><div class="lgi">🚪</div><h2>Pakka log out?</h2><p>You will need your username and password to get back in.</p><div class="lgr"><button type="button" class="lgs">Stay logged in</button><button type="button" class="lgy">Yes, log out</button></div></div>';
+    ov.innerHTML = '<div class="lgcb"><div class="lgi">🚪</div><h2>Confirm log out</h2><p>Are you sure you want to log out of your account? You will need to sign in again to continue.</p><div class="lgr"><button type="button" class="lgs">Stay logged in</button><button type="button" class="lgy">Yes, log out</button></div></div>';
     document.body.appendChild(ov);
     function close() { ov.remove(); document.removeEventListener('keydown', key); }
     function key(ev) { if (ev.key === 'Escape') close(); }
