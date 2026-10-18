@@ -1279,6 +1279,7 @@ a.wapp{display:inline-flex;align-items:center;justify-content:center;flex:none;w
         <button type="button" role="menuitem" data-a="profile"><i>👤</i>Your profile</button>
         <button type="button" role="menuitem" data-a="pwd"><i>🔑</i>Change password</button>
         <button type="button" role="menuitem" data-a="wa"><i>💬</i><span id="waMode">WhatsApp opens in: Browser tab</span></button>
+        <button type="button" role="menuitem" data-a="fx"><i>✨</i><span id="fxMode">Animations: on ✨ (tap to reduce)</span></button>
         <button type="button" role="menuitem" data-a="monkey"><i>🐒</i><span id="monkeyMode">Monkey: playing 🐒 (tap to rest)</span></button>
         <?php if (user_scope() === null) { ?><button type="button" role="menuitem" data-a="usage"><i>📊</i>Usage (who uses what)</button><?php } ?>
         <a role="menuitem" href="#/reports/activity" data-a="act"><i>🕵️</i><?= user_scope() !== null ? 'Your activity' : 'Activity log' ?></a>
@@ -3885,6 +3886,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     const a = it.dataset.a; shut();
     if (a === 'profile') openProfile(); else if (a === 'pwd') openPwd(); else if (a === 'usage') openUsage();
     else if (a === 'wa') { try { localStorage.setItem(WA_KEY, waMode() === 'app' ? 'web' : 'app'); } catch (x) {} paintWaMode(); toastWa(); }
+    else if (a === 'fx') { if (window.__fx) window.__fx.toggle(); }
     else if (a === 'monkey') { if (window.__monkeyLife) window.__monkeyLife.toggle(); }
     else if (a === 'search') { const s = g('gsearch'); if (s) { s.focus(); s.select(); } }
     else if (a === 'refresh') g('btnRefresh').click();
@@ -5877,9 +5879,14 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       '<g class="lgL"><path d="M64 158L60 184" stroke="' + fur + '" stroke-width="17" stroke-linecap="round"/><ellipse cx="55" cy="194" rx="17" ry="9" fill="#9a6338"/><ellipse cx="54" cy="196" rx="10" ry="4" fill="#f0c7a0"/></g>' +
       '<g class="lgR"><path d="M96 158L100 184" stroke="' + fur + '" stroke-width="17" stroke-linecap="round"/><ellipse cx="105" cy="194" rx="17" ry="9" fill="#9a6338"/><ellipse cx="106" cy="196" rx="10" ry="4" fill="#f0c7a0"/></g>' +
       '<g class="bod"><ellipse cx="80" cy="134" rx="34" ry="42" fill="#9a6338"/><ellipse cx="80" cy="142" rx="21" ry="29" fill="#f4d5b0"/></g>' +
-      '<g class="hd"><g transform="translate(80 60) scale(.56) translate(-100 -102)">' + FACE + '</g></g>' +
+      '<g class="hd"><g transform="translate(80 60) scale(.56) translate(-100 -102)">' + FACE + '</g>' +
+      '<g class="xhat"><path d="M54 33Q58 -4 100 6Q96 20 108 33Z" fill="#dc2626"/><rect x="48" y="28" width="64" height="10" rx="5" fill="#fff"/><circle cx="102" cy="6" r="6.5" fill="#fff"/></g>' +
+      '<g class="pty"><path d="M80 -8L62 32H98Z" fill="#a855f7"/><path d="M70 14l20 0M66 24l28 0" stroke="#fde68a" stroke-width="3"/><circle cx="80" cy="-9" r="5" fill="#fcd34d"/></g>' +
+      '<g class="band"><rect x="40" y="30" width="80" height="8" rx="4" fill="#ff9933"/><rect x="40" y="35" width="80" height="4" fill="#fff"/><rect x="40" y="38" width="80" height="3" rx="1.5" fill="#138808"/></g></g>' +
       '<g class="arL"><path d="M54 106C37 122 30 140 34 158" fill="none" stroke="' + fur + '" stroke-width="14" stroke-linecap="round"/><circle cx="34" cy="161" r="10.5" fill="#9a6338"/><circle cx="34" cy="163" r="5.5" fill="#f0c7a0" opacity=".7"/></g>' +
-      '<g class="arR"><path d="M106 106C123 122 130 140 126 158" fill="none" stroke="' + fur + '" stroke-width="14" stroke-linecap="round"/><circle cx="126" cy="161" r="10.5" fill="#9a6338"/><circle cx="126" cy="163" r="5.5" fill="#f0c7a0" opacity=".7"/><path class="bn" d="M116 170c-9-4-12-20-3-29c3-3 7-2 7 1c-4 9 0 17 9 21c3 2 2 6-1 7z" fill="#fcd34d" stroke="#b45309" stroke-width="1.6" stroke-linejoin="round"/></g>' +
+      '<g class="arR"><path d="M106 106C123 122 130 140 126 158" fill="none" stroke="' + fur + '" stroke-width="14" stroke-linecap="round"/><circle cx="126" cy="161" r="10.5" fill="#9a6338"/><circle cx="126" cy="163" r="5.5" fill="#f0c7a0" opacity=".7"/><path class="bn" d="M116 170c-9-4-12-20-3-29c3-3 7-2 7 1c-4 9 0 17 9 21c3 2 2 6-1 7z" fill="#fcd34d" stroke="#b45309" stroke-width="1.6" stroke-linejoin="round"/><g class="cup"><path d="M114 150h22l-3 20h-16z" fill="#fff" stroke="#9a6338" stroke-width="2"/><path d="M136 154q9 2 0 11" fill="none" stroke="#9a6338" stroke-width="2.5"/><path d="M114 156h22" stroke="#92400e" stroke-width="4"/><path class="stm" d="M121 146q-3-5 0-10M129 146q-3-5 0-10" stroke="#9ca3af" stroke-width="2" fill="none" stroke-linecap="round"/></g></g>' +
+      '<g class="diya"><circle cx="140" cy="190" r="22" fill="#fbbf24" opacity=".18"/><path d="M126 192h28q-2 10-14 10t-14-10z" fill="#b45309"/><path class="fl" d="M140 190q-8-11 0-24q8 13 0 24z" fill="#fbbf24"/></g>' +
+      '<g class="flag"><rect x="146" y="118" width="3" height="84" fill="#8b5a2b"/><rect x="149" y="120" width="24" height="7" fill="#ff9933"/><rect x="149" y="127" width="24" height="7" fill="#fff"/><rect x="149" y="134" width="24" height="7" fill="#138808"/><circle cx="161" cy="130.5" r="2.4" fill="none" stroke="#1e3a8a" stroke-width=".8"/></g>' +
       '<text class="zz" x="118" y="30" font-size="24" font-weight="800" fill="#7c5cf6">z</text><text class="zz z2" x="134" y="12" font-size="30" font-weight="800" fill="#a78bfa">Z</text>' +
       '</g></svg>';
   }
@@ -5924,6 +5931,9 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     '.mkr.stretch .arL{transform:rotate(172deg)}.mkr.stretch .arR{transform:rotate(-172deg)}.mkr.stretch .all{transform:translateY(-4px) scaleY(1.05)}.mkr.stretch .hd{transform:rotate(-7deg)}' +
     '.mkr.tailplay .tail{animation:mkTailF .22s ease-in-out infinite alternate}@keyframes mkTailF{from{transform:rotate(-24deg)}to{transform:rotate(28deg)}}.mkr.tailplay .hd{transform:rotate(15deg)}' +
     '.mkr.clap .arL{animation:mkClapL .3s ease-in-out infinite alternate}.mkr.clap .arR{animation:mkClapR .3s ease-in-out infinite alternate}@keyframes mkClapL{from{transform:rotate(-12deg)}to{transform:rotate(-44deg)}}@keyframes mkClapR{from{transform:rotate(12deg)}to{transform:rotate(44deg)}}' +
+    '.mkr .xhat,.mkr .pty,.mkr .band,.mkr .diya,.mkr .flag,.mkr .cup{display:none}.mkr.sx-xmas .xhat,.mkr.sx-party .pty,.mkr.sx-india .band,.mkr.sx-india .flag,.mkr.sx-diwali .diya,.mkr.coffee .cup{display:block}.mkr .diya .fl{transform-box:fill-box;transform-origin:50% 100%;animation:mkFlame .5s ease-in-out infinite alternate}@keyframes mkFlame{from{transform:scale(1,1) skewX(-4deg)}to{transform:scale(.88,1.15) skewX(5deg)}}' +
+    '.mkr.coffee .arR{transform:rotate(-128deg);animation:mkSip 2.2s ease-in-out infinite}@keyframes mkSip{0%,55%,100%{transform:rotate(-128deg)}70%,85%{transform:rotate(-152deg)}}.mkr.coffee .bn{display:none}.mkr.coffee .stm{animation:mkSteam 1.6s ease-in-out infinite}@keyframes mkSteam{0%{opacity:0;transform:translateY(4px)}50%{opacity:.9}100%{opacity:0;transform:translateY(-6px)}}' +
+    '.mkr.fan .arR{animation:mkWave .16s ease-in-out infinite alternate}.mkr.fan .hd{animation:mkChew .3s ease-in-out infinite alternate}.mkr.fan .all{filter:saturate(1.2)}' +
     /* speech bubble */
     '.mkbub{position:absolute;left:50%;bottom:calc(100% + 2px);transform:translateX(-50%) scale(.6);transform-origin:50% 100%;width:max-content;max-width:210px;padding:8px 12px;border-radius:14px;background:var(--card,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);box-shadow:0 10px 26px rgba(40,20,100,.3);font:600 13px/1.35 system-ui,-apple-system,Segoe UI,sans-serif;opacity:0;pointer-events:none;transition:opacity .18s,transform .28s cubic-bezier(.3,1.5,.5,1);z-index:2}' +
     '.mkbub.on{opacity:1;transform:translateX(-50%) scale(1)}.mkbub::after{content:"";position:absolute;left:50%;bottom:-7px;width:12px;height:12px;background:var(--card,#fff);border-right:1px solid var(--line,#ddd);border-bottom:1px solid var(--line,#ddd);transform:translateX(-50%) rotate(45deg)}' +
@@ -5946,6 +5956,17 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   let face = 1, rot = 0, pose = '', fx = '', moodCls = '', loc = 'ground', perchEl = null, perchTop = 0, edgeSide = 'right';
   let tok = 0, chatOpen = false, dragging = false, lastAct = Date.now(), asleep = false, alive = true, started = false, welcomeOn = false;
   const sl = new Set();
+  let season = '', acting = false;
+  function seasonNow() {
+    let q = ''; try { q = new URLSearchParams(location.search).get('mkseason') || ''; } catch (e) {}
+    if (q) return 'sx-' + q;
+    const d = new Date(), m = d.getMonth() + 1, dy = d.getDate(), y = d.getFullYear();
+    if ((y === 2026 && m === 11 && dy >= 3 && dy <= 10) || (y === 2027 && ((m === 10 && dy >= 27) || (m === 11 && dy <= 3)))) return 'sx-diwali';
+    if (m === 12 && dy >= 20 && dy <= 26) return 'sx-xmas';
+    if ((m === 12 && dy >= 30) || (m === 1 && dy <= 2)) return 'sx-party';
+    if ((m === 8 && dy >= 13 && dy <= 15) || (m === 1 && dy >= 24 && dy <= 26)) return 'sx-india';
+    return '';
+  }
 
   function size() { SC = small() ? .8 : 1; W = 96 * SC; H = 123 * SC; el.style.width = W + 'px'; el.style.height = H + 'px'; }
   const ground = () => innerHeight - 4;
@@ -5953,7 +5974,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     el.style.transform = 'translate3d(' + (P.x - W / 2).toFixed(1) + 'px,' + (P.y - H).toFixed(1) + 'px,0)' + (P.s !== 1 ? ' scale(' + P.s.toFixed(3) + ')' : '');
     svg.style.transform = 'scaleX(' + face + ') rotate(' + rot.toFixed(1) + 'deg)';
   }
-  function paint() { svg.setAttribute('class', ('mkr mbx ' + pose + ' ' + fx + ' ' + moodCls).replace(/\s+/g, ' ').trim()); }
+  function paint() { svg.setAttribute('class', ('mkr mbx ' + pose + ' ' + fx + ' ' + moodCls + ' ' + season).replace(/\s+/g, ' ').trim()); }
   function setPose(p) { pose = p || ''; paint(); }
   function setFx(f, ms) { fx = f || ''; paint(); clearTimeout(setFx.t); if (f && ms) setFx.t = setTimeout(() => { fx = ''; paint(); }, ms); }
   function setMood(m, ms) { moodCls = m && m !== 'idle' ? m : ''; paint(); clearTimeout(setMood.t); if (moodCls && ms) setMood.t = setTimeout(() => { moodCls = ''; paint(); }, ms); }
@@ -6132,7 +6153,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     setTimeout(() => { if (!chatOpen && !dragging) setPose(loc === 'edge' ? 'cling' : ''); }, 1500);
   }
 
-  function blocked() { return rest || reduce || chatOpen || dragging || welcomeOn || uiBusy(); }
+  function blocked() { return acting || rest || reduce || chatOpen || dragging || welcomeOn || uiBusy(); }
   let lastAct2 = -1;
   const ACTS = [
     {p: 'eat', t: 4400, s: ['Nom nom nom 🍌', 'Banana break! 🍌', 'Mmm… best banana ever 😋']},
@@ -6146,11 +6167,19 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     {p: 'cheer', t: 2000, s: ['Woohoo! 🎉']},
     {look: 1},
     {nap: 1, t: 9000, s: ['Zzz… 😴']},
-    {p: 'sit', mood: 'conf', t: 3200, s: ['Hmm, which lead should I chase next? 🤔']}
+    {p: 'sit', mood: 'conf', t: 3200, s: ['Hmm, which lead should I chase next? 🤔']},
+    {p: 'coffee', t: 5200, s: ['Morning coffee ☕', 'Sip… ahh ☕']}
   ];
+  function pool() {
+    const h = new Date().getHours() + new Date().getMinutes() / 60, idx = ACTS.map((x, i) => i), add = (p, n) => { ACTS.forEach((x, i) => { if (x.p === p || (p === 'nap' && x.nap)) for (let k = 0; k < n; k++) idx.push(i); }); };
+    if (h >= 6 && h < 10.5) add('coffee', 4);
+    if (h >= 12 && h < 14.5) add('eat', 3);
+    if (h >= 22 || h < 5) { add('nap', 3); add('stretch yawn', 2); }
+    return idx;
+  }
   async function doAct() {
     if (Date.now() - lastAct > 30000) { await napTime(); return; }
-    let i; do { i = Math.floor(Math.random() * ACTS.length); } while (i === lastAct2);
+    const pl = pool(); let i, guard = 0; do { i = pick(pl); } while (i === lastAct2 && guard++ < 12);
     lastAct2 = i; const a = ACTS[i];
     if (a.look) { await lookAround(); return; }
     if (a.nap) { asleep = true; setPose('sleep'); say(pick(a.s), 2400); const ok = await sleep(a.t); asleep = false; if (ok) { setPose('yawn'); await sleep(1300); setPose(''); } return; }
@@ -6194,16 +6223,41 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   ['keydown', 'pointerdown', 'wheel', 'touchstart'].forEach(ev => D.addEventListener(ev, () => { lastAct = Date.now(); if (asleep) wake(); }, {passive: true}));
 
   /* ================= touching the monkey ================= */
-  let down = null, hoverT = 0;
+  let down = null, hoverT = 0, clickT = 0;
+  const fxb = (x, y, n, em, p) => { if (window.__fx) window.__fx.burst(x, y, n, em, p); };
+  async function flip() {
+    cancel(); acting = true; asleep = false; hideBub(); const y0 = P.y, f = face || 1; setPose('leap'); setMood('happy', 1600);
+    const ok = await tween(900, k => { P.y = y0 - 4 * 80 * k * (1 - k); rot = 360 * k * -f; render(); });
+    rot = 0; P.y = y0; render(); acting = false; if (ok) { setPose(''); setFx('land', 320); say(pick(['Ta-da! 🤸', 'Wheee! 🤸‍♂️', 'Nailed it! 🏅']), 2000); }
+  }
+  async function feed() {
+    cancel(); acting = true; asleep = false; hideBub(); setPose('eat'); setMood('happy', 3800); say('Thank you! 🍌💕', 3200);
+    fxb(P.x, P.y - H * .6, 12, ['💖', '🍌', '✨'], .8);
+    const okf = await sleep(3800); acting = false; if (okf) setPose('');
+  }
+  /* banana to drag onto the monkey */
+  const ban = D.createElement('div'); ban.id = 'fxBan'; ban.textContent = '🍌'; ban.title = 'Drag me onto the monkey 🍌'; D.body.appendChild(ban);
+  let bd = null;
+  function banHome() { ban.style.left = (P.x - W / 2 - 52) + 'px'; ban.style.top = (P.y - 46) + 'px'; }
+  ban.addEventListener('pointerdown', e => { bd = {id: e.pointerId}; ban.classList.add('drag'); try { ban.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); });
+  ban.addEventListener('pointermove', e => { if (bd) { ban.style.left = (e.clientX - 20) + 'px'; ban.style.top = (e.clientY - 20) + 'px'; } });
+  const banUp = e => {
+    if (!bd) return; bd = null; ban.classList.remove('drag');
+    const dx = e.clientX - P.x, dy = e.clientY - (P.y - H * .5);
+    if (Math.hypot(dx, dy) < 80) { ban.hidden = true; feed(); setTimeout(() => { banHome(); ban.hidden = false; }, 4200); } else banHome();
+  };
+  ban.addEventListener('pointerup', banUp); ban.addEventListener('pointercancel', banUp);
+  setInterval(() => { ban.hidden = chatOpen || dragging || welcomeOn || rest; if (!bd && !ban.hidden) banHome(); }, 600);
   svg.addEventListener('pointerdown', e => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
-    down = {x: e.clientX, y: e.clientY, moved: false, id: e.pointerId}; try { svg.setPointerCapture(e.pointerId); } catch (x) {}
+    down = {x: e.clientX, y: e.clientY, moved: false, id: e.pointerId, long: false}; try { svg.setPointerCapture(e.pointerId); } catch (x) {}
+    const dd = down; dd.lt = setTimeout(() => { if (down === dd && !dd.moved) { dd.long = true; feed(); } }, 700);
     e.preventDefault();
   });
   svg.addEventListener('pointermove', e => {
     if (!down) return;
     if (!down.moved && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 7) {
-      down.moved = true; dragging = true; cancel(); asleep = false; el.classList.add('drag'); loc = 'air'; perchEl = null;
+      clearTimeout(down.lt); down.moved = true; dragging = true; cancel(); asleep = false; el.classList.add('drag'); loc = 'air'; perchEl = null;
       setPose('drag'); setMood('conf'); say('Eek! Put me down! 🙈', 2200);
     }
     if (down.moved) {
@@ -6213,9 +6267,13 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   });
   const upFn = e => {
     if (!down) return;
-    const d = down; down = null;
+    const d = down; down = null; clearTimeout(d.lt);
     try { svg.releasePointerCapture(d.id); } catch (x) {}
-    if (!d.moved) { openB.click(); return; }
+    if (!d.moved) {
+      if (d.long) return;
+      if (clickT) { clearTimeout(clickT); clickT = 0; flip(); return; }
+      clickT = setTimeout(() => { clickT = 0; openB.click(); }, 280); return;
+    }
     dragging = false; el.classList.remove('drag'); drop();
   };
   svg.addEventListener('pointerup', upFn); svg.addEventListener('pointercancel', upFn);
@@ -6272,12 +6330,16 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   }).observe(msgsEl, {childList: true});
 
   /* ================= reacting to what the user does ================= */
-  const toastEl = g('toast');
+  const toastEl = g('toast'), saves = []; let lastStreak = 0;
   if (toastEl) new MutationObserver(() => {
     if (toastEl.hidden || !toastEl.textContent) return;
     const t = toastEl.textContent;
     if (/not saved|fail|error|could not|couldn.t|wrong|unable|denied/i.test(t)) { setMood('cry', 3000); say('Oh no… 😢', 2600); }
-    else if (/saved|updated|done|success|added|copied|✓/i.test(t)) { setMood('happy', 2600); setFx('cheer', 1600); say(pick(['Yay! Nicely done 🎉', 'Ooh ooh! Saved! 🍌', 'That’s the way! 👏']), 2600); }
+    else if (/saved|updated|done|success|added|copied|✓/i.test(t)) {
+      setMood('happy', 2600); setFx('cheer', 1600); say(pick(['Yay! Nicely done 🎉', 'Ooh ooh! Saved! 🍌', 'That’s the way! 👏']), 2600);
+      if (window.__fx) window.__fx.saved();
+      if (/saved to bitrix/i.test(t)) { const n = Date.now(); saves.push(n); while (saves.length && n - saves[0] > 180000) saves.shift(); if (saves.length >= 3 && n - lastStreak > 180000) { lastStreak = n; setTimeout(() => { say('Hat-trick! Three saves in a row 🍌🎉', 3600); setFx('cheer', 2600); fxb(P.x, P.y - H * .7, 26, ['🍌', '🎉', '🎊', '✨'], 1.3); }, 900); } }
+    }
   }).observe(toastEl, {attributes: true, attributeFilter: ['hidden']});
   let lastRoute = 0;
   addEventListener('hashchange', () => {
@@ -6404,7 +6466,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   }
 
   /* ================= start ================= */
-  size(); paintMode();
+  season = seasonNow(); size(); paintMode();
   function setup(from) {
     started = true; render();
     if (reduce) { rest = true; P.x = innerWidth - 82; P.y = ground(); setPose('sit'); render(); return; }
@@ -6415,7 +6477,9 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
         await leapTo(innerWidth - (small() ? 56 : 82), ground(), 140, 1);
         face = 1; render(); setPose('wave'); setMood('happy', 3200); setFx('cheer', 1400);
         say('Hello hello! 👋 Welcome, ' + firstName() + '!', 4200);
-        await sleep(4300); setPose('');
+        if (!await sleep(4300)) return; setPose('');
+        let day = ''; try { day = localStorage.getItem('pp_day') || ''; localStorage.setItem('pp_day', new Date().toDateString()); } catch (e) {}
+        if (day !== new Date().toDateString()) { const h = new Date().getHours(); setPose('dance'); setMood('happy', 3200); say('First login today — ' + (h < 12 ? 'good morning ☀️' : h < 17 ? 'good afternoon 🌤' : 'good evening 🌙') + '!', 3400); fxb(P.x, P.y - H * .7, 18, ['🌞', '🍌', '✨', '🎉'], 1); if (await sleep(3600)) setPose(''); }
       })();
     } else {
       P.x = innerWidth + 70; P.y = ground(); face = 1; render();
@@ -6426,6 +6490,21 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       })();
     }
   }
+  /* reacting to the data itself */
+  let lastTotal = 0;
+  function total() { try { return typeof allRows !== 'undefined' ? allRows.length : 0; } catch (e) { return 0; } }
+  function dataReact(first) {
+    if (chatOpen || dragging || rest || reduce) return;
+    const n = total(); let st = 0; try { st = (prioStats() || {}).stale || 0; } catch (e) {}
+    let prev = 0; try { prev = +(localStorage.getItem('pp_last_total') || 0); localStorage.setItem('pp_last_total', String(n)); } catch (e) {}
+    const base = first ? prev : lastTotal;
+    if (base && n > base) { setMood('happy', 3600); setFx('cheer', 2600); say('🎉 ' + (n - base) + ' new deal' + (n - base === 1 ? '' : 's') + (first ? ' since you were last here!' : ' came in!'), 4200); fxb(P.x, P.y - H * .7, 16, ['🎉', '🍌', '✨'], 1); }
+    else if (first && st > 0) { setPose('fan'); say('😓 ' + st + ' follow-up' + (st === 1 ? ' is' : 's are') + ' overdue — let’s chase them!', 4200); sleep(4200).then(ok => { if (ok && pose === 'fan') setPose(''); }); }
+    lastTotal = n;
+  }
+  (function () { let tries = 0; const iv = setInterval(() => { if (total() > 0 && started && !welcomeOn) { clearInterval(iv); lastTotal = total(); setTimeout(() => dataReact(true), window.__ppWelcome ? 12500 : 5500); } else if (++tries > 80) clearInterval(iv); }, 1000); })();
+  const upd0 = g('updated');
+  if (upd0) new MutationObserver(() => { const n = total(); if (n && lastTotal && n !== lastTotal) dataReact(false); else if (n && !lastTotal) lastTotal = n; }).observe(upd0, {childList: true, characterData: true, subtree: true});
   window.__monkeyLife = {
     toggle: () => setRest(!rest), say: say, welcome: welcome,
     state: () => ({x: P.x, y: P.y, loc: loc, pose: pose, rest: rest, chatOpen: chatOpen, dragging: dragging, asleep: asleep}),
@@ -6439,5 +6518,187 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
 })();
 </script>
 <!--/LIFE-->
+<!--FX-->
+<style id="fxcss">
+/* live pulse next to "Updated …" */
+#updated::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-right:7px;vertical-align:middle;box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:fxPulse 2.2s ease-out infinite}
+@keyframes fxPulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}70%,100%{box-shadow:0 0 0 9px rgba(34,197,94,0)}}
+/* number flash after a refresh changes a value */
+.fxflash{display:inline-block;transform-origin:0 60%;animation:fxFlash 1.3s ease-out}
+@keyframes fxFlash{0%{color:#f59e0b;text-shadow:0 0 16px rgba(245,158,11,.8);transform:scale(1.12)}100%{text-shadow:0 0 0 transparent;transform:none}}
+/* page transitions */
+.fxin{animation:fxIn .5s cubic-bezier(.2,.8,.2,1) both}
+@keyframes fxIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.fxrows tbody tr{animation:fxRow .4s cubic-bezier(.2,.8,.2,1) both}
+.fxrows tbody tr:nth-child(1){animation-delay:.02s}.fxrows tbody tr:nth-child(2){animation-delay:.06s}.fxrows tbody tr:nth-child(3){animation-delay:.1s}.fxrows tbody tr:nth-child(4){animation-delay:.14s}.fxrows tbody tr:nth-child(5){animation-delay:.18s}.fxrows tbody tr:nth-child(6){animation-delay:.22s}.fxrows tbody tr:nth-child(7){animation-delay:.26s}.fxrows tbody tr:nth-child(8){animation-delay:.3s}.fxrows tbody tr:nth-child(9){animation-delay:.34s}.fxrows tbody tr:nth-child(n+10){animation-delay:.38s}
+@keyframes fxRow{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+/* hover: lift + shine */
+a.tile,.kpi{transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,border-color .25s;position:relative;overflow:hidden}
+a.tile:hover,a.kpi:hover{transform:translateY(-5px)!important;box-shadow:0 18px 38px rgba(90,60,220,.22)!important}
+a.tile::after,a.kpi::after{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-18deg);pointer-events:none;opacity:0}
+a.tile:hover::after,a.kpi:hover::after{opacity:1;animation:fxShine .75s ease}
+@keyframes fxShine{from{left:-70%}to{left:130%}}
+/* priority badge pulses */
+#navPrio:not(:empty){animation:fxBadge 2s ease-in-out infinite}
+@keyframes fxBadge{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(239,68,68,.55)}50%{transform:scale(1.12);box-shadow:0 0 0 7px rgba(239,68,68,0)}}
+/* overdue wiggle */
+.fxwig{display:inline-block;animation:fxWig 4.5s ease-in-out infinite;transform-origin:50% 20%}
+@keyframes fxWig{0%,70%,100%{transform:none}74%{transform:rotate(-16deg)}78%{transform:rotate(14deg)}82%{transform:rotate(-12deg)}86%{transform:rotate(9deg)}90%{transform:rotate(-5deg)}}
+/* edited row glow */
+tr.fxhi td{animation:fxHi 2.6s ease-out}
+@keyframes fxHi{0%,30%{background:rgba(124,92,246,.32)}100%{background:transparent}}
+/* whatsapp pop-up */
+.wapop{animation:fxPop .32s cubic-bezier(.3,1.6,.5,1) both!important;transform-origin:20% 0}
+@keyframes fxPop{from{opacity:0;transform:scale(.7) translateY(-8px)}to{opacity:1;transform:none}}
+.wapop button{animation:fxSlide .35s cubic-bezier(.2,.9,.3,1.2) both}
+.wapop button:nth-of-type(1){animation-delay:.08s}.wapop button:nth-of-type(2){animation-delay:.14s}.wapop button:nth-of-type(3){animation-delay:.2s}.wapop button:nth-of-type(4){animation-delay:.26s}
+@keyframes fxSlide{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+/* theme switch */
+html.fxtheme *,html.fxtheme *::before,html.fxtheme *::after{transition:background-color .55s ease,color .55s ease,border-color .55s ease,fill .55s ease,stroke .55s ease,box-shadow .55s ease!important}
+button.thm.fxspin svg{animation:fxSpin .7s cubic-bezier(.3,1.4,.5,1)}
+@keyframes fxSpin{from{transform:rotate(-200deg) scale(.3);opacity:0}to{transform:none;opacity:1}}
+/* floating background */
+#fxbg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+#fxbg span{position:absolute;bottom:-60px;opacity:.1;animation:fxRise linear infinite;will-change:transform}
+@keyframes fxRise{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(-118vh) rotate(360deg)}}
+html[data-theme=dark] #fxbg span{opacity:.07}
+/* loading pill */
+#fxLoad{position:fixed;left:84px;bottom:18px;z-index:45;display:flex;align-items:center;gap:10px;padding:8px 16px 8px 10px;border-radius:999px;background:var(--card);color:var(--text);border:1px solid var(--line);box-shadow:0 12px 30px rgba(60,30,140,.25);font-weight:700;font-size:13px;animation:fxPop .35s cubic-bezier(.3,1.6,.5,1) both}
+#fxLoad[hidden]{display:none}
+#fxLoad .sw{position:relative;width:34px;height:34px;transform-origin:50% -6px;animation:fxSwing 1.1s ease-in-out infinite alternate}
+#fxLoad .sw svg{width:34px;height:34px;overflow:visible}
+@keyframes fxSwing{from{transform:rotate(-26deg)}to{transform:rotate(26deg)}}
+#fxLoad em{font-style:normal;display:inline-block;animation:fxBounce .7s ease-in-out infinite alternate}
+@keyframes fxBounce{from{transform:translateY(0)}to{transform:translateY(-4px)}}
+/* success tick */
+#fxTick{position:fixed;left:50%;bottom:92px;width:84px;height:84px;margin-left:-42px;z-index:70;pointer-events:none;animation:fxTickIn 1.7s ease both}
+#fxTick circle{fill:#16a34a;filter:drop-shadow(0 8px 14px rgba(22,163,74,.45))}
+#fxTick path{fill:none;stroke:#fff;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:50;stroke-dashoffset:50;animation:fxDraw .5s .25s ease forwards}
+@keyframes fxDraw{to{stroke-dashoffset:0}}
+@keyframes fxTickIn{0%{opacity:0;transform:scale(.3)}18%{opacity:1;transform:scale(1.08)}28%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:translateY(-14px)}}
+.fxp{position:fixed;z-index:75;pointer-events:none;font-size:22px;will-change:transform,opacity}
+/* monkey banana to drag */
+#fxBan{position:fixed;z-index:44;width:40px;height:40px;display:grid;place-items:center;font-size:28px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;filter:drop-shadow(0 4px 5px rgba(0,0,0,.25));animation:fxBounce .9s ease-in-out infinite alternate}
+#fxBan.drag{cursor:grabbing;animation:none;z-index:80}
+#fxBan[hidden]{display:none}
+@media(max-width:600px){#fxBan{display:none}#fxLoad{left:12px}}
+/* animations switched off */
+body.fxoff #fxbg,body.fxoff #fxLoad .sw{display:none}
+body.fxoff :not(#mkLife):not(#mkLife *):not(#ppwel):not(#ppwel *):not(#fxBan){animation-duration:.001s!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.001s!important}
+@media(prefers-reduced-motion:reduce){#fxbg{display:none}}
+</style>
+<script>
+(function () {
+  'use strict';
+  const D = document, B = D.body, $ = id => D.getElementById(id);
+  const OFF_KEY = 'pp_fx_off';
+  let off = false, stored = null;
+  try { stored = localStorage.getItem(OFF_KEY); } catch (e) {}
+  const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  off = stored === null ? reduce : stored === '1';
+  const rand = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.floor(Math.random() * a.length)];
+
+  function paintMode() { const m = $('fxMode'); if (m) m.textContent = off ? 'Animations: reduced (tap to turn on)' : 'Animations: on ✨ (tap to reduce)'; B.classList.toggle('fxoff', off); }
+  function toggle() { off = !off; try { localStorage.setItem(OFF_KEY, off ? '1' : '0'); } catch (e) {} paintMode(); }
+
+  /* ---------- confetti / emoji burst ---------- */
+  function burst(x, y, n, emojis, power) {
+    if (off || !D.body.animate) return;
+    emojis = emojis || ['🍌', '🎉', '✨', '🍃', '🎊'];
+    for (let i = 0; i < (n || 14); i++) {
+      const s = D.createElement('span'); s.className = 'fxp'; s.textContent = pick(emojis);
+      s.style.left = x + 'px'; s.style.top = y + 'px'; s.style.fontSize = rand(16, 30).toFixed(0) + 'px'; D.body.appendChild(s);
+      const a = rand(-Math.PI * .95, -Math.PI * .05), v = rand(120, 300) * (power || 1), dx = Math.cos(a) * v, dy = Math.sin(a) * v;
+      s.animate([{transform: 'translate(0,0) rotate(0deg) scale(.6)', opacity: 1}, {transform: 'translate(' + (dx * .6).toFixed(0) + 'px,' + (dy * .8).toFixed(0) + 'px) rotate(' + rand(-200, 200).toFixed(0) + 'deg) scale(1.1)', opacity: 1, offset: .45}, {transform: 'translate(' + dx.toFixed(0) + 'px,' + (dy + 280).toFixed(0) + 'px) rotate(' + rand(-420, 420).toFixed(0) + 'deg) scale(.9)', opacity: 0}], {duration: rand(1100, 1900), easing: 'cubic-bezier(.2,.7,.4,1)', fill: 'forwards'}).onfinish = () => s.remove();
+    }
+  }
+
+  /* ---------- count-up numbers + wiggle ---------- */
+  const NUM = /^[\d,]+(\.\d+)?%?$/, busy = new Set();
+  const SEL = '.kpi b,a.tile b,.tile b,.hk b,.hero .hs b';
+  function cu(el) {
+    const t = el.textContent.trim(); if (!NUM.test(t)) return;
+    const prev = el.dataset.cu; if (prev === t) return;
+    el.dataset.cu = t; if (off) return;
+    const to = parseFloat(t.replace(/,/g, '')), dec = ((t.split('.')[1] || '').replace('%', '')).length, from = prev !== undefined ? parseFloat(prev.replace(/,/g, '')) : 0;
+    if (isNaN(to)) return;
+    if (prev !== undefined) { el.classList.remove('fxflash'); void el.offsetWidth; el.classList.add('fxflash'); setTimeout(() => el.classList.remove('fxflash'), 1400); }
+    busy.add(el); const t0 = performance.now(), dur = prev === undefined ? 850 : 650, pct = t.endsWith('%');
+    (function f(now) {
+      const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3), v = from + (to - from) * e;
+      if (k < 1) { el.textContent = (dec ? v.toFixed(dec) : Math.round(v).toLocaleString('en-IN')) + (pct ? '%' : ''); requestAnimationFrame(f); }
+      else { el.textContent = t; setTimeout(() => busy.delete(el), 0); }
+    })(t0);
+  }
+  let scanQ = 0;
+  function scan() {
+    scanQ = 0;
+    D.querySelectorAll(SEL).forEach(cu);
+    D.querySelectorAll('a.tile[href*="f=stale"],a.tile[href*="f=paydue"]').forEach(a => {
+      const b = a.querySelector('b'), n = b ? parseFloat((b.dataset.cu || b.textContent || '0').replace(/,/g, '')) || 0 : 0;
+      const ic = a.querySelector('.tl i'); if (ic) ic.classList.toggle('fxwig', n > 0 && !off);
+    });
+  }
+  const mn = D.querySelector('.main');
+  if (mn && window.MutationObserver) new MutationObserver(ms => {
+    for (const m of ms) { const t = m.target.nodeType === 3 ? m.target.parentElement : m.target; if (t && busy.has(t)) continue; if (!scanQ) scanQ = requestAnimationFrame(scan); break; }
+  }).observe(mn, {childList: true, subtree: true, characterData: true});
+  scan();
+
+  /* ---------- page transitions ---------- */
+  addEventListener('hashchange', () => {
+    if (off || !mn) return;
+    Array.from(mn.children).forEach(c => { if (c.classList.contains('top') || c.classList.contains('gfbar')) return; c.classList.remove('fxin'); void c.offsetWidth; c.classList.add('fxin'); setTimeout(() => c.classList.remove('fxin'), 700); });
+    mn.classList.add('fxrows'); setTimeout(() => mn.classList.remove('fxrows'), 1000);
+  });
+
+  /* ---------- loading pill ---------- */
+  const pill = D.createElement('div'); pill.id = 'fxLoad'; pill.hidden = true;
+  pill.innerHTML = '<span class="sw"><svg viewBox="0 0 200 190" aria-hidden="true"><use href="#mbface"/></svg></span><span>Fetching deals… <em>🍌</em></span>';
+  B.appendChild(pill);
+  const upd = $('updated'), rf = $('btnRefresh');
+  function pillCheck() {
+    const a = upd ? upd.textContent : '', b = rf ? rf.textContent : '';
+    pill.hidden = !(/^\s*Loading/i.test(a) || /Refreshing/i.test(b));
+  }
+  [upd, rf].forEach(n => { if (n && window.MutationObserver) new MutationObserver(pillCheck).observe(n, {childList: true, characterData: true, subtree: true}); });
+  pillCheck();
+
+  /* ---------- background floaters ---------- */
+  const bg = D.createElement('div'); bg.id = 'fxbg'; bg.setAttribute('aria-hidden', 'true');
+  const sh = ['🍌', '🍃', '🌴', '🥥', '✨', '🍌', '🍃', '🌿'];
+  for (let i = 0; i < 9; i++) { const s = D.createElement('span'); s.textContent = sh[i % sh.length]; s.style.left = (4 + i * 11 + rand(-3, 3)).toFixed(0) + '%'; s.style.fontSize = rand(22, 40).toFixed(0) + 'px'; s.style.animationDuration = rand(26, 44).toFixed(0) + 's'; s.style.animationDelay = (-rand(0, 40)).toFixed(0) + 's'; bg.appendChild(s); }
+  const shell = $('shell'); if (shell) shell.parentNode.insertBefore(bg, shell); else B.appendChild(bg);
+
+  /* ---------- theme switch ---------- */
+  const tb = $('btnTheme');
+  if (tb) tb.addEventListener('click', () => {
+    if (off) return;
+    const h = D.documentElement; h.classList.add('fxtheme'); tb.classList.remove('fxspin'); void tb.offsetWidth; tb.classList.add('fxspin');
+    setTimeout(() => { h.classList.remove('fxtheme'); tb.classList.remove('fxspin'); }, 800);
+  }, true);
+
+  /* ---------- after a save: tick, confetti, row glow ---------- */
+  function saved() {
+    if (off) return;
+    D.querySelectorAll('#fxTick').forEach(n => n.remove());
+    const t = D.createElementNS('http://www.w3.org/2000/svg', 'svg'); t.id = 'fxTick'; t.setAttribute('viewBox', '0 0 84 84');
+    t.innerHTML = '<circle cx="42" cy="42" r="38"/><path d="M26 43l11 11 21-24"/>'; B.appendChild(t); setTimeout(() => t.remove(), 1800);
+    burst(innerWidth / 2, innerHeight - 90, 16, ['🎉', '✨', '🍌', '🎊'], .9);
+    try {
+      let best = null, bt = 0; Object.keys(TOUCHED).forEach(id => { if (TOUCHED[id] > bt) { bt = TOUCHED[id]; best = id; } });
+      if (best && Date.now() - bt < 4000 && typeof view !== 'undefined') {
+        const i = view.findIndex(x => String(x.ID) === String(best)), rows = D.querySelectorAll('#dash tbody tr');
+        const tr = i >= 0 ? rows[i - page * PER] : null; if (tr) { tr.classList.remove('fxhi'); void tr.offsetWidth; tr.classList.add('fxhi'); setTimeout(() => tr.classList.remove('fxhi'), 2800); }
+      }
+    } catch (e) {}
+  }
+
+  window.__fx = {toggle: toggle, burst: burst, saved: saved, isOff: () => off};
+  paintMode();
+})();
+</script>
+<!--/FX-->
+
 
 </body></html>
