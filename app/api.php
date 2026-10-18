@@ -23,7 +23,7 @@ function av_file($u) {
 function av_map($scope, $me) {
     $out = array();
     foreach (read_profiles() as $u => $pf) {
-        if (is_array($pf) && !empty($pf['av']) && ($scope === null || $u === $me)) {
+        if (is_array($pf) && !empty($pf['av']) && is_file(av_file($u)) && ($scope === null || $u === $me)) {
             $out[(string)$u] = (int)$pf['av'];
         }
     }
