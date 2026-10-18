@@ -12,6 +12,24 @@ function fail($code, $msg) {
     exit;
 }
 
+
+function av_dir() {
+    return cfg()['cache_dir'] . '/avatars';
+}
+function av_file($u) {
+    return av_dir() . '/' . md5(mb_strtolower((string)$u, 'UTF-8')) . '.jpg';
+}
+// username => version, for people who have a photo. A team login only gets its own.
+function av_map($scope, $me) {
+    $out = array();
+    foreach (read_profiles() as $u => $pf) {
+        if (is_array($pf) && !empty($pf['av']) && ($scope === null || $u === $me)) {
+            $out[(string)$u] = (int)$pf['av'];
+        }
+    }
+    return $out;
+}
+
 try {
     session_boot();
     if (empty($_SESSION['auth'])) {
@@ -66,7 +84,7 @@ try {
         if (isset($_GET['limit'])) {
             $items = array_slice($items, 0, max(1, min(100, (int)$_GET['limit'])));
         }
-        echo json_encode(array('ok' => true, 'items' => $items), JSON_UNESCAPED_UNICODE);
+        echo json_encode(array('ok' => true, 'items' => $items, 'avs' => (object)av_map($scope, (string)$_SESSION['user'])), JSON_UNESCAPED_UNICODE);
         exit;
     }
 
@@ -203,8 +221,81 @@ try {
         foreach ($daily as $day => $us) { $dau[] = array('day' => $day, 'n' => count($us)); }
         $ul = array_values($users);
         usort($ul, function ($a, $b) { return strcmp($b['last'], $a['last']); });
-        echo json_encode(array('ok' => true, 'days' => $days, 'features' => $feat, 'totals' => $tot, 'users' => $ul,
+        echo json_encode(array('ok' => true, 'avs' => (object)av_map(null, ''), 'days' => $days, 'features' => $feat, 'totals' => $tot, 'users' => $ul,
             'pages' => array_slice($pages, 0, 12, true), 'misses' => array_slice($miss, 0, 15, true), 'dau' => array_slice($dau, -14)), JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    if ($action === 'avatar') {
+        $u = isset($_GET['u']) ? (string)$_GET['u'] : '';
+        session_write_close();
+        $f = av_file($u);
+        if ($u === '' || !is_file($f)) {
+            http_response_code(404);
+            header('Content-Type: text/plain');
+            echo 'No photo.';
+            exit;
+        }
+        header_remove('Cache-Control');
+        header('Content-Type: image/jpeg');
+        header('Cache-Control: private, max-age=2592000');
+        header('Content-Length: ' . filesize($f));
+        readfile($f);
+        exit;
+    }
+
+    if ($action === 'avatar_save' || $action === 'avatar_del') {
+        $sent = isset($_SERVER['HTTP_X_CSRF_TOKEN']) ? (string)$_SERVER['HTTP_X_CSRF_TOKEN'] : '';
+        $want = isset($_SESSION['csrf']) ? (string)$_SESSION['csrf'] : '';
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $want === '' || !hash_equals($want, $sent)) {
+            fail(403, 'Blocked. Reload the page and try again.');
+        }
+        $me = (string)$_SESSION['user'];
+        $raw = $action === 'avatar_save' ? (string)file_get_contents('php://input', false, null, 0, 600001) : '';
+        session_write_close();
+        $f = av_file($me);
+        if ($action === 'avatar_del') {
+            if (is_file($f)) {
+                @unlink($f);
+            }
+            write_profile($me, array('av' => 0));
+            echo json_encode(array('ok' => true, 'av' => 0));
+            exit;
+        }
+        if ($raw === '' || strlen($raw) > 600000) {
+            fail(400, 'That photo is too large. Please pick a smaller one.');
+        }
+        $info = @getimagesizefromstring($raw);
+        if (!$info || $info[2] !== IMAGETYPE_JPEG || $info[0] > 2000 || $info[1] > 2000) {
+            fail(400, 'Please upload a JPG or PNG photo.');
+        }
+        // Re-encode so only pixels are kept (drops anything hidden in the file).
+        if (function_exists('imagecreatefromstring') && function_exists('imagejpeg')) {
+            $im = @imagecreatefromstring($raw);
+            if (!$im) {
+                fail(400, 'That photo could not be read.');
+            }
+            $w = imagesx($im);
+            $h = imagesy($im);
+            $side = min($w, $h);
+            $dst = imagecreatetruecolor(256, 256);
+            imagecopyresampled($dst, $im, 0, 0, (int)(($w - $side) / 2), (int)(($h - $side) / 2), 256, 256, $side, $side);
+            ob_start();
+            imagejpeg($dst, null, 88);
+            $raw = (string)ob_get_clean();
+            imagedestroy($im);
+            imagedestroy($dst);
+        }
+        $d = av_dir();
+        if (!is_dir($d)) {
+            @mkdir($d, 0755, true);
+        }
+        if (@file_put_contents($f, $raw, LOCK_EX) === false) {
+            fail(500, 'Could not save the photo. Check that the cache folder is writable.');
+        }
+        $v = time();
+        write_profile($me, array('av' => $v));
+        echo json_encode(array('ok' => true, 'av' => $v));
         exit;
     }
 
