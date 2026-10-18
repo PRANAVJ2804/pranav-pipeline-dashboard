@@ -627,7 +627,11 @@ button.thm{width:38px;height:38px;padding:0;border-radius:12px;border:1px solid 
 .shell.nosb .side,.side.float{position:fixed;left:-280px;top:0;transition:left .2s}
 body.sbopen .side{left:0!important;box-shadow:0 0 40px rgba(0,0,0,.4)}
 body.sbopen .sbback{display:block;position:fixed;inset:0;background:rgba(10,15,35,.5);z-index:35}
+.sidesp{display:none}
 @media (min-width:901px){
+  .shell:not(.nosb) .sidesp{display:block;flex:none;width:68px}
+  .shell:not(.nosb) .side{position:fixed;left:0;top:0}
+  .shell:not(.nosb):not(.col) .side{box-shadow:0 0 0 1px rgba(255,255,255,.06),12px 0 60px rgba(10,15,50,.5)}
   .shell.col:not(.nosb) .side{width:68px;padding:16px 8px;overflow-x:hidden}
   .shell.col .side .t,.shell.col .unav{display:none}
   .shell.col .navh{justify-content:center;padding:9px 0;font-size:16px}
@@ -1221,6 +1225,7 @@ a.wapp{display:inline-flex;align-items:center;justify-content:center;flex:none;w
 <?php } ?>
 <script>window.__ppWelcome = <?= $welcome ? 'true' : 'false' ?>;</script>
 <div class="shell" id="shell">
+<div class="sidesp" aria-hidden="true"></div>
 <aside class="side" id="side">
   <a class="brand" href="#/"><span class="logo" id="logoBtn" title="Show / hide the side menu" role="button" tabindex="0" aria-label="Show or hide the side menu"><span class="lg-mark sbm" aria-hidden="true"><i></i><i></i><i></i><i></i></span></span><span class="t">Pranav Pipeline</span></a>
   <nav class="nav" id="nav">
@@ -2301,21 +2306,30 @@ const SB_KEY = 'pranav_sb_collapsed', UN_KEY = 'pranav_unis_open';
 const lsg = k => { try { return localStorage.getItem(k) === '1'; } catch (e) { return false; } };
 const lss = (k, v) => { try { localStorage.setItem(k, v ? '1' : '0'); } catch (e) {} };
 const narrow = () => window.matchMedia('(max-width:900px)').matches;
-$('shell').classList.toggle('col', lsg(SB_KEY));
+$('shell').classList.toggle('col', narrow() ? lsg(SB_KEY) : true);
 function setUnis(open) { $('unav').hidden = !open; $('navU').setAttribute('aria-expanded', open ? 'true' : 'false'); lss(UN_KEY, open); }
 const inRail = () => $('shell').classList.contains('col') && !narrow() && !$('shell').classList.contains('nosb');
 function expandRail() { $('shell').classList.remove('col'); lss(SB_KEY, false); }
 $('navU').onclick = () => { if (inRail()) { expandRail(); setUnis(true); return; } setUnis($('unav').hidden); };
 setUnis(lsg(UN_KEY));
+let sbPin = false, sbT = 0;
+const floatOn = () => !narrow() && !$('shell').classList.contains('nosb');
+function sbOpen(pin) { clearTimeout(sbT); sbPin = !!pin; $('shell').classList.remove('col'); }
+function sbClose() { clearTimeout(sbT); sbPin = false; if (floatOn()) $('shell').classList.add('col'); }
 function toggleSide() {
-  if (narrow() || $('shell').classList.contains('nosb')) { document.body.classList.toggle('sbopen'); return; }
-  lss(SB_KEY, $('shell').classList.toggle('col'));
+  if (!floatOn()) { document.body.classList.toggle('sbopen'); return; }
+  if ($('shell').classList.contains('col') || !sbPin) sbOpen(true); else sbClose();
 }
+$('side').addEventListener('mouseenter', () => { if (!floatOn() || !$('shell').classList.contains('col')) return; clearTimeout(sbT); sbT = setTimeout(() => sbOpen(false), 200); });
+$('side').addEventListener('mouseleave', () => { if (!floatOn()) return; clearTimeout(sbT); if (!sbPin) sbT = setTimeout(sbClose, 350); });
+document.addEventListener('click', e => { if (floatOn() && !$('shell').classList.contains('col') && !e.target.closest('#side')) sbClose(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && floatOn() && !$('shell').classList.contains('col')) sbClose(); });
+addEventListener('resize', () => { if (floatOn() && !sbPin) $('shell').classList.add('col'); });
 $('logoBtn').onclick = e => { e.preventDefault(); e.stopPropagation(); toggleSide(); };
 $('logoBtn').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSide(); } };
 $('btnMenu').onclick = () => document.body.classList.toggle('sbopen');
 $('sbback').onclick = () => document.body.classList.remove('sbopen');
-$('side').addEventListener('click', e => { if (e.target.closest('a')) document.body.classList.remove('sbopen'); });
+$('side').addEventListener('click', e => { if (e.target.closest('a')) { document.body.classList.remove('sbopen'); if (floatOn()) setTimeout(sbClose, 120); } });
 $('selTop').onchange = () => renderTopChart(uniStats());
 $('selMonths').onchange = renderTrendChart;
 $('uSort').onchange = () => { if (route.type === 'home') renderHome(); };
