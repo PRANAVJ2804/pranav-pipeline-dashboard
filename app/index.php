@@ -1307,15 +1307,11 @@ a.wapp{display:inline-flex;align-items:center;justify-content:center;flex:none;w
         <div class="uhd"><span class="av" id="uAv2"></span><span class="t"><small>Signed in as</small><b id="uNm2"></b><em id="uUn2"></em></span></div>
         <button type="button" role="menuitem" data-a="profile"><i>👤</i>Your profile</button>
         <button type="button" role="menuitem" data-a="pwd"><i>🔑</i>Change password</button>
-        <button type="button" role="menuitem" data-a="wa"><i>💬</i><span id="waMode">WhatsApp opens in: Browser tab</span></button>
         <button type="button" role="menuitem" data-a="monkey"><i>🐒</i><span id="monkeyMode">Pranav: playing 🐒 (tap to rest)</span></button>
         <?php if (user_scope() === null) { ?><button type="button" role="menuitem" data-a="usage"><i>📊</i>Usage (who uses what)</button><?php } ?>
-        <a role="menuitem" href="#/reports/activity" data-a="act"><i>🕵️</i><?= user_scope() !== null ? 'Your activity' : 'Activity log' ?></a>
-        <a role="menuitem" href="#/master/sheet?f=stale" data-a="stale"><i>⏰</i>Follow-up overdue</a>
-        <button type="button" role="menuitem" data-a="search"><i>🔎</i>Search<kbd>Ctrl K</kbd></button>
         <button type="button" role="menuitem" data-a="refresh"><i>↻</i>Refresh data</button>
         <hr>
-        <form method="post" id="lgoForm"><input type="hidden" name="csrf" value="<?= h($_SESSION['csrf']) ?>"><button name="logout" value="1" role="menuitem" class="so"><i>🚪</i>Sign out</button></form>
+        <form method="post" id="lgoForm"><input type="hidden" name="csrf" value="<?= h($_SESSION['csrf']) ?>"><input type="hidden" name="logout" value="1"><button type="button" id="lgoBtn" role="menuitem" class="so"><i>🚪</i>Log out</button></form>
       </div></div></div>
   </div>
 <div class="rfbar" id="rfbar" hidden><i></i></div>
@@ -5582,7 +5578,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     if (/\b(what is|whats|what s|explain|tell me about|about|describe)\b.*\b(this (site|website|dashboard|page|app|portal|tool)|pranav pipeline|the dashboard|the website)\b|\bwhat does this (site|website|dashboard|do)\b/.test(low)) return R('This is the <b>Pranav Pipeline dashboard</b> — a live view of every deal (student) in the Bitrix24 pipeline: stages, universities, programs, semester payments and follow-ups. You can filter, open reports, edit deals (with a comment) and ask me. 🐒', 'happy', ['How many deals?', 'Show all reports', 'What can you do?']);
     if ((/\b(data|dashboard|site|website)\b.*\b(old|fresh|stale|updated|refreshed|latest|sync|synced|current|live)\b|\b(last|when)\b.*\b(refresh|refreshed|sync|synced)\b|\bhow old\b.*\bdata\b/.test(low)) && !/\bwho\b|\bstudent\b|\bdeal #?\d|status of\b/.test(low)) { const u = document.getElementById('updated'); return R('The data was loaded: <b>' + E(u ? u.textContent.replace(/^Updated\s*/i, '') : 'a little while ago') + '</b>.<div class="mbs">To get the newest data: account menu (your name, top right) → <b>Refresh data</b>. Your own saves show up straight away.</div>'); }
     if (/\b(how|where)\b.*\b(refresh|reload)\b|\brefresh data\b|\bupdate the data\b/.test(low)) return R('Click your <b>name (top right)</b> → <b>Refresh data</b>. It pulls the latest from Bitrix24. Your own saves show up instantly without that. 🔄');
-    if (/\b(log ?out|sign ?out|logoff|log off)\b/.test(low)) return R('Click your <b>name (top right)</b> → <b>Sign out</b>. 👋');
+    if (/\b(log ?out|sign ?out|logoff|log off)\b/.test(low)) return R('Click your <b>name (top right)</b> → <b>Log out</b>. 👋');
     if (/\b(change|reset|forgot|new|update)\b.*\bpassword\b|\bpassword\b.*\b(change|reset|forgot)\b/.test(low)) return R('Click your <b>name (top right)</b> → <b>Change password</b> (at least 8 characters). 🔑 If you forgot it completely, ask the admin to reset it.');
     if (/\b(export|download|csv|excel|spreadsheet|xls)\b/.test(low) && !/\bhow many|count\b/.test(low)) return R('Open any report and press <b>Download Excel</b> (every number links to the deals behind it), or open <b>All deals</b> and press <b>Download CSV</b>. 📥 Filters you set are respected.', 'happy', ['Show all reports']);
     if (/\b(how|where)\b.*\b(search|find)\b|\bctrl ?k\b|\bshortcut\b|\bsearch (bar|box)\b/.test(low)) return R('Use the <b>search bar at the top</b> (or press <b>Ctrl + K</b>) and type a student’s name, phone, email or university. 🔍');
@@ -5672,7 +5668,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       ol_(['Click your <b>name (top right)</b> → <b>Activity log</b> (team logins see <b>Your activity</b>).', 'Filter by person, date or search text.', 'Each line shows the deal, each field’s old → new value, the comment and who made it.']), c: ['Open the activity log']},
     refresh: {t: 'How to refresh the data', h: () => ol_(['Click your <b>name (top right)</b>.', 'Press <b>Refresh data</b>. It pulls the latest from Bitrix24.']) + tips_(['Your own saves show up instantly without refreshing.', 'The top bar shows how old the data is.']), c: ['How old is the data?']},
     password: {t: 'How to change your password or profile', h: () => ol_(['Click your <b>name (top right)</b>.', '<b>Change password</b>: enter the old one and a new one (at least 8 characters).', '<b>Your profile</b>: update your name, phone or colour.']) + tips_(['Forgot it completely? Ask the admin to reset it.']), c: []},
-    signout: {t: 'How to sign out', h: () => ol_(['Click your <b>name (top right)</b>.', 'Press <b>Sign out</b>.']), c: []},
+    signout: {t: 'How to log out', h: () => ol_(['Click your <b>name (top right)</b>.', 'Press <b>Log out</b>, then confirm.']), c: []},
     overdue: {t: 'How to work through follow-up overdue', h: () =>
       ol_(['Click <b>Follow-up overdue</b> in the sidebar (or ask me “overdue deals”).', 'Open a student, call them, then add a <b>comment</b> and a new <b>Next Follow-up</b> date.', 'Save. The deal leaves the overdue list.']) + tips_(['Overdue = active student whose latest comment is 15+ days old.', '<b>Not contacted</b> (also in the sidebar) = active students with no comment at all.']), c: ['Overdue follow-ups']},
     rereg: {t: 'How the Re Reg Percentage works', h: () =>
@@ -7099,4 +7095,34 @@ a.ucard .ucov{height:96px;margin:-14px -16px 12px;border-radius:14px 14px 0 0;ba
 })();
 </script>
 <!--/ND-->
+<!--LGO-->
+<style>
+.lgcf{position:fixed;inset:0;z-index:9500;display:grid;place-items:center;padding:16px;background:rgba(8,28,30,.55);backdrop-filter:blur(4px);animation:ndIn .2s ease both}
+.lgcb{width:min(400px,100%);padding:24px 24px 20px;text-align:center;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.4);animation:ndUp .3s cubic-bezier(.2,1.2,.4,1) both}
+.lgcb .lgi{font-size:42px;line-height:1}.lgcb h2{margin:10px 0 6px;font-size:20px}.lgcb p{margin:0 0 18px;color:var(--muted);font-size:14px}
+.lgcb .lgr{display:flex;gap:10px}.lgcb button{flex:1;padding:11px 14px;border-radius:12px;font:inherit;font-weight:700;cursor:pointer;border:1px solid var(--line)}
+.lgcb .lgs{background:linear-gradient(135deg,#17b3a6,#0f8f85);color:#fff;border-color:transparent}
+.lgcb .lgy{background:transparent;color:#e11d48;border-color:rgba(225,29,72,.45)}.lgcb .lgy:hover{background:rgba(225,29,72,.1)}
+</style>
+<script>
+(function () {
+  var btn = document.getElementById('lgoBtn'), form = document.getElementById('lgoForm');
+  if (!btn || !form) return;
+  btn.addEventListener('click', function (e) {
+    e.preventDefault();
+    if (document.querySelector('.lgcf')) return;
+    var ov = document.createElement('div'); ov.className = 'lgcf'; ov.setAttribute('role', 'alertdialog'); ov.setAttribute('aria-modal', 'true');
+    ov.innerHTML = '<div class="lgcb"><div class="lgi">🚪</div><h2>Pakka log out?</h2><p>You will need your username and password to get back in.</p><div class="lgr"><button type="button" class="lgs">Stay logged in</button><button type="button" class="lgy">Yes, log out</button></div></div>';
+    document.body.appendChild(ov);
+    function close() { ov.remove(); document.removeEventListener('keydown', key); }
+    function key(ev) { if (ev.key === 'Escape') close(); }
+    document.addEventListener('keydown', key);
+    ov.querySelector('.lgs').onclick = close;
+    ov.querySelector('.lgy').onclick = function () { form.submit(); };
+    ov.addEventListener('mousedown', function (ev) { if (ev.target === ov) close(); });
+    ov.querySelector('.lgs').focus();
+  });
+})();
+</script>
+<!--/LGO-->
 </body></html>
