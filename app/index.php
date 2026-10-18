@@ -5092,6 +5092,8 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     '.mbch:empty{display:none}.mbch{display:flex;flex-wrap:wrap;gap:6px;padding:6px 14px 2px;background:var(--bg)}' +
     '.mbty{display:flex;gap:4px;padding:12px 14px}.mbty i{width:7px;height:7px;border-radius:50%;background:#75e8e0;animation:mbDot 1s infinite}.mbty i:nth-child(2){animation-delay:.15s}.mbty i:nth-child(3){animation-delay:.3s}@keyframes mbDot{0%,60%,100%{transform:none;opacity:.5}30%{transform:translateY(-5px);opacity:1}}' +
     '.mbf{display:flex;gap:8px;padding:10px 12px 12px;background:var(--card);border-top:1px solid var(--line)}.mbf input{flex:1;min-width:0;padding:11px 14px;font:inherit;font-size:14px;color:var(--text);background:var(--bg);border:1.5px solid var(--line);border-radius:14px;outline:0}.mbf input:focus{border-color:#2cdace;box-shadow:0 0 0 3px rgba(44,218,206,.16)}' +
+    '.mbf .mbmic{background:var(--bg);color:#12877f;border:1.5px solid var(--line);display:grid;place-items:center;padding:0;transition:background .2s,color .2s}.mbf .mbmic svg{width:20px;height:20px}.mbf .mbmic:hover{border-color:#2cdace}.mbf .mbmic[hidden]{display:none}' +
+    '.mbf .mbmic.rec{background:#e11d48;color:#fff;border-color:#e11d48;animation:mbRec 1.2s ease-out infinite}@keyframes mbRec{0%{box-shadow:0 0 0 0 rgba(225,29,72,.5)}100%{box-shadow:0 0 0 12px rgba(225,29,72,0)}}.mbf input.lis{border-color:#e11d48;background:color-mix(in srgb,#e11d48 6%,var(--bg))}' +
     '.mbf button{width:44px;border:0;border-radius:14px;background:linear-gradient(135deg,#2cdace,#28c1b6);color:#fff;font-size:18px;cursor:pointer}.mbf button:disabled{opacity:.5}' +
     '.mbhead svg .mbhap,.mbhead svg .mbm2x{display:none}' +
     /* face moods */
@@ -5118,7 +5120,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     '<section class="mbp2" id="mbPanel" role="dialog" aria-label="Pranav chat" hidden>' +
     '<div class="mbh mbhead"><div class="av"><svg class="mbx" id="mbHead" viewBox="0 0 200 190" aria-hidden="true">' + FACE + '</svg></div><div class="sp"><h3>Pranav</h3><p id="mbSub">Pranav Pipeline’s own monkey 🐒 · ask me anything</p></div><div class="mbhb"><button type="button" id="mbClear" title="Clear chat" aria-label="Clear chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M18.5 2.5V7H14"/></svg></button><button type="button" id="mbClose" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>' +
     '<div class="mbmsgs" id="mbMsgs" aria-live="polite"></div><div class="mbch" id="mbChips"></div>' +
-    '<form class="mbf" id="mbForm" autocomplete="off"><input id="mbIn" type="text" maxlength="400" placeholder="Ask me anything about the deals…" aria-label="Message Pranav"><button type="submit" aria-label="Send">➤</button></form></section>';
+    '<form class="mbf" id="mbForm" autocomplete="off"><input id="mbIn" type="text" maxlength="400" placeholder="Ask me anything about the deals…" aria-label="Message Pranav"><button type="button" class="mbmic" id="mbMic" aria-label="Speak your question" title="Speak your question"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8.5 21h7"/></svg></button><button type="submit" aria-label="Send">➤</button></form></section>';
   document.body.appendChild(wrap);
 
   const msgs = g('mbMsgs'), chips = g('mbChips'), input = g('mbIn'), panel = g('mbPanel'), openB = g('mbOpen');
@@ -6060,10 +6062,38 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       setTimeout(() => input.focus(), 60);
     }
   }
-  openB.onclick = () => openPanel(panel.hidden);
-  g('mbClose').onclick = () => { openPanel(false); openB.focus(); };
+  openB.onclick = () => { if (!panel.hidden) micAbort(); openPanel(panel.hidden); };
+  g('mbClose').onclick = () => { micAbort(); openPanel(false); openB.focus(); };
   g('mbClear').onclick = () => { talked = false; msgs.innerHTML = ''; S.deal = null; S.pending = null; S.edit = null; respond({h: 'Fresh start! 🍌 What shall we look up?', mood: 'happy', chips: baseChips()}); };
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden && !document.querySelector('.modal:not([hidden])')) { openPanel(false); } });
+
+  /* ================= voice to text ================= */
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition, micB = g('mbMic');
+  let rec = null, listening = false, micErr = '';
+  const PH = input.placeholder;
+  function micNote(t, ms) { const e = g('mbSub'); if (!e) return; const was = e.dataset.was || e.textContent; e.dataset.was = was; e.textContent = t; clearTimeout(micNote.t); micNote.t = setTimeout(() => { e.textContent = e.dataset.was; delete e.dataset.was; }, ms || 4500); }
+  function micAbort() { if (rec && listening) { micErr = 'x'; try { rec.abort(); } catch (e) {} } }
+  if (!SR) { micB.hidden = true; } else {
+    micB.onclick = () => {
+      if (S.busy) return;
+      if (listening) { try { rec.stop(); } catch (e) {} return; }
+      micErr = ''; input.value = '';
+      rec = new SR(); rec.lang = 'en-IN'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+      rec.onstart = () => { listening = true; micB.classList.add('rec'); input.classList.add('lis'); input.placeholder = 'Listening… speak now 🎙️'; micB.title = 'Tap to stop and send'; };
+      rec.onresult = ev => { let f = '', i2 = ''; for (let i = 0; i < ev.results.length; i++) { const r = ev.results[i]; if (r.isFinal) f += r[0].transcript; else i2 += r[0].transcript; } input.value = (f + ' ' + i2).replace(/\s+/g, ' ').trim(); };
+      rec.onerror = ev => {
+        const e = ev && ev.error; if (e === 'aborted') return; micErr = e || 'err';
+        micNote(e === 'not-allowed' || e === 'service-not-allowed' ? 'Mic is blocked. Allow the microphone in the browser address bar 🎙️' : e === 'no-speech' ? 'I did not hear anything. Tap the mic and try again 🙉' : e === 'audio-capture' ? 'No microphone found 🎙️' : e === 'network' ? 'Voice needs an internet connection 🌐' : 'Voice did not work. Please type instead 🙈', 5000);
+      };
+      rec.onend = () => {
+        listening = false; micB.classList.remove('rec'); input.classList.remove('lis'); input.placeholder = PH; micB.title = 'Speak your question';
+        const t = input.value.trim();
+        if (!micErr && t) send(t); else if (micErr === 'x' || micErr) input.value = micErr === 'x' ? '' : t;
+        else micNote('I did not catch that. Tap the mic and try again 🙉', 3500);
+      };
+      try { rec.start(); } catch (e) { micNote('Voice did not start. Please try again.', 3500); }
+    };
+  }
   g('mbForm').onsubmit = e => { e.preventDefault(); send(input.value); };
   chips.addEventListener('click', e => { const b = e.target.closest('button[data-q]'); if (b) send(b.dataset.q); });
   msgs.addEventListener('click', e => {
