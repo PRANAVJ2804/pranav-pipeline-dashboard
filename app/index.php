@@ -1279,8 +1279,7 @@ a.wapp{display:inline-flex;align-items:center;justify-content:center;flex:none;w
         <button type="button" role="menuitem" data-a="profile"><i>👤</i>Your profile</button>
         <button type="button" role="menuitem" data-a="pwd"><i>🔑</i>Change password</button>
         <button type="button" role="menuitem" data-a="wa"><i>💬</i><span id="waMode">WhatsApp opens in: Browser tab</span></button>
-        <button type="button" role="menuitem" data-a="fx"><i>✨</i><span id="fxMode">Animations: on ✨ (tap to reduce)</span></button>
-        <button type="button" role="menuitem" data-a="monkey"><i>🐒</i><span id="monkeyMode">Monkey: playing 🐒 (tap to rest)</span></button>
+        <button type="button" role="menuitem" data-a="monkey"><i>🐒</i><span id="monkeyMode">Pranav: playing 🐒 (tap to rest)</span></button>
         <?php if (user_scope() === null) { ?><button type="button" role="menuitem" data-a="usage"><i>📊</i>Usage (who uses what)</button><?php } ?>
         <a role="menuitem" href="#/reports/activity" data-a="act"><i>🕵️</i><?= user_scope() !== null ? 'Your activity' : 'Activity log' ?></a>
         <a role="menuitem" href="#/master/sheet?f=stale" data-a="stale"><i>⏰</i>Follow-up overdue</a>
@@ -1926,7 +1925,7 @@ function renderRoute(reset) {
     if (route.s !== null) parts.push(route.s.split(MS).join(' or '));
     if (route.f && FILTER_LABEL[route.f]) parts.push(FILTER_LABEL[route.f]);
     route.x.forEach(p => parts.push(xLabel(p)));
-    if (route.bot) { const bs = botSel(route.bot); parts.push(bs ? bs.label : 'Selection from Monkey bot (expired, showing all)'); }
+    if (route.bot) { const bs = botSel(route.bot); parts.push(bs ? bs.label : 'Selection from Pranav (expired, showing all)'); }
     if (route.q) parts.push('Search: ' + route.q);
     $('dashTitle').textContent = parts.join(' · ');
     document.title = parts.join(' · ') + ' · Pranav Pipeline';
@@ -3886,7 +3885,6 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     const a = it.dataset.a; shut();
     if (a === 'profile') openProfile(); else if (a === 'pwd') openPwd(); else if (a === 'usage') openUsage();
     else if (a === 'wa') { try { localStorage.setItem(WA_KEY, waMode() === 'app' ? 'web' : 'app'); } catch (x) {} paintWaMode(); toastWa(); }
-    else if (a === 'fx') { if (window.__fx) window.__fx.toggle(); }
     else if (a === 'monkey') { if (window.__monkeyLife) window.__monkeyLife.toggle(); }
     else if (a === 'search') { const s = g('gsearch'); if (s) { s.focus(); s.select(); } }
     else if (a === 'refresh') g('btnRefresh').click();
@@ -4558,7 +4556,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   function mkSel(list, label) {
     const M = (window.__botSel = window.__botSel || {});
     const key = 'b' + (++SELN) + Date.now().toString(36).slice(-4);
-    M[key] = {label: label || 'From Monkey bot', ids: list.map(r => String(r.ID))};
+    M[key] = {label: label || 'From Pranav', ids: list.map(r => String(r.ID))};
     const ks = Object.keys(M); if (ks.length > 15) ks.slice(0, ks.length - 15).forEach(k => { delete M[k]; });
     try { sessionStorage.setItem('pranav_botsel', JSON.stringify(M)); } catch (e) {}
     return key;
@@ -4813,7 +4811,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   let ti = 0, oi = 0;
   const notTrained = () => ({h: TRAINED[ti++ % TRAINED.length], mood: 'cry', copy: true});
   const outOfTopic = () => ({h: OOT[oi++ % OOT.length], mood: 'conf'});
-  const HELP = '<b>I’m Monkey bot 🐒</b> — I read this dashboard’s data and I find things fast. Editing is your job, so I open the lead for you. Typos are fine!<ul class="mbl2"><li><b>A student:</b> “status of Rahul”, “phone of Rahul”, “who worked last on deal 108”, “when was Rahul’s deal created”</li><li><b>Counts:</b> “how many deals were created this month”, “how many in muj + smu + amity”, “overdue deals”, “sem 1 paid in Amity”, “which university has the most deals”</li><li><b>Latest:</b> “latest deal created”, “last 5 deals”</li><li><b>My work:</b> “last deal I worked on”, “last university I worked on”, “what filter was I using”</li><li><b>Filters:</b> “filter muj + smu + amity”, “only mba and bba”, “clear filters”</li><li><b>Reports:</b> “open alumni report”, “create a report of university by stage for muj + smu”</li><li><b>Edit:</b> “edit Rahul”, “change Rahul’s sem 1 status”. I open that lead’s edit form and walk you through it. No questions.</li><li><b>How-to:</b> refresh data, change password, export CSV, what “overdue” means…</li></ul>🍌';
+  const HELP = '<b>I’m Pranav 🐒</b> — I read this dashboard’s data and I find things fast. Editing is your job, so I open the lead for you. Typos are fine!<ul class="mbl2"><li><b>A student:</b> “status of Rahul”, “phone of Rahul”, “who worked last on deal 108”, “when was Rahul’s deal created”</li><li><b>Counts:</b> “how many deals were created this month”, “how many in muj + smu + amity”, “overdue deals”, “sem 1 paid in Amity”, “which university has the most deals”</li><li><b>Latest:</b> “latest deal created”, “last 5 deals”</li><li><b>My work:</b> “last deal I worked on”, “last university I worked on”, “what filter was I using”</li><li><b>Filters:</b> “filter muj + smu + amity”, “only mba and bba”, “clear filters”</li><li><b>Reports:</b> “open alumni report”, “create a report of university by stage for muj + smu”</li><li><b>Edit:</b> “edit Rahul”, “change Rahul’s sem 1 status”. I open that lead’s edit form and walk you through it. No questions.</li><li><b>How-to:</b> refresh data, change password, export CSV, what “overdue” means…</li></ul>🍌';
 
   /* ================= UI ================= */
   const FACE = (
@@ -4874,11 +4872,11 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   const wrap = document.createElement('div');
   wrap.innerHTML =
     '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="mbface" viewBox="0 0 200 190"><circle cx="36" cy="106" r="22" fill="#8a5632"/><circle cx="36" cy="106" r="12" fill="#f0c7a0"/><circle cx="164" cy="106" r="22" fill="#8a5632"/><circle cx="164" cy="106" r="12" fill="#f0c7a0"/><circle cx="100" cy="102" r="64" fill="#9a6338"/><path d="M100 72c-14-14-46-6-46 24 0 14 6 22 14 28 4 18 18 30 32 30s28-12 32-30c8-6 14-14 14-28 0-30-32-38-46-24z" fill="#f4d5b0"/><ellipse cx="78" cy="102" rx="13" ry="15" fill="#fff"/><circle cx="78" cy="104" r="7" fill="#2a1a12"/><ellipse cx="122" cy="102" rx="13" ry="15" fill="#fff"/><circle cx="122" cy="104" r="7" fill="#2a1a12"/><ellipse cx="100" cy="127" rx="9" ry="6" fill="#6b3f22"/><path d="M84 141q16 14 32 0" fill="none" stroke="#6b3f22" stroke-width="3.5" stroke-linecap="round"/></symbol></defs></svg>' +
-    '<button class="mbl hasq" id="mbOpen" type="button" aria-label="Open Monkey bot" aria-expanded="false"><span class="mbtip">Ask Monkey bot 🐒</span><svg class="mbx" id="mbLaunch" viewBox="0 0 200 190" aria-hidden="true">' + FACE + '</svg></button>' +
-    '<section class="mbp2" id="mbPanel" role="dialog" aria-label="Monkey bot chat" hidden>' +
-    '<div class="mbh mbhead"><div class="av"><svg class="mbx" id="mbHead" viewBox="0 0 200 190" aria-hidden="true">' + FACE + '</svg></div><div class="sp"><h3>Monkey bot</h3><p id="mbSub">Ask me about deals, students and counts 🍌</p></div><div class="mbhb"><button type="button" id="mbClear" title="Clear chat" aria-label="Clear chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M18.5 2.5V7H14"/></svg></button><button type="button" id="mbClose" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>' +
+    '<button class="mbl hasq" id="mbOpen" type="button" aria-label="Open Pranav" aria-expanded="false"><span class="mbtip">Ask Pranav 🐒</span><svg class="mbx" id="mbLaunch" viewBox="0 0 200 190" aria-hidden="true">' + FACE + '</svg></button>' +
+    '<section class="mbp2" id="mbPanel" role="dialog" aria-label="Pranav chat" hidden>' +
+    '<div class="mbh mbhead"><div class="av"><svg class="mbx" id="mbHead" viewBox="0 0 200 190" aria-hidden="true">' + FACE + '</svg></div><div class="sp"><h3>Pranav</h3><p id="mbSub">Pranav Pipeline’s own monkey 🐒 · ask me anything</p></div><div class="mbhb"><button type="button" id="mbClear" title="Clear chat" aria-label="Clear chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M18.5 2.5V7H14"/></svg></button><button type="button" id="mbClose" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>' +
     '<div class="mbmsgs" id="mbMsgs" aria-live="polite"></div><div class="mbch" id="mbChips"></div>' +
-    '<form class="mbf" id="mbForm" autocomplete="off"><input id="mbIn" type="text" maxlength="400" placeholder="Ask me anything about the deals…" aria-label="Message Monkey bot"><button type="submit" aria-label="Send">➤</button></form></section>';
+    '<form class="mbf" id="mbForm" autocomplete="off"><input id="mbIn" type="text" maxlength="400" placeholder="Ask me anything about the deals…" aria-label="Message Pranav"><button type="submit" aria-label="Send">➤</button></form></section>';
   document.body.appendChild(wrap);
 
   const msgs = g('mbMsgs'), chips = g('mbChips'), input = g('mbIn'), panel = g('mbPanel'), openB = g('mbOpen');
@@ -4913,7 +4911,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     if (rep.copy) h += '<div class="mbact"><button type="button" data-act="copyq">📋 Copy my question for the admin</button></div>';
     addBot(h);
     mood(rep.mood || 'idle');
-    g('mbSub').textContent = rep.mood === 'cry' ? 'Sniff… I need more training 😭' : rep.mood === 'conf' ? 'Hmm? That is not my jungle 🙈' : 'Ask me about deals, students and counts 🍌';
+    g('mbSub').textContent = rep.mood === 'cry' ? 'Sniff… I need more training 😭' : rep.mood === 'conf' ? 'Hmm? That is not my jungle 🙈' : 'Pranav Pipeline’s own monkey 🐒 · ask me anything';
     setChips(rep.chips || dealChips());
   }
   async function think(fn, ms) {
@@ -4948,7 +4946,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
   function buildComment(E_) {
     const who = ME || 'a user';
     const bits = E_.items.map(it => it.col.label + ' changed from “' + (it.old || 'empty') + '” to “' + it.v.disp + '”');
-    return ('Monkey bot: ' + who + ' asked me to update this deal. ' + bits.join('; ') + '.').slice(0, 980);
+    return ('Pranav (bot): ' + who + ' asked me to update this deal. ' + bits.join('; ') + '.').slice(0, 980);
   }
   function askFollow() {
     S.edit.step = 'fu';
@@ -4992,7 +4990,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     const fuCol = colByRole('fuupd');
     if (fuCol && e.fu) { changes[fuCol.key] = dIsoT(e.fu); original[fuCol.key] = r[fuCol.key] || ''; }
     let by = ''; try { by = localStorage.getItem('pranav_cm_by') || ''; } catch (x) {}
-    by = ((by || ME || 'user') + ' via Monkey bot').slice(0, 60);
+    by = ((by || ME || 'user') + ' via Pranav (bot)').slice(0, 60);
     let resp, j = {};
     try {
       resp = await fetch('api.php?action=update', {method: 'POST', credentials: 'same-origin', headers: {'X-CSRF-Token': CSRF, 'Content-Type': 'application/json'}, body: JSON.stringify({id: r.ID, changes: changes, original: original, comment: cmSrc ? e.comment : '', by: by})});
@@ -5001,7 +4999,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     } catch (x) { resp = null; }
     if (resp && resp.ok && j.ok) {
       applyRowUpdates(r, j.updated || {});
-      TOUCHED[r.ID] = Date.now(); BOT_IDS[r.ID] = Date.now(); evAdd('Monkey bot saved changes to ' + nameOf(r)); ACT = null;
+      TOUCHED[r.ID] = Date.now(); BOT_IDS[r.ID] = Date.now(); evAdd('Pranav saved changes to ' + nameOf(r)); ACT = null;
       try { renderRoute(false); } catch (x) {}
       S.edit = null;
       return {h: '🎉 <b>Done!</b> Saved to Bitrix24 for <b>' + E(nameOf(r)) + '</b>.' + (cmSrc ? '<div class="mbs" style="margin-top:4px">Comment added: “' + E(e.comment) + '”</div>' : '') + dealCard(r), mood: 'happy', deal: r, actions: true};
@@ -5352,7 +5350,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     steps.push('Write a <b>comment</b> and your <b>name</b>.');
     steps.push('Press <b>Save</b>.');
     S.edit = null; S.pending = null; S.deal = r; S.via = how || 'name';
-    try { openEdit(r); const b = document.getElementById('mBanner'); if (b) { b.textContent = '🐒 Monkey bot: ' + steps.map((x, i) => (i + 1) + '. ' + x.replace(/<[^>]+>/g, '')).join('  ') ; b.hidden = false; } } catch (e) {}
+    try { openEdit(r); const b = document.getElementById('mBanner'); if (b) { b.textContent = '🐒 Pranav: ' + steps.map((x, i) => (i + 1) + '. ' + x.replace(/<[^>]+>/g, '')).join('  ') ; b.hidden = false; } } catch (e) {}
     setTimeout(() => { try { openPanel(false); } catch (e) {} }, 200);
     return {h: '🐒 Ooh ooh! That one’s <b>your work</b>, boss. I only swing around the data! I opened <b>' + E(nameOf(r)) + '</b> (#' + E(r.ID) + ') for you. Quick drill:<ol class="mbl2">' + steps.map(x => '<li>' + x + '</li>').join('') + '</ol>I’ll be right here if you need me. 🍌', mood: 'happy'};
   }
@@ -5413,7 +5411,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
         'I ask for the <b>next follow-up date</b> (every save needs one). Say “tomorrow”, “20 Oct”, “in 3 days” or “next monday 4pm”.',
         'I repeat what I understood: the old → new value, the follow-up date and the comment I will write. <b>Check it carefully.</b>',
         'Say <b>yes</b> to save, or <b>no</b> to cancel. To fix something, just tell me (“make it sem 2”, “follow up on 25 Oct”).',
-        'I save to Bitrix24 and add a comment like “Monkey bot: &lt;your name&gt; asked me to update this deal…”.'
+        'I save to Bitrix24 and add a comment like “Pranav (bot): &lt;your name&gt; asked me to update this deal…”.'
       ]) +
       '<b>Way 2: by hand</b>' + ol_([
         'Find the student: type in the <b>search bar</b> at the top (or press <b>Ctrl + K</b>), or open <b>All deals</b>. Click the student to open the <b>edit form</b>.',
@@ -5475,7 +5473,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       ol_(['Click <b>Follow-up overdue</b> in the sidebar (or ask me “overdue deals”).', 'Open a student, call them, then add a <b>comment</b> and a new <b>Next Follow-up</b> date.', 'Save. The deal leaves the overdue list.']) + tips_(['Overdue = active student whose latest comment is 15+ days old.', '<b>Not contacted</b> (also in the sidebar) = active students with no comment at all.']), c: ['Overdue follow-ups']},
     rereg: {t: 'How the Re Reg Percentage works', h: () =>
       ol_(['Only students in an <b>Active</b> stage are looked at.', 'No <b>Last Payment Date</b> → not counted at all.', 'Today between Last and Next Payment Date → <b>Done</b>.', 'Everything else (no Next Payment Date, or past it) → <b>Pending</b> (delayed).', '<b>Re-reg % = Done ÷ (Done + Pending).</b>']), c: ['Open re reg percentage report']},
-    bot: {t: 'How to use me (Monkey bot)', h: () => HELP, c: ['Edit a deal now', 'Deals created this month']}
+    bot: {t: 'How to use me (Pranav)', h: () => HELP, c: ['Edit a deal now', 'Deals created this month']}
   };
   const GUIDE_MENU = [['edit', 'Edit a lead'], ['sem', 'Semester payment status'], ['stage', 'Stage / lead / documents status'], ['followup', 'Follow-up date'], ['comment', 'Add a comment'], ['contact', 'Fix name / phone / email'], ['search', 'Find a student'], ['filter', 'Filters'], ['report', 'Reports'], ['csv', 'Download CSV'], ['activity', 'Activity log'], ['overdue', 'Overdue follow-ups'], ['refresh', 'Refresh data'], ['password', 'Password / profile']];
   function howTopic(low) {
@@ -5641,7 +5639,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
         if (sc[1] === 'hi') return {h: 'Ooh ooh! 🐒 Hello' + (ME ? ' <b>' + E(ME) + '</b>' : '') + '! Ask me about any student or a count, or tell me which lead to open for editing.', mood: 'happy', chips: baseChips()};
         if (sc[1] === 'thanks') return {h: 'Anytime! 🍌 A banana for you too.', mood: 'happy'};
         if (sc[1] === 'bye') return {h: 'Bye bye! 🙊 I’ll be hanging around here.', mood: 'happy'};
-        if (sc[1] === 'who') return {h: 'I’m <b>Monkey bot</b> 🐒, this dashboard’s helper. I answer from your live data, and when you want to edit a lead I open it for you.', mood: 'happy'};
+        if (sc[1] === 'who') return {h: 'I’m <b>Pranav</b> 🐒 — the monkey built to look after this dashboard. I answer from your live data, and when you want to edit a lead I open it for you.', mood: 'happy'};
         if (sc[1] === 'help') return {h: HELP, mood: 'happy', chips: baseChips()};
         if (sc[1] === 'ok') return {h: '👍', mood: 'idle'};
         if (sc[1] === 'howru') return {h: 'Swinging great! 🍌 What shall we look up?', mood: 'happy'};
@@ -5803,7 +5801,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     let i; do { i = Math.floor(Math.random() * pool.length); } while (pool === GREET && i === gi && pool.length > 1); if (pool === GREET) gi = i;
     let t = pool[i].replace(/\{n\}/g, E(nm));
     const notes = allRows.length ? ctxNotes() : [];
-    if (first) t += '<div class="mbs" style="margin-top:6px">I’m <b>Monkey bot</b>. I watch this dashboard, answer from its data, and open any lead you want to edit. Typos are fine!</div>';
+    if (first) t += '<div class="mbs" style="margin-top:6px">I’m <b>Pranav</b>, the monkey built for this dashboard. I watch it, answer from its data, and open any lead you want to edit. Typos are fine!</div>';
     if (notes.length) t += '<div class="mbs" style="margin-top:6px">' + notes.join('<br>') + '</div>';
     respond({h: t, mood: 'happy', chips: baseChips()});
   }
@@ -5840,7 +5838,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       if (act === 'yes' || act === 'no') { if (S.busy) return; a.closest('.mbact').querySelectorAll('button').forEach(b => { b.disabled = true; }); send(act === 'yes' ? 'Yes' : 'No'); }
       else if (act === 'edit') { const r = allRows.find(x => String(x.ID) === a.dataset.id); if (r) { think(() => guideEdit([r], understand('edit this deal'), S.via || 'name'), 300); } }
       else if (act === 'form') { const r = allRows.find(x => String(x.ID) === a.dataset.id); if (r && typeof openEdit === 'function') { try { openEdit(r); } catch (x) {} } }
-      else if (act === 'copyq') { try { navigator.clipboard.writeText('Monkey bot could not answer: “' + S.asked + '”. Please train it. 🐒'); a.textContent = '✓ Copied'; } catch (x) { a.textContent = 'Copy failed'; } }
+      else if (act === 'copyq') { try { navigator.clipboard.writeText('Pranav could not answer: “' + S.asked + '”. Please train it. 🐒'); a.textContent = '✓ Copied'; } catch (x) { a.textContent = 'Copy failed'; } }
       return;
     }
     const nl = e.target.closest('a.mbnum');
@@ -5882,7 +5880,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       '<g class="hd"><g transform="translate(80 60) scale(.56) translate(-100 -102)">' + FACE + '</g>' +
       '<g class="xhat"><path d="M54 33Q58 -4 100 6Q96 20 108 33Z" fill="#dc2626"/><rect x="48" y="28" width="64" height="10" rx="5" fill="#fff"/><circle cx="102" cy="6" r="6.5" fill="#fff"/></g>' +
       '<g class="pty"><path d="M80 -8L62 32H98Z" fill="#a855f7"/><path d="M70 14l20 0M66 24l28 0" stroke="#fde68a" stroke-width="3"/><circle cx="80" cy="-9" r="5" fill="#fcd34d"/></g>' +
-      '<g class="band"><rect x="40" y="30" width="80" height="8" rx="4" fill="#ff9933"/><rect x="40" y="35" width="80" height="4" fill="#fff"/><rect x="40" y="38" width="80" height="3" rx="1.5" fill="#138808"/></g></g>' +
+      '<g class="gcap"><path d="M80 4L130 23L80 42L30 23Z" fill="#1f1b4d"/><path d="M58 33v11c0 5 10 9 22 9s22-4 22-9V33l-22 9z" fill="#2e2a75"/><path d="M122 27v24" stroke="#fbbf24" stroke-width="3"/><circle cx="122" cy="53" r="4.5" fill="#fbbf24"/></g><g class="band"><rect x="40" y="30" width="80" height="8" rx="4" fill="#ff9933"/><rect x="40" y="35" width="80" height="4" fill="#fff"/><rect x="40" y="38" width="80" height="3" rx="1.5" fill="#138808"/></g></g>' +
       '<g class="arL"><path d="M54 106C37 122 30 140 34 158" fill="none" stroke="' + fur + '" stroke-width="14" stroke-linecap="round"/><circle cx="34" cy="161" r="10.5" fill="#9a6338"/><circle cx="34" cy="163" r="5.5" fill="#f0c7a0" opacity=".7"/></g>' +
       '<g class="arR"><path d="M106 106C123 122 130 140 126 158" fill="none" stroke="' + fur + '" stroke-width="14" stroke-linecap="round"/><circle cx="126" cy="161" r="10.5" fill="#9a6338"/><circle cx="126" cy="163" r="5.5" fill="#f0c7a0" opacity=".7"/><path class="bn" d="M116 170c-9-4-12-20-3-29c3-3 7-2 7 1c-4 9 0 17 9 21c3 2 2 6-1 7z" fill="#fcd34d" stroke="#b45309" stroke-width="1.6" stroke-linejoin="round"/><g class="cup"><path d="M114 150h22l-3 20h-16z" fill="#fff" stroke="#9a6338" stroke-width="2"/><path d="M136 154q9 2 0 11" fill="none" stroke="#9a6338" stroke-width="2.5"/><path d="M114 156h22" stroke="#92400e" stroke-width="4"/><path class="stm" d="M121 146q-3-5 0-10M129 146q-3-5 0-10" stroke="#9ca3af" stroke-width="2" fill="none" stroke-linecap="round"/></g></g>' +
       '<g class="diya"><circle cx="140" cy="190" r="22" fill="#fbbf24" opacity=".18"/><path d="M126 192h28q-2 10-14 10t-14-10z" fill="#b45309"/><path class="fl" d="M140 190q-8-11 0-24q8 13 0 24z" fill="#fbbf24"/></g>' +
@@ -5931,9 +5929,13 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     '.mkr.stretch .arL{transform:rotate(172deg)}.mkr.stretch .arR{transform:rotate(-172deg)}.mkr.stretch .all{transform:translateY(-4px) scaleY(1.05)}.mkr.stretch .hd{transform:rotate(-7deg)}' +
     '.mkr.tailplay .tail{animation:mkTailF .22s ease-in-out infinite alternate}@keyframes mkTailF{from{transform:rotate(-24deg)}to{transform:rotate(28deg)}}.mkr.tailplay .hd{transform:rotate(15deg)}' +
     '.mkr.clap .arL{animation:mkClapL .3s ease-in-out infinite alternate}.mkr.clap .arR{animation:mkClapR .3s ease-in-out infinite alternate}@keyframes mkClapL{from{transform:rotate(-12deg)}to{transform:rotate(-44deg)}}@keyframes mkClapR{from{transform:rotate(12deg)}to{transform:rotate(44deg)}}' +
-    '.mkr .xhat,.mkr .pty,.mkr .band,.mkr .diya,.mkr .flag,.mkr .cup{display:none}.mkr.sx-xmas .xhat,.mkr.sx-party .pty,.mkr.sx-india .band,.mkr.sx-india .flag,.mkr.sx-diwali .diya,.mkr.coffee .cup{display:block}.mkr .diya .fl{transform-box:fill-box;transform-origin:50% 100%;animation:mkFlame .5s ease-in-out infinite alternate}@keyframes mkFlame{from{transform:scale(1,1) skewX(-4deg)}to{transform:scale(.88,1.15) skewX(5deg)}}' +
+    '.mkr .xhat,.mkr .pty,.mkr .band,.mkr .diya,.mkr .flag,.mkr .cup,.mkr .gcap{display:none}.mkr.sx-xmas .xhat,.mkr.sx-party .pty,.mkr.sx-india .band,.mkr.sx-india .flag,.mkr.sx-diwali .diya,.mkr.coffee .cup{display:block}.mkr .diya .fl{transform-box:fill-box;transform-origin:50% 100%;animation:mkFlame .5s ease-in-out infinite alternate}@keyframes mkFlame{from{transform:scale(1,1) skewX(-4deg)}to{transform:scale(.88,1.15) skewX(5deg)}}' +
     '.mkr.coffee .arR{transform:rotate(-128deg);animation:mkSip 2.2s ease-in-out infinite}@keyframes mkSip{0%,55%,100%{transform:rotate(-128deg)}70%,85%{transform:rotate(-152deg)}}.mkr.coffee .bn{display:none}.mkr.coffee .stm{animation:mkSteam 1.6s ease-in-out infinite}@keyframes mkSteam{0%{opacity:0;transform:translateY(4px)}50%{opacity:.9}100%{opacity:0;transform:translateY(-6px)}}' +
     '.mkr.fan .arR{animation:mkWave .16s ease-in-out infinite alternate}.mkr.fan .hd{animation:mkChew .3s ease-in-out infinite alternate}.mkr.fan .all{filter:saturate(1.2)}' +
+    '#fxBan{position:fixed;z-index:44;display:flex;align-items:center;gap:8px;padding:5px 14px 5px 8px;border-radius:999px;background:var(--card,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);box-shadow:0 8px 22px rgba(60,30,140,.22);font:700 12.5px system-ui,sans-serif;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;white-space:nowrap}' +
+    '#fxBan .b{font-size:24px;line-height:1;display:inline-block;animation:mkBanB .9s ease-in-out infinite alternate;filter:drop-shadow(0 3px 3px rgba(0,0,0,.25))}@keyframes mkBanB{from{transform:translateY(0) rotate(-8deg)}to{transform:translateY(-4px) rotate(8deg)}}' +
+    '#fxBan.drag{cursor:grabbing;z-index:80;padding:0;background:transparent;border:0;box-shadow:none}#fxBan.drag small{display:none}#fxBan.drag .b{font-size:34px;animation:none}#fxBan[hidden]{display:none}' +
+    '@media(max-width:700px){#fxBan{display:none}}' +
     /* speech bubble */
     '.mkbub{position:absolute;left:50%;bottom:calc(100% + 2px);transform:translateX(-50%) scale(.6);transform-origin:50% 100%;width:max-content;max-width:210px;padding:8px 12px;border-radius:14px;background:var(--card,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);box-shadow:0 10px 26px rgba(40,20,100,.3);font:600 13px/1.35 system-ui,-apple-system,Segoe UI,sans-serif;opacity:0;pointer-events:none;transition:opacity .18s,transform .28s cubic-bezier(.3,1.5,.5,1);z-index:2}' +
     '.mkbub.on{opacity:1;transform:translateX(-50%) scale(1)}.mkbub::after{content:"";position:absolute;left:50%;bottom:-7px;width:12px;height:12px;background:var(--card,#fff);border-right:1px solid var(--line,#ddd);border-bottom:1px solid var(--line,#ddd);transform:translateX(-50%) rotate(45deg)}' +
@@ -6236,11 +6238,11 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     const okf = await sleep(3800); acting = false; if (okf) setPose('');
   }
   /* banana to drag onto the monkey */
-  const ban = D.createElement('div'); ban.id = 'fxBan'; ban.textContent = '🍌'; ban.title = 'Drag me onto the monkey 🍌'; D.body.appendChild(ban);
+  const ban = D.createElement('div'); ban.id = 'fxBan'; ban.innerHTML = '<span class="b">🍌</span><small>Reward Pranav — drag me to him!</small>'; ban.title = 'Want to reward Pranav? Drag this banana onto him 🍌'; D.body.appendChild(ban);
   let bd = null;
-  function banHome() { ban.style.left = (P.x - W / 2 - 52) + 'px'; ban.style.top = (P.y - 46) + 'px'; }
+  function banHome() { ban.style.left = '92px'; ban.style.top = (innerHeight - 58) + 'px'; }
   ban.addEventListener('pointerdown', e => { bd = {id: e.pointerId}; ban.classList.add('drag'); try { ban.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); });
-  ban.addEventListener('pointermove', e => { if (bd) { ban.style.left = (e.clientX - 20) + 'px'; ban.style.top = (e.clientY - 20) + 'px'; } });
+  ban.addEventListener('pointermove', e => { if (bd) { ban.style.left = (e.clientX - 18) + 'px'; ban.style.top = (e.clientY - 20) + 'px'; } });
   const banUp = e => {
     if (!bd) return; bd = null; ban.classList.remove('drag');
     const dx = e.clientX - P.x, dy = e.clientY - (P.y - H * .5);
@@ -6365,7 +6367,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
 
   /* ================= rest switch ================= */
   function paintMode() {
-    const m = g('monkeyMode'); if (m) m.textContent = rest || reduce ? 'Monkey: resting 😴 (tap to wake)' : 'Monkey: playing 🐒 (tap to rest)';
+    const m = g('monkeyMode'); if (m) m.textContent = rest || reduce ? 'Pranav: resting 😴 (tap to wake)' : 'Pranav: playing 🐒 (tap to rest)';
   }
   function setRest(v) {
     rest = !!v; try { localStorage.setItem(LS, rest ? '1' : '0'); } catch (e) {}
@@ -6380,39 +6382,67 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     let n = ''; try { n = String((typeof PROFILE !== 'undefined' && PROFILE.name) || (typeof ME !== 'undefined' && ME) || '').trim(); } catch (e) {}
     n = n.split(/[_\s.\-0-9]+/)[0] || 'there'; return n.charAt(0).toUpperCase() + n.slice(1);
   }
-  function leafCluster(n, seed, cols) {
-    let s = '';
-    for (let i = 0; i < n; i++) {
-      const a = -80 + (160 * i) / Math.max(1, n - 1) + ((i * seed) % 11) - 5, sc = .75 + ((i * seed) % 7) / 14;
-      s += '<g transform="rotate(' + a.toFixed(0) + ') scale(' + sc.toFixed(2) + ')"><path d="M0 0C-26 -34 -26 -92 0 -138C26 -92 26 -34 0 0Z" fill="' + cols[i % cols.length] + '"/><path d="M0 -4V-120" stroke="rgba(255,255,255,.18)" stroke-width="2.5"/></g>';
-    }
-    return s;
-  }
-  const GREENS = ['#14532d', '#166534', '#15803d', '#0f3d22', '#1a7a3c'];
   const WCSS = '' +
-    '#ppwel{--hm:clamp(150px,29vh,250px);--r:0px;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden;cursor:pointer;user-select:none;-webkit-user-select:none}' +
+    '#ppwel{--hm:clamp(150px,28vh,240px);--r:0px;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden;cursor:pointer;user-select:none;-webkit-user-select:none;background:linear-gradient(180deg,#160d3f 0,#3b1a85 38%,#a23d9e 74%,#f59e6b 100%)!important}' +
     '#ppwel *{box-sizing:border-box}' +
-    '.ppw-rays{position:absolute;left:50%;top:38%;width:240vmax;height:240vmax;margin:-120vmax 0 0 -120vmax;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.07) 0 6deg,transparent 6deg 18deg);-webkit-mask-image:radial-gradient(circle,#000 0,transparent 42%);mask-image:radial-gradient(circle,#000 0,transparent 42%);animation:ppwSpin 60s linear infinite}@keyframes ppwSpin{to{transform:rotate(360deg)}}' +
-    '.ppw-ff{position:absolute;width:6px;height:6px;border-radius:50%;background:#fde68a;box-shadow:0 0 12px 3px rgba(253,230,138,.8);animation:ppwFly 6s ease-in-out infinite alternate,ppwTw 1.8s ease-in-out infinite}@keyframes ppwFly{to{transform:translate(40px,-60px)}}@keyframes ppwTw{0%,100%{opacity:.25}50%{opacity:1}}' +
-    '.ppw-gr{position:absolute;left:-5%;right:-5%;bottom:0;height:19vh;background:radial-gradient(120% 100% at 50% 0,#166534 0,#0b3d1f 55%,#04210f 100%);border-radius:50% 50% 0 0/26px 26px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.3)}' +
-    '.ppw-sh{position:absolute;left:50%;bottom:calc(18vh - 8px);width:calc(var(--hm)*.6);height:calc(var(--hm)*.1);margin-left:calc(var(--hm)*-.3);border-radius:50%;background:rgba(0,0,0,.35);filter:blur(4px);opacity:0;animation:ppwShadow .4s 2.55s both}@keyframes ppwShadow{to{opacity:1}}' +
-    '.ppw-edge{position:absolute;width:min(46vw,420px);pointer-events:none;animation:ppwSway 5s ease-in-out infinite alternate}.ppw-edge svg{display:block;width:100%;height:auto;overflow:visible}.ppw-edge.bl{left:-6%;bottom:-6%;transform-origin:20% 100%}.ppw-edge.br{right:-6%;bottom:-6%;transform-origin:80% 100%;animation-delay:-2s}.ppw-edge.tl{left:-8%;top:-10%;transform:rotate(180deg) scaleX(-1);transform-origin:50% 50%;animation:none}.ppw-edge.tr{right:-8%;top:-10%;transform:rotate(180deg);animation:none}@keyframes ppwSway{from{transform:rotate(-2.4deg)}to{transform:rotate(2.4deg)}}' +
-    '.ppw-cur{position:absolute;top:-6%;bottom:-6%;width:64%;z-index:6;pointer-events:none}.ppw-cur svg{width:100%;height:100%;display:block}.ppw-cur.l{left:0;animation:ppwCurL 1.1s .12s cubic-bezier(.65,0,.3,1) both}.ppw-cur.r{right:0;animation:ppwCurR 1.1s .12s cubic-bezier(.65,0,.3,1) both}@keyframes ppwCurL{to{transform:translateX(-108%)}}@keyframes ppwCurR{to{transform:translateX(108%)}}' +
-    '.ppw-sw{position:absolute;left:50%;top:0;width:0;height:calc(81vh - var(--hm)*.92);transform-origin:50% 0;animation:ppwSwing 2.25s .35s cubic-bezier(.45,.05,.35,1) both;z-index:3}' +
-    '@keyframes ppwSwing{0%{transform:rotate(-98deg);opacity:0}7%{opacity:1}35%{transform:rotate(54deg)}58%{transform:rotate(-27deg)}77%{transform:rotate(11deg)}91%{transform:rotate(-3.5deg)}100%{transform:rotate(0)}}' +
-    '.ppw-sw .vn{position:absolute;left:-3.5px;top:0;width:7px;height:100%;border-radius:4px;background:linear-gradient(90deg,#14532d,#65a30d 45%,#14532d);box-shadow:0 0 0 1px rgba(0,0,0,.2);animation:ppwVine .6s 2.7s ease-in forwards}@keyframes ppwVine{to{transform:translateY(-115%)}}' +
-    '.ppw-sw .vn::after{content:"";position:absolute;left:7px;top:45%;width:26px;height:14px;border-radius:0 100% 0 100%;background:#22c55e;transform:rotate(-20deg)}' +
-    '.ppw-mk{position:absolute;left:calc(var(--hm)*-.39);top:calc(100% - var(--hm)*.08);width:calc(var(--hm)*.78);height:var(--hm)}' +
-    '.ppw-mk.drop{animation:ppwDrop .5s cubic-bezier(.3,0,.6,1) both}@keyframes ppwDrop{0%{transform:translateY(-10px)}55%{transform:translateY(0) scaleY(.9)}100%{transform:none}}' +
-    '.ppw-txt{position:absolute;left:0;right:0;top:8vh;text-align:center;padding:0 18px;z-index:4;pointer-events:none}' +
-    '.ppw-txt small{display:block;font-size:clamp(14px,2.4vw,24px);font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#e9d5ff;opacity:0;animation:ppwUp .7s 2.25s both}' +
-    '.ppw-txt h2{margin:6px 0 0;font-size:clamp(38px,8.2vw,92px);line-height:1.02;font-weight:900;letter-spacing:-.03em;text-shadow:0 6px 30px rgba(0,0,0,.35),0 0 40px rgba(250,204,21,.25)}' +
+    '.ppw-star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;opacity:.3;animation:ppwTw 2.4s ease-in-out infinite}@keyframes ppwTw{0%,100%{opacity:.2}50%{opacity:1}}' +
+    '.ppw-sun{position:absolute;left:50%;bottom:16vh;width:min(70vw,640px);aspect-ratio:1;margin-left:calc(min(70vw,640px)/-2);border-radius:50%;background:radial-gradient(circle,rgba(255,226,150,.95) 0,rgba(255,170,110,.55) 35%,transparent 68%);opacity:0;animation:ppwFade 1.4s .9s ease forwards}@keyframes ppwFade{to{opacity:1}}' +
+    '.ppw-scene{position:absolute;left:0;right:0;bottom:0;height:62vh;transform-origin:50% 100%;animation:ppwPush 2.6s .5s cubic-bezier(.2,.7,.2,1) both}@keyframes ppwPush{from{transform:scale(1.22)}to{transform:scale(1)}}' +
+    '.ppw-scene svg{position:absolute;left:50%;bottom:0;height:100%;min-width:100%;transform:translateX(-50%)}' +
+    '.ppw-gates{position:absolute;inset:0;perspective:1500px;z-index:6;pointer-events:none}' +
+    '.ppw-gate{position:absolute;top:0;bottom:0;width:50.4%;background:linear-gradient(90deg,#120a33,#1d1250 60%,#120a33);border:0 solid #d4a73a;box-shadow:inset 0 0 0 10px #d4a73a,inset 0 0 0 14px #120a33,inset 0 0 60px rgba(0,0,0,.6);overflow:hidden}' +
+    '.ppw-gate::before{content:"";position:absolute;inset:14px;background:repeating-linear-gradient(90deg,transparent 0 34px,rgba(212,167,58,.9) 34px 40px)}' +
+    '.ppw-gate::after{content:"";position:absolute;left:14px;right:14px;top:34%;height:10px;background:#d4a73a;box-shadow:0 calc(30vh) 0 #d4a73a,0 -22vh 0 #d4a73a}' +
+    '.ppw-gate.l{left:0;transform-origin:0 50%;animation:ppwOpenL 1.7s .55s cubic-bezier(.55,0,.25,1) forwards}.ppw-gate.r{right:0;transform-origin:100% 50%;animation:ppwOpenR 1.7s .55s cubic-bezier(.55,0,.25,1) forwards}' +
+    '@keyframes ppwOpenL{to{transform:rotateY(-104deg);filter:brightness(.55)}}@keyframes ppwOpenR{to{transform:rotateY(104deg);filter:brightness(.55)}}' +
+    '.ppw-emb{position:absolute;top:50%;width:clamp(56px,8vw,96px);aspect-ratio:1;margin-top:calc(clamp(56px,8vw,96px)/-2);border-radius:50%;background:radial-gradient(circle at 35% 30%,#fde68a,#d4a73a 60%,#92651a);box-shadow:0 0 0 6px #120a33,0 6px 20px rgba(0,0,0,.5);display:grid;place-items:center;font:900 clamp(26px,4vw,48px)/1 system-ui;color:#2a1760;z-index:2}.ppw-gate.l .ppw-emb{right:-1px;margin-right:calc(clamp(56px,8vw,96px)/-2)}.ppw-gate.r .ppw-emb{left:-1px;margin-left:calc(clamp(56px,8vw,96px)/-2)}' +
+    '.ppw-gates .ppw-emb{display:none}' +
+    '.ppw-seam{position:absolute;left:50%;top:50%;width:clamp(64px,9vw,104px);aspect-ratio:1;margin:calc(clamp(64px,9vw,104px)/-2) 0 0 calc(clamp(64px,9vw,104px)/-2);border-radius:50%;background:radial-gradient(circle at 35% 30%,#fde68a,#d4a73a 60%,#92651a);box-shadow:0 0 0 6px #120a33,0 6px 24px rgba(0,0,0,.55);display:grid;place-items:center;font:900 clamp(28px,4.4vw,52px)/1 system-ui;color:#2a1760;z-index:7;animation:ppwSeam .5s 1.2s ease forwards}@keyframes ppwSeam{to{opacity:0;transform:scale(.4)}}' +
+    '.ppw-plaque{position:absolute;left:50%;top:7vh;transform:translateX(-50%);z-index:8;padding:12px 30px;border-radius:14px;background:linear-gradient(180deg,#2a1760,#160d3f);border:3px solid #d4a73a;box-shadow:0 10px 40px rgba(0,0,0,.5),0 0 40px rgba(212,167,58,.35);color:#fde68a;font-weight:900;letter-spacing:.2em;font-size:clamp(14px,2.4vw,26px);white-space:nowrap;animation:ppwPlaque .7s 1.5s ease forwards}@keyframes ppwPlaque{to{opacity:0;transform:translate(-50%,-30px)}}' +
+    '.ppw-txt{position:absolute;left:0;right:0;top:6vh;text-align:center;padding:0 18px;z-index:5;pointer-events:none}' +
+    '.ppw-txt small{display:block;font-size:clamp(13px,2.2vw,22px);font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#fde68a;opacity:0;animation:ppwUp .7s 2.5s both}' +
+    '.ppw-txt h2{margin:4px 0 0;font-size:clamp(36px,7.6vw,86px);line-height:1.02;font-weight:900;letter-spacing:-.03em;text-shadow:0 6px 30px rgba(0,0,0,.4),0 0 40px rgba(250,204,21,.25)}' +
     '.ppw-txt h2 span{display:inline-block;opacity:0;animation:ppwLetter .55s both cubic-bezier(.2,1.7,.4,1)}.ppw-txt h2 .sp{width:.28em}.ppw-txt h2 .y{color:#fcd34d}' +
-    '.ppw-txt p{margin:14px 0 0;font-size:clamp(15px,2.2vw,22px);font-weight:600;color:#fdf4ff;opacity:0;animation:ppwUp .7s 3.45s both}' +
+    '.ppw-txt p{margin:12px auto 0;max-width:720px;font-size:clamp(14px,2vw,20px);font-weight:600;color:#fdf4ff;opacity:0;animation:ppwUp .7s 3.7s both;text-shadow:0 2px 12px rgba(0,0,0,.4)}' +
     '@keyframes ppwUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}@keyframes ppwLetter{from{opacity:0;transform:translateY(40px) scale(.4) rotate(-14deg)}to{opacity:1;transform:none}}' +
-    '.ppw-fall{position:absolute;top:-8vh;font-size:clamp(22px,3.4vw,40px);opacity:0;pointer-events:none;animation:ppwFall linear both;z-index:5}@keyframes ppwFall{0%{opacity:0;transform:translateY(0) rotate(0)}8%{opacity:1}100%{opacity:1;transform:translateY(118vh) rotate(var(--rt))}}' +
-    '.ppw-skip{position:absolute;right:16px;bottom:16px;z-index:8;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.14);color:#fff;border-radius:999px;padding:8px 16px;font:600 13px system-ui;cursor:pointer;backdrop-filter:blur(6px);opacity:0;animation:ppwUp .5s 1s both}.ppw-skip:hover{background:rgba(255,255,255,.28)}' +
-    '@media(prefers-reduced-motion:reduce){#ppwel *{animation:none!important}#ppwel .ppw-txt small,#ppwel .ppw-txt h2 span,#ppwel .ppw-txt p,#ppwel .ppw-skip{opacity:1!important}.ppw-cur,.ppw-sw,.ppw-fall,.ppw-rays{display:none}}';
+    '.ppw-unis{position:absolute;left:0;right:0;top:calc(6vh + clamp(150px,27vh,260px));display:flex;flex-wrap:wrap;justify-content:center;gap:12px;padding:0 4vw;z-index:4;pointer-events:none}' +
+    '.ppw-uc{display:flex;align-items:center;gap:10px;padding:10px 16px 10px 12px;border-radius:16px;background:rgba(255,255,255,.94);color:#1c1647;box-shadow:0 14px 34px rgba(20,8,70,.35);min-width:150px;opacity:0;transform:translateY(40px) scale(.6);animation:ppwCard .6s cubic-bezier(.2,1.5,.4,1) forwards}' +
+    '.ppw-uc i{font-style:normal;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#ede9fe,#fbcfe8);font-size:20px}.ppw-uc b{display:block;font-size:20px;line-height:1.1;letter-spacing:-.3px}.ppw-uc small{display:block;font-size:11.5px;font-weight:700;color:#6b6f95;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+    '.ppw-uc.all{background:linear-gradient(135deg,#fde68a,#fbbf24);color:#3b2400}.ppw-uc.all i{background:rgba(255,255,255,.55)}.ppw-uc.all small{color:#7c4a03}' +
+    '@keyframes ppwCard{to{opacity:1;transform:none}}' +
+    '.ppw-mk{position:absolute;left:50%;bottom:11vh;width:calc(var(--hm)*.78);height:var(--hm);margin-left:calc(var(--hm)*-.39);z-index:3;transform-origin:50% 100%;animation:ppwRun 1.5s 1.9s cubic-bezier(.3,.6,.3,1) both}' +
+    '@keyframes ppwRun{0%{opacity:0;transform:translateY(-16vh) scale(.2)}12%{opacity:1}100%{opacity:1;transform:none}}' +
+    '.ppw-mk .mkr{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 10px 10px rgba(20,5,60,.4))}' +
+    '.ppw-mk .bob{width:100%;height:100%;animation:ppwBob .3s 1.9s ease-in-out 5 alternate both}@keyframes ppwBob{from{transform:translateY(0)}to{transform:translateY(-3.5vh)}}' +
+    '.ppw-gr{position:absolute;left:-5%;right:-5%;bottom:0;height:13vh;background:radial-gradient(120% 100% at 50% 0,#2f8f4e 0,#14532d 60%,#052e16 100%);border-radius:50% 50% 0 0/22px 22px 0 0;z-index:2}' +
+    '.ppw-skip{position:absolute;right:16px;bottom:16px;z-index:9;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.14);color:#fff;border-radius:999px;padding:8px 16px;font:600 13px system-ui;cursor:pointer;backdrop-filter:blur(6px);opacity:0;animation:ppwUp .5s .8s both}.ppw-skip:hover{background:rgba(255,255,255,.28)}' +
+    '.mkr .gcap{display:none}.mkr.grad .gcap{display:block}' +
+    '@media(prefers-reduced-motion:reduce){#ppwel *{animation:none!important}.ppw-txt small,.ppw-txt h2 span,.ppw-txt p,.ppw-skip,.ppw-uc{opacity:1!important;transform:none!important}.ppw-gates,.ppw-plaque,.ppw-seam{display:none}.ppw-sun{opacity:1}}';
+
+  function campusSVG() {
+    let cols = '';
+    for (let i = 0; i < 8; i++) cols += '<rect x="' + (292 + i * 28) + '" y="196" width="14" height="108" rx="3" fill="#fff"/>';
+    let win = '';
+    for (let i = 0; i < 5; i++) { win += '<rect x="' + (58 + i * 38) + '" y="238" width="18" height="30" rx="9" fill="#a78bfa"/><rect x="' + (588 + i * 38) + '" y="238" width="18" height="30" rx="9" fill="#a78bfa"/>'; }
+    return '<svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMax slice" aria-hidden="true">' +
+      '<path d="M0 330C120 290 220 300 330 322C470 300 620 286 800 326V400H0z" fill="#3a1c7a" opacity=".55"/>' +
+      '<g transform="translate(0 6)"><rect x="40" y="214" width="230" height="92" rx="6" fill="#e9e3ff"/><rect x="530" y="214" width="230" height="92" rx="6" fill="#e9e3ff"/><path d="M34 214h242l-10-22H44zM524 214h242l-10-22H534z" fill="#7c5cf6"/>' + win + '</g>' +
+      '<rect x="268" y="196" width="264" height="116" fill="#f3efff"/><path d="M252 196h296L400 128z" fill="#7c5cf6"/><path d="M276 196h248L400 140z" fill="#c4b5fd"/>' + cols +
+      '<circle cx="400" cy="168" r="14" fill="#fff" stroke="#7c5cf6" stroke-width="4"/>' +
+      '<rect x="360" y="64" width="80" height="64" fill="#ede9fe"/><path d="M356 70q44-70 88 0z" fill="#fbbf24"/><rect x="398" y="22" width="4" height="26" fill="#fbbf24"/><path d="M402 24h26l-8 7 8 7h-26z" fill="#ef4444"/>' +
+      '<rect x="270" y="304" width="260" height="10" fill="#d9d1ff"/><rect x="254" y="314" width="292" height="10" fill="#c9bfff"/><rect x="238" y="324" width="324" height="10" fill="#b9acff"/>' +
+      '<path d="M330 334h140l60 66H270z" fill="#f4d9a8"/>' +
+      '<g fill="#14532d"><circle cx="40" cy="316" r="34"/><circle cx="92" cy="326" r="26"/><circle cx="760" cy="316" r="34"/><circle cx="708" cy="326" r="26"/></g><g fill="#1f7a3f"><circle cx="34" cy="304" r="22"/><circle cx="766" cy="304" r="22"/></g>' +
+      '</svg>';
+  }
+
+  function uniCards() {
+    try {
+      const m = {}; allRows.forEach(r => { const u = uniOf(r); m[u] = (m[u] || 0) + 1; });
+      const list = Object.keys(m).filter(k => k && !/^\(?\s*(no university|unassigned|unknown)|^[—–-]+$/i.test(k)).map(k => ({n: k, c: m[k]})).sort((a, b) => b.c - a.c).slice(0, 5);
+      return {total: allRows.length, list: list};
+    } catch (e) { return null; }
+  }
 
   function welcome() {
     const ov = g('ppwel');
@@ -6420,31 +6450,36 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
     welcomeOn = true;
     const S = D.createElement('style'); S.textContent = WCSS; D.head.appendChild(S);
     const nm = firstName();
-    let letters = '', idx = 0; const t1 = 'Pranav', t2 = 'Pipeline';
-    [t1, t2].forEach((w, wi) => { for (const ch of w) { letters += '<span class="' + (wi ? 'y' : '') + '" style="animation-delay:' + (2.55 + idx * .055).toFixed(2) + 's">' + ch + '</span>'; idx++; } if (!wi) letters += '<span class="sp" aria-hidden="true" style="animation-delay:0s"> </span>'; });
-    let ff = '', fall = '';
-    for (let i = 0; i < 16; i++) ff += '<i class="ppw-ff" style="left:' + rand(4, 96).toFixed(0) + '%;top:' + rand(10, 80).toFixed(0) + '%;animation-delay:' + (-rand(0, 5)).toFixed(1) + 's,' + (-rand(0, 2)).toFixed(1) + 's"></i>';
-    const em = ['🍌', '🍌', '🍃', '✨', '🍌', '🌴'];
-    for (let i = 0; i < 20; i++) fall += '<span class="ppw-fall" style="left:' + rand(2, 96).toFixed(0) + '%;animation-duration:' + rand(2.2, 3.8).toFixed(1) + 's;animation-delay:' + rand(2.6, 4.2).toFixed(2) + 's;--rt:' + rand(-300, 300).toFixed(0) + 'deg">' + pick(em) + '</span>';
-    const clusterSvg = (n, seed, w, h, vb) => '<svg viewBox="' + vb + '" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><g transform="translate(' + (w / 2) + ' ' + h + ')">' + leafCluster(n, seed, GREENS) + '</g></svg>';
-    const curtain = side => '<div class="ppw-cur ' + side + '"><svg viewBox="0 0 400 800" preserveAspectRatio="none" aria-hidden="true"><rect width="400" height="800" fill="#0b3d1f"/><g transform="translate(' + (side === 'l' ? 0 : 400) + ' 400) rotate(' + (side === 'l' ? 90 : -90) + ') scale(3.1)">' + leafCluster(13, side === 'l' ? 5 : 7, GREENS) + '</g><g transform="translate(' + (side === 'l' ? 0 : 400) + ' 120) rotate(' + (side === 'l' ? 90 : -90) + ') scale(2.2)">' + leafCluster(9, 3, GREENS) + '</g><g transform="translate(' + (side === 'l' ? 0 : 400) + ' 690) rotate(' + (side === 'l' ? 90 : -90) + ') scale(2.4)">' + leafCluster(9, 9, GREENS) + '</g></svg></div>';
+    let letters = '', idx = 0;
+    [['Pranav', ''], ['Pipeline', 'y']].forEach((w, wi) => { for (const ch of w[0]) { letters += '<span class="' + w[1] + '" style="animation-delay:' + (2.8 + idx * .055).toFixed(2) + 's">' + ch + '</span>'; idx++; } if (!wi) letters += '<span class="sp" aria-hidden="true" style="animation-delay:0s"> </span>'; });
+    let stars = ''; for (let i = 0; i < 40; i++) stars += '<i class="ppw-star" style="left:' + rand(1, 99).toFixed(0) + '%;top:' + rand(1, 55).toFixed(0) + '%;animation-delay:' + (-rand(0, 2.4)).toFixed(1) + 's;width:' + (rand(2, 4)).toFixed(0) + 'px;height:' + (rand(2, 4)).toFixed(0) + 'px"></i>';
     ov.innerHTML =
-      '<div class="ppw-rays"></div>' + ff +
-      '<div class="ppw-edge bl">' + clusterSvg(11, 5, 420, 240, '0 -130 420 372') + '</div><div class="ppw-edge br">' + clusterSvg(11, 7, 420, 240, '0 -130 420 372') + '</div><div class="ppw-edge tl">' + clusterSvg(8, 3, 420, 160, '0 -130 420 292') + '</div><div class="ppw-edge tr">' + clusterSvg(8, 9, 420, 160, '0 -130 420 292') + '</div>' +
-      '<div class="ppw-gr"></div><div class="ppw-sh"></div>' +
-      '<div class="ppw-txt"><small>Welcome to the world of</small><h2 aria-label="Pranav Pipeline">' + letters + '</h2><p>Hi ' + nm.replace(/[<>&]/g, '') + '! Hop in — I’ll show you around 🍌</p></div>' +
-      '<div class="ppw-sw"><div class="vn"></div><div class="ppw-mk">' + rig('leap') + '</div></div>' + fall +
-      curtain('l') + curtain('r') +
+      stars + '<div class="ppw-sun"></div>' +
+      '<div class="ppw-scene">' + campusSVG() + '</div><div class="ppw-gr"></div>' +
+      '<div class="ppw-txt"><small>Welcome to</small><h2 aria-label="Pranav Pipeline">' + letters + '</h2><p>Hi ' + nm.replace(/[<>&]/g, '') + '! I’m <b>Pranav</b> 🐒 — I keep an eye on every university’s deals for you.</p></div>' +
+      '<div class="ppw-unis" id="ppwUnis"></div>' +
+      '<div class="ppw-mk"><div class="bob">' + rig('grad walk') + '</div></div>' +
+      '<div class="ppw-gates"><div class="ppw-gate l"></div><div class="ppw-gate r"></div></div><div class="ppw-seam">P</div><div class="ppw-plaque">PRANAV PIPELINE</div>' +
       '<button type="button" class="ppw-skip" aria-label="Skip the welcome">Skip ›</button>';
-    ov.removeAttribute('aria-hidden'); ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Welcome to the world of Pranav Pipeline');
+    ov.removeAttribute('aria-hidden'); ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Welcome to Pranav Pipeline');
     D.body.style.overflow = 'hidden';
     const mk = ov.querySelector('.ppw-mk'), mkr = mk.querySelector('.mkr');
-    const timers = [];
-    timers.push(setTimeout(() => { mk.classList.add('drop'); mkr.setAttribute('class', 'mkr mbx wave happy'); }, 2650));
+    const timers = []; let cardsDone = false;
+    timers.push(setTimeout(() => { mkr.setAttribute('class', 'mkr mbx grad wave happy'); }, 3350));
+    function countUp(el, to) { const t0 = performance.now(); (function f(now) { const k = Math.min(1, (now - t0) / 1100), e = 1 - Math.pow(1 - k, 3); el.textContent = Math.round(to * e).toLocaleString('en-IN'); if (k < 1) requestAnimationFrame(f); })(t0); }
+    function showCards() {
+      if (cardsDone) return; const d = uniCards(); if (!d || !d.total) return; cardsDone = true;
+      const box = g('ppwUnis'); if (!box) return;
+      const items = [{n: 'All universities', c: d.total, all: 1}].concat(d.list);
+      box.innerHTML = items.map((u, i) => '<div class="ppw-uc' + (u.all ? ' all' : '') + '" style="animation-delay:' + (i * .18).toFixed(2) + 's"><i>' + (u.all ? '🏛️' : '🎓') + '</i><span><b data-to="' + u.c + '">0</b><small>' + String(u.n).replace(/[<>&]/g, '') + (u.all ? ' · deals' : ' · deals') + '</small></span></div>').join('');
+      box.querySelectorAll('b[data-to]').forEach(b => countUp(b, +b.dataset.to));
+    }
+    const cardT = setInterval(() => { if (performance.now() - t00 > 3300) showCards(); if (cardsDone) clearInterval(cardT); }, 150);
+    const t00 = performance.now();
     return new Promise(resolve => {
       let done = false;
       function end() {
-        if (done) return; done = true; timers.forEach(clearTimeout);
+        if (done) return; done = true; timers.forEach(clearTimeout); clearInterval(cardT);
         D.removeEventListener('keydown', onKey);
         const r = mk.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height * .55;
         resolve({x: cx, y: r.bottom, h: r.height});
@@ -6461,7 +6496,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       }
       function onKey(e) { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); end(); } }
       ov.addEventListener('click', end); D.addEventListener('keydown', onKey);
-      timers.push(setTimeout(end, reduce ? 1600 : 4900));
+      timers.push(setTimeout(end, reduce ? 1800 : 6200));
     });
   }
 
@@ -6490,6 +6525,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       })();
     }
   }
+  setTimeout(() => { try { if (sessionStorage.getItem('pp_ban_hint')) return; sessionStorage.setItem('pp_ban_hint', '1'); } catch (e) {} if (!chatOpen && !dragging && !rest) say('Psst! Got a 🍌 for me? Drag the one at the bottom-left over to me!', 5200); }, 30000);
   /* reacting to the data itself */
   let lastTotal = 0;
   function total() { try { return typeof allRows !== 'undefined' ? allRows.length : 0; } catch (e) { return 0; } }
@@ -6532,15 +6568,6 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
 .fxrows tbody tr{animation:fxRow .4s cubic-bezier(.2,.8,.2,1) both}
 .fxrows tbody tr:nth-child(1){animation-delay:.02s}.fxrows tbody tr:nth-child(2){animation-delay:.06s}.fxrows tbody tr:nth-child(3){animation-delay:.1s}.fxrows tbody tr:nth-child(4){animation-delay:.14s}.fxrows tbody tr:nth-child(5){animation-delay:.18s}.fxrows tbody tr:nth-child(6){animation-delay:.22s}.fxrows tbody tr:nth-child(7){animation-delay:.26s}.fxrows tbody tr:nth-child(8){animation-delay:.3s}.fxrows tbody tr:nth-child(9){animation-delay:.34s}.fxrows tbody tr:nth-child(n+10){animation-delay:.38s}
 @keyframes fxRow{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
-/* hover: lift + shine */
-a.tile,.kpi{transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,border-color .25s;position:relative;overflow:hidden}
-a.tile:hover,a.kpi:hover{transform:translateY(-5px)!important;box-shadow:0 18px 38px rgba(90,60,220,.22)!important}
-a.tile::after,a.kpi::after{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-18deg);pointer-events:none;opacity:0}
-a.tile:hover::after,a.kpi:hover::after{opacity:1;animation:fxShine .75s ease}
-@keyframes fxShine{from{left:-70%}to{left:130%}}
-/* priority badge pulses */
-#navPrio:not(:empty){animation:fxBadge 2s ease-in-out infinite}
-@keyframes fxBadge{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(239,68,68,.55)}50%{transform:scale(1.12);box-shadow:0 0 0 7px rgba(239,68,68,0)}}
 /* overdue wiggle */
 .fxwig{display:inline-block;animation:fxWig 4.5s ease-in-out infinite;transform-origin:50% 20%}
 @keyframes fxWig{0%,70%,100%{transform:none}74%{transform:rotate(-16deg)}78%{transform:rotate(14deg)}82%{transform:rotate(-12deg)}86%{transform:rotate(9deg)}90%{transform:rotate(-5deg)}}
@@ -6553,17 +6580,8 @@ tr.fxhi td{animation:fxHi 2.6s ease-out}
 .wapop button{animation:fxSlide .35s cubic-bezier(.2,.9,.3,1.2) both}
 .wapop button:nth-of-type(1){animation-delay:.08s}.wapop button:nth-of-type(2){animation-delay:.14s}.wapop button:nth-of-type(3){animation-delay:.2s}.wapop button:nth-of-type(4){animation-delay:.26s}
 @keyframes fxSlide{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
-/* theme switch */
-html.fxtheme *,html.fxtheme *::before,html.fxtheme *::after{transition:background-color .55s ease,color .55s ease,border-color .55s ease,fill .55s ease,stroke .55s ease,box-shadow .55s ease!important}
-button.thm.fxspin svg{animation:fxSpin .7s cubic-bezier(.3,1.4,.5,1)}
-@keyframes fxSpin{from{transform:rotate(-200deg) scale(.3);opacity:0}to{transform:none;opacity:1}}
-/* floating background */
-#fxbg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
-#fxbg span{position:absolute;bottom:-60px;opacity:.1;animation:fxRise linear infinite;will-change:transform}
-@keyframes fxRise{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(-118vh) rotate(360deg)}}
-html[data-theme=dark] #fxbg span{opacity:.07}
 /* loading pill */
-#fxLoad{position:fixed;left:84px;bottom:18px;z-index:45;display:flex;align-items:center;gap:10px;padding:8px 16px 8px 10px;border-radius:999px;background:var(--card);color:var(--text);border:1px solid var(--line);box-shadow:0 12px 30px rgba(60,30,140,.25);font-weight:700;font-size:13px;animation:fxPop .35s cubic-bezier(.3,1.6,.5,1) both}
+#fxLoad{position:fixed;left:88px;bottom:18px;z-index:45;display:flex;align-items:center;gap:10px;padding:8px 16px 8px 10px;border-radius:999px;background:var(--card);color:var(--text);border:1px solid var(--line);box-shadow:0 12px 30px rgba(60,30,140,.25);font-weight:700;font-size:13px;animation:fxPop .35s cubic-bezier(.3,1.6,.5,1) both}
 #fxLoad[hidden]{display:none}
 #fxLoad .sw{position:relative;width:34px;height:34px;transform-origin:50% -6px;animation:fxSwing 1.1s ease-in-out infinite alternate}
 #fxLoad .sw svg{width:34px;height:34px;overflow:visible}
@@ -6577,29 +6595,13 @@ html[data-theme=dark] #fxbg span{opacity:.07}
 @keyframes fxDraw{to{stroke-dashoffset:0}}
 @keyframes fxTickIn{0%{opacity:0;transform:scale(.3)}18%{opacity:1;transform:scale(1.08)}28%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:translateY(-14px)}}
 .fxp{position:fixed;z-index:75;pointer-events:none;font-size:22px;will-change:transform,opacity}
-/* monkey banana to drag */
-#fxBan{position:fixed;z-index:44;width:40px;height:40px;display:grid;place-items:center;font-size:28px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;filter:drop-shadow(0 4px 5px rgba(0,0,0,.25));animation:fxBounce .9s ease-in-out infinite alternate}
-#fxBan.drag{cursor:grabbing;animation:none;z-index:80}
-#fxBan[hidden]{display:none}
-@media(max-width:600px){#fxBan{display:none}#fxLoad{left:12px}}
-/* animations switched off */
-body.fxoff #fxbg,body.fxoff #fxLoad .sw{display:none}
-body.fxoff :not(#mkLife):not(#mkLife *):not(#ppwel):not(#ppwel *):not(#fxBan){animation-duration:.001s!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.001s!important}
-@media(prefers-reduced-motion:reduce){#fxbg{display:none}}
 </style>
 <script>
 (function () {
   'use strict';
   const D = document, B = D.body, $ = id => D.getElementById(id);
-  const OFF_KEY = 'pp_fx_off';
-  let off = false, stored = null;
-  try { stored = localStorage.getItem(OFF_KEY); } catch (e) {}
-  const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-  off = stored === null ? reduce : stored === '1';
+  const off = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   const rand = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.floor(Math.random() * a.length)];
-
-  function paintMode() { const m = $('fxMode'); if (m) m.textContent = off ? 'Animations: reduced (tap to turn on)' : 'Animations: on ✨ (tap to reduce)'; B.classList.toggle('fxoff', off); }
-  function toggle() { off = !off; try { localStorage.setItem(OFF_KEY, off ? '1' : '0'); } catch (e) {} paintMode(); }
 
   /* ---------- confetti / emoji burst ---------- */
   function burst(x, y, n, emojis, power) {
@@ -6613,36 +6615,22 @@ body.fxoff :not(#mkLife):not(#mkLife *):not(#ppwel):not(#ppwel *):not(#fxBan){an
     }
   }
 
-  /* ---------- count-up numbers + wiggle ---------- */
-  const NUM = /^[\d,]+(\.\d+)?%?$/, busy = new Set();
+  /* ---------- number flash on change + overdue wiggle ---------- */
+  const NUM = /^[\d,]+(\.\d+)?%?$/;
   const SEL = '.kpi b,a.tile b,.tile b,.hk b,.hero .hs b';
-  function cu(el) {
-    const t = el.textContent.trim(); if (!NUM.test(t)) return;
-    const prev = el.dataset.cu; if (prev === t) return;
-    el.dataset.cu = t; if (off) return;
-    const to = parseFloat(t.replace(/,/g, '')), dec = ((t.split('.')[1] || '').replace('%', '')).length, from = prev !== undefined ? parseFloat(prev.replace(/,/g, '')) : 0;
-    if (isNaN(to)) return;
-    if (prev !== undefined) { el.classList.remove('fxflash'); void el.offsetWidth; el.classList.add('fxflash'); setTimeout(() => el.classList.remove('fxflash'), 1400); }
-    busy.add(el); const t0 = performance.now(), dur = prev === undefined ? 850 : 650, pct = t.endsWith('%');
-    (function f(now) {
-      const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3), v = from + (to - from) * e;
-      if (k < 1) { el.textContent = (dec ? v.toFixed(dec) : Math.round(v).toLocaleString('en-IN')) + (pct ? '%' : ''); requestAnimationFrame(f); }
-      else { el.textContent = t; setTimeout(() => busy.delete(el), 0); }
-    })(t0);
-  }
-  let scanQ = 0;
+  function flashEl(el) { el.classList.remove('fxflash'); void el.offsetWidth; el.classList.add('fxflash'); setTimeout(() => el.classList.remove('fxflash'), 1400); }
+  let scanQ = 0, refreshAt = 0;
+  const updN = $('updated'); if (updN && window.MutationObserver) new MutationObserver(() => { refreshAt = Date.now(); }).observe(updN, {childList: true, characterData: true, subtree: true});
   function scan() {
     scanQ = 0;
-    D.querySelectorAll(SEL).forEach(cu);
+    D.querySelectorAll(SEL).forEach(el => { const t = el.textContent.trim(); if (!NUM.test(t)) return; const p = el.dataset.cu; if (p !== undefined && p !== t && Date.now() - refreshAt < 6000) flashEl(el); el.dataset.cu = t; });
     D.querySelectorAll('a.tile[href*="f=stale"],a.tile[href*="f=paydue"]').forEach(a => {
       const b = a.querySelector('b'), n = b ? parseFloat((b.dataset.cu || b.textContent || '0').replace(/,/g, '')) || 0 : 0;
-      const ic = a.querySelector('.tl i'); if (ic) ic.classList.toggle('fxwig', n > 0 && !off);
+      const ic = a.querySelector('.tl i'); if (ic) ic.classList.toggle('fxwig', n > 0);
     });
   }
   const mn = D.querySelector('.main');
-  if (mn && window.MutationObserver) new MutationObserver(ms => {
-    for (const m of ms) { const t = m.target.nodeType === 3 ? m.target.parentElement : m.target; if (t && busy.has(t)) continue; if (!scanQ) scanQ = requestAnimationFrame(scan); break; }
-  }).observe(mn, {childList: true, subtree: true, characterData: true});
+  if (mn && window.MutationObserver) new MutationObserver(() => { if (!scanQ) scanQ = requestAnimationFrame(scan); }).observe(mn, {childList: true, subtree: true, characterData: true});
   scan();
 
   /* ---------- page transitions ---------- */
@@ -6664,20 +6652,6 @@ body.fxoff :not(#mkLife):not(#mkLife *):not(#ppwel):not(#ppwel *):not(#fxBan){an
   [upd, rf].forEach(n => { if (n && window.MutationObserver) new MutationObserver(pillCheck).observe(n, {childList: true, characterData: true, subtree: true}); });
   pillCheck();
 
-  /* ---------- background floaters ---------- */
-  const bg = D.createElement('div'); bg.id = 'fxbg'; bg.setAttribute('aria-hidden', 'true');
-  const sh = ['🍌', '🍃', '🌴', '🥥', '✨', '🍌', '🍃', '🌿'];
-  for (let i = 0; i < 9; i++) { const s = D.createElement('span'); s.textContent = sh[i % sh.length]; s.style.left = (4 + i * 11 + rand(-3, 3)).toFixed(0) + '%'; s.style.fontSize = rand(22, 40).toFixed(0) + 'px'; s.style.animationDuration = rand(26, 44).toFixed(0) + 's'; s.style.animationDelay = (-rand(0, 40)).toFixed(0) + 's'; bg.appendChild(s); }
-  const shell = $('shell'); if (shell) shell.parentNode.insertBefore(bg, shell); else B.appendChild(bg);
-
-  /* ---------- theme switch ---------- */
-  const tb = $('btnTheme');
-  if (tb) tb.addEventListener('click', () => {
-    if (off) return;
-    const h = D.documentElement; h.classList.add('fxtheme'); tb.classList.remove('fxspin'); void tb.offsetWidth; tb.classList.add('fxspin');
-    setTimeout(() => { h.classList.remove('fxtheme'); tb.classList.remove('fxspin'); }, 800);
-  }, true);
-
   /* ---------- after a save: tick, confetti, row glow ---------- */
   function saved() {
     if (off) return;
@@ -6694,11 +6668,9 @@ body.fxoff :not(#mkLife):not(#mkLife *):not(#ppwel):not(#ppwel *):not(#fxBan){an
     } catch (e) {}
   }
 
-  window.__fx = {toggle: toggle, burst: burst, saved: saved, isOff: () => off};
-  paintMode();
+  window.__fx = {burst: burst, saved: saved};
 })();
 </script>
 <!--/FX-->
-
 
 </body></html>
