@@ -6079,7 +6079,7 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       if (listening) { try { rec.stop(); } catch (e) {} return; }
       micErr = ''; input.value = '';
       rec = new SR(); rec.lang = 'en-IN'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
-      rec.onstart = () => { listening = true; micB.classList.add('rec'); input.classList.add('lis'); input.placeholder = 'Listening… speak now 🎙️'; micB.title = 'Tap to stop and send'; };
+      rec.onstart = () => { listening = true; micB.classList.add('rec'); input.classList.add('lis'); input.placeholder = 'Listening… speak now 🎙️'; micB.title = 'Tap to stop'; };
       rec.onresult = ev => { let f = '', i2 = ''; for (let i = 0; i < ev.results.length; i++) { const r = ev.results[i]; if (r.isFinal) f += r[0].transcript; else i2 += r[0].transcript; } input.value = (f + ' ' + i2).replace(/\s+/g, ' ').trim(); };
       rec.onerror = ev => {
         const e = ev && ev.error; if (e === 'aborted') return; micErr = e || 'err';
@@ -6088,8 +6088,8 @@ load().catch(() => { $('updated').textContent = 'Could not load the data.'; });
       rec.onend = () => {
         listening = false; micB.classList.remove('rec'); input.classList.remove('lis'); input.placeholder = PH; micB.title = 'Speak your question';
         const t = input.value.trim();
-        if (!micErr && t) send(t); else if (micErr === 'x' || micErr) input.value = micErr === 'x' ? '' : t;
-        else micNote('I did not catch that. Tap the mic and try again 🙉', 3500);
+        if (!micErr && t) { input.focus(); try { input.setSelectionRange(t.length, t.length); } catch (e) {} } else if (micErr === 'x') input.value = '';
+        else if (!micErr) micNote('I did not catch that. Tap the mic and try again 🙉', 3500);
       };
       try { rec.start(); } catch (e) { micNote('Voice did not start. Please try again.', 3500); }
     };
